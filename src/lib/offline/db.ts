@@ -26,7 +26,7 @@ export type Row = Record<string, unknown>;
 // DB Schema
 
 const DB_NAME = 'ss-offline';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 // All data tables we cache locally
 const DATA_STORES = [
@@ -44,6 +44,13 @@ const DATA_STORES = [
 ] as const;
 
 export type DataStoreName = (typeof DATA_STORES)[number];
+
+export function isDataStore(name: string): name is DataStoreName {
+  return (DATA_STORES as readonly string[]).includes(name);
+}
+
+// Local mode keeps rows for every other table here, keyed `${table}:${id}`.
+const LOCAL_ROWS_STORE = 'local_rows';
 
 // Singleton
 
@@ -98,6 +105,11 @@ export async function getDB(): Promise<IDBPDatabase> {
             store.createIndex('by_script', 'script_id', { unique: false });
           }
         }
+      }
+
+      if (!db.objectStoreNames.contains(LOCAL_ROWS_STORE)) {
+        const lr = db.createObjectStore(LOCAL_ROWS_STORE, { keyPath: 'key' });
+        lr.createIndex('by_table', 'table', { unique: false });
       }
 
       // Pending writes queue
@@ -158,6 +170,38 @@ export async function deleteCached(store: DataStoreName, id: string): Promise<vo
 export async function getCachedProjects(): Promise<Row[]> {
   const db = await getDB();
   return db.getAll('projects') as Promise<Row[]>;
+}
+
+/** All local rows for any table (local mode). */
+export async function getLocalTableRows(table: string): Promise<Row[]> {
+  const db = await getDB();
+  if (isDataStore(table)) return db.getAll(table) as Promise<Row[]>;
+  const entries = await db.getAllFromIndex(LOCAL_ROWS_STORE, 'by_table', table) as { row: Row }[];
+  return entries.map((e) => e.row);
+}
+
+/** Upsert rows for any table (local mode). */
+export async function putLocalTableRows(table: string, rows: Row[]): Promise<void> {
+  if (!rows.length) return;
+  if (isDataStore(table)) return cacheRows(table, rows);
+  const db = await getDB();
+  const tx = db.transaction(LOCAL_ROWS_STORE, 'readwrite');
+  await Promise.all([
+    ...rows.map((row) => tx.store.put({ key: `${table}:${row.id}`, table, row })),
+    tx.done,
+  ]);
+}
+
+/** Delete rows by id for any table (local mode). */
+export async function deleteLocalTableRows(table: string, ids: string[]): Promise<void> {
+  if (!ids.length) return;
+  const db = await getDB();
+  const store = isDataStore(table) ? table : LOCAL_ROWS_STORE;
+  const tx = db.transaction(store, 'readwrite');
+  await Promise.all([
+    ...ids.map((id) => tx.store.delete(isDataStore(table) ? id : `${table}:${id}`)),
+    tx.done,
+  ]);
 }
 
 // Sync Queue

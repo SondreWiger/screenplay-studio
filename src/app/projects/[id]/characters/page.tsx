@@ -577,13 +577,15 @@ function CharacterEditor({
       created_by: userId,
     };
 
-    if (character) {
-      await supabase.from('characters').update(payload).eq('id', character.id);
-    } else {
-      await supabase.from('characters').insert(payload);
-    }
+    const { error } = character
+      ? await supabase.from('characters').update(payload).eq('id', character.id)
+      : await supabase.from('characters').insert(payload);
 
     setLoading(false);
+    if (error) {
+      toast.error('Could not save character: ' + error.message);
+      return;
+    }
     onSaved();
   };
 
