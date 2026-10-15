@@ -1759,7 +1759,7 @@ ${pageHTML}
   useElectronMenu({
     'menu:save': () => { handleSilentSave(); },
     'menu:save-as': () => { handleElectronSave(); },
-    'menu:open-file': () => { handleElectronOpen(); },
+    // File › Open is handled app-wide: it opens the file as a project.
   });
 
   // Rename / delete from the scripts sidebar ⋯ menu or the Export menu

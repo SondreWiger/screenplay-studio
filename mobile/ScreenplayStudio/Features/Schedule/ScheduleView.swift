@@ -78,6 +78,7 @@ struct ScheduleView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        .readableListWidth()
         .background(Theme.background)
         .refreshable { await model.refresh() }
         .navigationTitle("Schedule")

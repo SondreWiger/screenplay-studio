@@ -37,6 +37,7 @@ struct ScenesView: View {
         // rather than sitting inside a second inset container.
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        .readableListWidth()
         .background(Theme.background)
         .scrollDismissesKeyboard(.immediately)
         .refreshable { await model.refresh() }

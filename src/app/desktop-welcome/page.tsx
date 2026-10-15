@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui';
-import { Icon } from '@/components/ui/icons';
+import { Button, toast } from '@/components/ui';
+import { FileText, FolderOpen, Feather, Plus } from 'lucide-react';
 import { isElectronMode } from '@/lib/supabase/electron-client';
 
 export default function DesktopWelcome() {
@@ -94,68 +94,12 @@ export default function DesktopWelcome() {
   };
 
   const handleOpenFile = async () => {
-    if (window.electron?.openFile) {
-      const result = await window.electron.openFile({
-        filters: [{ name: 'Screenplay Studio', extensions: ['studio', 'json', 'screenplay', 'fdx', 'fountain'] }]
-      });
-      if (!result.canceled && result.filePaths.length > 0) {
-        const filePath = result.filePaths[0];
-        try {
-          const content = await window.electron.readFile(filePath);
-          const data = JSON.parse(content);
-          
-          let projectId = '';
-          let projectTitle = 'Untitled';
-          
-          if (data.project && data.project.id) {
-            projectId = data.project.id;
-            projectTitle = data.project.title || 'Untitled';
-            
-            // It's a full project bundle (.studio / project.json format)
-            const basePath = await window.electron.getDocumentsDir();
-            const projectDir = `${basePath}/ScreenplayStudio/projects/${projectId}`;
-            await window.electron.writeFile(`${projectDir}/project.json`, content);
-          } else if (data.script && data.script.id) {
-            projectId = data.script.project_id || 'local-' + data.script.id;
-            projectTitle = data.script.title || 'Untitled Script';
-            
-            // It's a bare .screenplay file. Wrap it in a project.
-            const fauxProject = {
-              id: projectId,
-              title: projectTitle,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            };
-            const bundleData = {
-              project: fauxProject,
-              scripts: [data.script],
-              elements: data.elements || [],
-              savedAt: new Date().toISOString(),
-              version: 1
-            };
-            const basePath = await window.electron.getDocumentsDir();
-            const projectDir = `${basePath}/ScreenplayStudio/projects/${projectId}`;
-            await window.electron.writeFile(`${projectDir}/project.json`, JSON.stringify(bundleData, null, 2));
-          } else {
-            alert('Invalid file format. No project or script found.');
-            return;
-          }
-          
-          // Add to recent projects
-          if (window.electron.addRecentProject) {
-            window.electron.addRecentProject({
-              id: projectId,
-              title: projectTitle,
-            });
-          }
-          
-          // Navigate to editor
-          router.push(`/projects/${projectId}/script`);
-        } catch (err) {
-          console.error('Failed to open file:', err);
-          alert('Failed to read file. It might not be a valid Screenplay Studio project.');
-        }
-      }
+    const { chooseAndImportFile } = await import('@/lib/desktop/import-file');
+    try {
+      const result = await chooseAndImportFile();
+      if (result) router.push(`/projects/${result.projectId}/script`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Couldn’t open that file.');
     }
   };
 
@@ -164,7 +108,7 @@ export default function DesktopWelcome() {
       <div className="max-w-2xl w-full p-8 flex flex-col items-center">
         {/* App Icon / Logo area */}
         <div className="w-24 h-24 bg-brand-500 rounded-3xl shadow-2xl flex items-center justify-center mb-8">
-          <Icon name="feather" size="xl" className="text-white" />
+          <Feather className="h-8 w-8 text-white" />
         </div>
 
         <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Screenplay Studio</h1>
@@ -174,11 +118,11 @@ export default function DesktopWelcome() {
 
         <div className="flex gap-4 mb-16">
           <Button size="lg" onClick={handleNewProject} className="gap-2 px-8">
-            <Icon name="plus" />
+            <Plus className="h-5 w-5" />
             New Document
           </Button>
           <Button variant="secondary" size="lg" onClick={handleOpenFile} className="gap-2 px-8">
-            <Icon name="folder" />
+            <FolderOpen className="h-5 w-5" />
             Open File...
           </Button>
         </div>
@@ -196,7 +140,7 @@ export default function DesktopWelcome() {
                   className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-surface-800/50 transition-colors text-left group"
                 >
                   <div className="w-10 h-10 rounded-lg bg-surface-800 flex items-center justify-center group-hover:bg-surface-700 transition-colors">
-                    <Icon name="file-text" className="text-surface-400" />
+                    <FileText className="h-5 w-5 text-surface-400" />
                   </div>
                   <div>
                     <div className="text-sm font-medium text-white">{rp.title || 'Untitled'}</div>

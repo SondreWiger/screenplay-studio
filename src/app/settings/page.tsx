@@ -20,6 +20,8 @@ import { ThemePreview } from '@/components/ThemePreview';
 import { BadgeDisplay, getDisplayBadges } from '@/components/BadgeDisplay';
 import { XPBar } from '@/components/XPBar';
 import { useTranslation } from '@/components/TranslationProvider';
+import { DesktopSettingsTab } from '@/components/settings/DesktopSettingsTab';
+import { useDesktop } from '@/hooks/useDesktop';
 
 
 function InsiderProgramCard() {
@@ -206,7 +208,7 @@ function PreMiDCard() {
 
 
 
-type SettingsTab = 'profile' | 'notifications' | 'preferences' | 'appearance' | 'company' | 'privacy' | 'security' | 'gamification' | 'translations' | 'accountability';
+type SettingsTab = 'profile' | 'notifications' | 'preferences' | 'appearance' | 'desktop' | 'company' | 'privacy' | 'security' | 'gamification' | 'translations' | 'accountability';
 
 /**
  * A settings row with an on/off switch. The whole row is the control, and it
@@ -797,7 +799,9 @@ export default function UserSettingsPage() {
   const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tab = (searchParams.get('tab') as SettingsTab) || 'profile';
+  const desktop = useDesktop();
+  // Local mode has no account profile, so it opens on the desktop settings.
+  const tab = (searchParams.get('tab') as SettingsTab) || (desktop.isDesktop && desktop.isLocal ? 'desktop' : 'profile');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -847,9 +851,6 @@ export default function UserSettingsPage() {
     team: true, thumbnails: true, seo: true, sponsors: true, broll: true, checklist: true,
   });
 
-  // Desktop auth mode (Electron only)
-  const [authMode, setAuthMode] = useState<'cloud' | 'local'>('cloud');
-
   // Company
   const [companies, setCompanies] = useState<Company[]>([]);
   const [companyName, setCompanyName] = useState('');
@@ -897,13 +898,6 @@ export default function UserSettingsPage() {
     setEmailTicketReplies(user.email_ticket_replies !== false);
     setEmailWeeklyDigest(user.email_weekly_digest === true);
 
-    // Load desktop auth mode preference
-    if (isElectronMode()) {
-      const storedChoice = window.electron?.getPreferenceSync
-        ? window.electron.getPreferenceSync('ss-auth-choice')
-        : localStorage.getItem('ss-auth-choice');
-      setAuthMode(storedChoice === 'local' ? 'local' : 'cloud');
-    }
     setShowActivityGrid((user.show_activity_grid as 'private' | 'buddies' | 'public') || 'buddies');
     setDailyGoalPages(String(user.daily_goal_pages ?? 1));
     setDailyGoalMinutes(String(user.daily_goal_minutes ?? 0));
@@ -1062,43 +1056,6 @@ export default function UserSettingsPage() {
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
-  };
-
-  const handleDesktopModeChange = async (mode: 'cloud' | 'local') => {
-    setAuthMode(mode);
-    
-    // Save to Electron preferences and localStorage
-    if (window.electron?.setPreference) {
-      window.electron.setPreference('ss-auth-choice', mode);
-      window.electron.setPreference('ss-onboarding-completed', '1');
-    }
-    localStorage.setItem('ss-auth-choice', mode);
-    localStorage.setItem('ss-onboarding-completed', '1');
-
-    if (mode === 'local') {
-      // Enable local mode
-      if (window.electron?.setPreference) {
-        window.electron.setPreference('ss-local-mode', '1');
-      }
-      localStorage.setItem('ss-local-mode', '1');
-      document.cookie = 'ss-local-mode=1; path=/; max-age=31536000; SameSite=Lax';
-      
-      // Create local user if needed
-      const { createLocalUser } = await import('@/lib/supabase/electron-client');
-      createLocalUser('Local Writer');
-      
-      toast.success('Switched to local mode. Your projects are stored on your computer.');
-    } else {
-      // Disable local mode
-      if (window.electron?.setPreference) {
-        window.electron.setPreference('ss-local-mode', null);
-      }
-      localStorage.removeItem('ss-local-mode');
-      document.cookie = 'ss-local-mode=; path=/; max-age=0';
-      
-      toast.success('Switched to cloud mode. Sign in to sync your projects.');
-      router.push('/auth/login');
-    }
   };
 
   const createCompany = async () => {
@@ -1614,66 +1571,12 @@ export default function UserSettingsPage() {
             {/* Insider Program */}
             <InsiderProgramCard />
 
-            {/* Desktop Auth Mode (Electron only) */}
+            {/* Desktop app: storage mode and window settings live in their own tab */}
             {isElectronMode() && (
               <Card className="p-6">
-                <h2 className="text-lg font-semibold text-white mb-2">Desktop Mode</h2>
-                <p className="text-sm text-surface-400 mb-4">
-                  Choose how you want to use the desktop app. You can change this at any time.
-                </p>
-                <div className="space-y-3">
-                  <button
-                    onClick={() => handleDesktopModeChange('cloud')}
-                    className={`w-full flex items-start gap-3 p-4 rounded-xl border-2 text-left transition-colors ${
-                      authMode === 'cloud'
-                        ? 'border-brand-500 bg-brand-500/10'
-                        : 'border-surface-700 hover:border-surface-600'
-                    }`}
-                  >
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                      authMode === 'cloud' ? 'bg-brand-500' : 'bg-surface-800'
-                    }`}>
-                      <Icon name="cloud" className={authMode === 'cloud' ? 'text-white' : 'text-surface-400'} />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-sm font-semibold text-white">Cloud Mode</h3>
-                      <p className="text-xs text-surface-400 mt-0.5">
-                        Sign in to sync projects across devices and access collaboration features
-                      </p>
-                    </div>
-                    {authMode === 'cloud' && (
-                      <svg className="w-5 h-5 text-brand-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-
-                  <button
-                    onClick={() => handleDesktopModeChange('local')}
-                    className={`w-full flex items-start gap-3 p-4 rounded-xl border-2 text-left transition-colors ${
-                      authMode === 'local'
-                        ? 'border-brand-500 bg-brand-500/10'
-                        : 'border-surface-700 hover:border-surface-600'
-                    }`}
-                  >
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                      authMode === 'local' ? 'bg-brand-500' : 'bg-surface-800'
-                    }`}>
-                      <Icon name="hard-drive" className={authMode === 'local' ? 'text-white' : 'text-surface-400'} />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-sm font-semibold text-white">Local Only</h3>
-                      <p className="text-xs text-surface-400 mt-0.5">
-                        Keep everything on your computer. No account needed, complete privacy.
-                      </p>
-                    </div>
-                    {authMode === 'local' && (
-                      <svg className="w-5 h-5 text-brand-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
+                <h2 className="text-lg font-semibold text-white mb-2">Desktop app</h2>
+                <p className="text-sm text-surface-400 mb-4">Where projects are stored, window appearance, text size, updates and shortcuts.</p>
+                <Link href="/settings?tab=desktop"><Button variant="secondary" size="sm">Open Desktop Settings</Button></Link>
               </Card>
             )}
 
@@ -1702,6 +1605,9 @@ export default function UserSettingsPage() {
             </div>
           </Card>
         </>)}
+
+        {/* Desktop app Tab */}
+        {tab === 'desktop' && <DesktopSettingsTab />}
 
         {/* Appearance Tab */}
         {tab === 'appearance' && (

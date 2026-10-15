@@ -140,6 +140,45 @@ final class AuthStore: ObservableObject {
         Haptics.tap()
     }
 
+    // MARK: - Account deletion
+
+    /// The website that hosts the account endpoints.
+    static let webBaseURL = URL(string: "https://screenplaystudio.fun")!
+
+    /// Permanently deletes the account and everything it owns, then signs out.
+    /// Returns an error message to show, or nil on success.
+    func deleteAccount() async -> String? {
+        guard !isWorking else { return nil }
+        isWorking = true
+        defer { isWorking = false }
+
+        do {
+            let token = try await Supabase.shared.validAccessToken()
+            var request = URLRequest(url: Self.webBaseURL.appendingPathComponent("api/user/delete-account"))
+            request.httpMethod = "POST"
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            request.setValue("application/json", forHTTPHeaderField: "Accept")
+            request.timeoutInterval = 30
+
+            let (_, response) = try await URLSession.shared.data(for: request)
+            let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+            guard (200..<300).contains(status) else {
+                Haptics.error()
+                return status == 401
+                    ? "Your session has expired. Sign in again, then delete your account."
+                    : "The account couldn’t be deleted (error \(status)). Try again, or contact support from the website."
+            }
+
+            await SyncQueue.shared.clear()
+            await signOut()
+            Haptics.success()
+            return nil
+        } catch {
+            Haptics.error()
+            return "Couldn’t reach Screenplay Studio. Check your connection and try again."
+        }
+    }
+
     // MARK: - Profile
 
     func loadProfile() async {

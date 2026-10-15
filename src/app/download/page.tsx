@@ -6,6 +6,8 @@ import { SiteVersion } from '@/components/SiteVersion';
 import {
   Monitor,
   Laptop,
+  Smartphone,
+  Tablet,
   LayoutGrid,
   Download as DownloadIcon,
   Check,
@@ -19,6 +21,8 @@ import {
 
 const GITHUB_REPO = 'SondreWiger/screenplay-studio';
 const RELEASE_TAG = 'v2.7.7';
+/** The App Store listing for the iPhone and iPad app. Set once it's live. */
+const IOS_APP_STORE_URL: string | null = null;
 
 function getDownloadUrl(filename: string): string {
   return `https://github.com/${GITHUB_REPO}/releases/download/${RELEASE_TAG}/${filename}`;
@@ -244,6 +248,45 @@ export default function DownloadPage() {
               <DownloadIcon size={16} />
               Download for {dl.label}{selected === 'macos' ? ` (${MAC_ARCHS.find(a => a.key === macArch)?.label})` : ''}
             </a>
+          </div>
+        </div>
+
+        {/* iPhone and iPad */}
+        <div className="mb-20 grid gap-8 border border-white/[0.07] bg-white/[0.02] p-8 md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <Eyebrow>iPhone &amp; iPad</Eyebrow>
+            <h2 className="mb-3 text-2xl font-bold text-white" style={{ letterSpacing: '-0.02em' }}>
+              Take the script with you
+            </h2>
+            <p className="max-w-xl text-sm leading-relaxed text-white/50">
+              A native app for iPhone and iPad with the same account. Write on a full paper page on iPad with a
+              keyboard, check today&apos;s schedule on set, tick off shots and slate takes — it all syncs back here,
+              and keeps working with no signal.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3 text-[11px] text-white/45">
+              <span className="flex items-center gap-1"><Check size={12} className="text-brand-500" /> iPhone &amp; iPad</span>
+              <span className="flex items-center gap-1"><Check size={12} className="text-brand-500" /> Works offline</span>
+              <span className="flex items-center gap-1"><Check size={12} className="text-brand-500" /> Light &amp; dark</span>
+              <span className="flex items-center gap-1"><Check size={12} className="text-brand-500" /> iOS 17 or later</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="hidden items-end gap-2 text-white/30 sm:flex" aria-hidden="true">
+              <Smartphone size={36} />
+              <Tablet size={52} />
+            </div>
+            {IOS_APP_STORE_URL ? (
+              <a
+                href={IOS_APP_STORE_URL}
+                className="inline-flex h-12 items-center justify-center gap-2 bg-white px-6 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+              >
+                Download on the App Store
+              </a>
+            ) : (
+              <p className="max-w-[14rem] text-xs leading-relaxed text-white/50">
+                Search for <span className="text-white/80">Screenplay Studio</span> on the App Store.
+              </p>
+            )}
           </div>
         </div>
 

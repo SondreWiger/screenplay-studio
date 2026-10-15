@@ -3,14 +3,24 @@ import SwiftUI
 struct ProjectsView: View {
 
     @EnvironmentObject private var auth: AuthStore
-    @StateObject private var model = ProjectsViewModel()
-
-    @State private var isPresentingNewProject = false
+    @EnvironmentObject private var router: Router
+    @EnvironmentObject private var settings: AppSettings
+    @EnvironmentObject private var model: ProjectsViewModel
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.scenePhase) private var scenePhase
+
+    @State private var projectPendingDelete: Project?
+
+    /// Cards in a grid on iPad, a single column on iPhone.
+    private var columns: [GridItem] {
+        sizeClass == .regular
+            ? [GridItem(.adaptive(minimum: 300, maximum: 460), spacing: 14, alignment: .top)]
+            : [GridItem(.flexible(), alignment: .top)]
+    }
 
     var body: some View {
         ScrollView {
-            LazyVStack(spacing: Theme.rowSpacing) {
+            VStack(alignment: .leading, spacing: Theme.rowSpacing) {
                 if !model.projects.isEmpty {
                     StatusFilterRow(
                         selected: $model.statusFilter,
@@ -23,8 +33,7 @@ struct ProjectsView: View {
             }
             .screenPadding()
             .padding(.top, 4)
-            // Clear of the tab bar and the floating add button.
-            .padding(.bottom, 96)
+            .padding(.bottom, 40)
         }
         .background(Theme.background)
         .scrollDismissesKeyboard(.immediately)
@@ -41,25 +50,18 @@ struct ProjectsView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     Haptics.tap()
-                    isPresentingNewProject = true
+                    router.requestNewProject()
                 } label: {
                     Image(systemName: "plus")
                         .font(.body.weight(.semibold))
                         .tappableArea()
                 }
                 .accessibilityLabel("New project")
+                .help("New Project (⌘N)")
             }
         }
         .navigationDestination(for: Project.self) { project in
             ProjectHubView(project: project)
-        }
-        .sheet(isPresented: $isPresentingNewProject) {
-            NewProjectSheet { title, format, logline in
-                guard let ownerID = auth.userID else { return nil }
-                return await model.create(
-                    title: title, format: format, logline: logline, ownerID: ownerID
-                )
-            }
         }
         .task {
             await model.loadIfNeeded()
@@ -80,6 +82,33 @@ struct ProjectsView: View {
             actions: { Button("OK", role: .cancel) { model.errorMessage = nil } },
             message: { Text(model.errorMessage ?? "") }
         )
+        .confirmationDialog(
+            "Delete “\(projectPendingDelete?.title ?? "")”?",
+            isPresented: Binding(
+                get: { projectPendingDelete != nil },
+                set: { if !$0 { projectPendingDelete = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button("Delete Project", role: .destructive) {
+                if let project = projectPendingDelete {
+                    Task { await model.delete(project) }
+                }
+                projectPendingDelete = nil
+            }
+            Button("Cancel", role: .cancel) { projectPendingDelete = nil }
+        } message: {
+            Text("Its script, scenes, shots and schedule are deleted for everyone on the project. This can’t be undone.")
+        }
+    }
+
+    /// Pinned projects first (in pin order), then everything else.
+    private var orderedProjects: (pinned: [Project], others: [Project]) {
+        let ids = settings.pinnedProjectIDs
+        let filtered = model.filteredProjects
+        let pinned = ids.compactMap { id in filtered.first { $0.id == id } }
+        let pinnedSet = Set(ids)
+        return (pinned, filtered.filter { !pinnedSet.contains($0.id) })
     }
 
     @ViewBuilder
@@ -100,7 +129,7 @@ struct ProjectsView: View {
                 message: "Start a feature, a short, or a series. Everything else — scenes, shots, schedule — hangs off it.",
                 actionTitle: "New project"
             ) {
-                isPresentingNewProject = true
+                router.requestNewProject()
             }
             .padding(.top, 40)
 
@@ -113,16 +142,46 @@ struct ProjectsView: View {
             .padding(.top, 40)
 
         } else {
-            ForEach(model.filteredProjects) { project in
-                NavigationLink(value: project) {
-                    ProjectRow(project: project)
+            let groups = orderedProjects
+            if !groups.pinned.isEmpty {
+                SectionHeader(title: "Pinned")
+                    .padding(.top, 6)
+                projectGrid(groups.pinned)
+                if !groups.others.isEmpty {
+                    SectionHeader(title: "All projects")
+                        .padding(.top, 10)
+                }
+            }
+            projectGrid(groups.others)
+        }
+    }
+
+    private func projectGrid(_ projects: [Project]) -> some View {
+        LazyVGrid(columns: columns, spacing: Theme.rowSpacing) {
+            ForEach(projects) { project in
+                Button {
+                    Haptics.tap()
+                    router.show(project)
+                } label: {
+                    ProjectRow(project: project, isPinned: settings.isPinned(project.id))
                 }
                 .buttonStyle(.plain)
+                .hoverEffect(.lift)
                 .contextMenu {
+                    Button {
+                        settings.togglePin(project.id)
+                        Haptics.tap()
+                    } label: {
+                        if settings.isPinned(project.id) {
+                            Label("Unpin", systemImage: "pin.slash")
+                        } else {
+                            Label("Pin", systemImage: "pin")
+                        }
+                    }
                     statusMenu(for: project)
                     Divider()
                     Button(role: .destructive) {
-                        Task { await model.delete(project) }
+                        projectPendingDelete = project
                     } label: {
                         Label("Delete project", systemImage: "trash")
                     }
@@ -151,6 +210,7 @@ struct ProjectsView: View {
 
 struct ProjectRow: View {
     let project: Project
+    var isPinned = false
 
     private var accent: Color {
         Color(hex: Project.accentPalette[project.accentSeed])
@@ -167,10 +227,18 @@ struct ProjectRow: View {
                     .accessibilityHidden(true)
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(project.title)
-                        .font(.headline)
-                        .foregroundStyle(Theme.textPrimary)
-                        .lineLimit(2)
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(project.title)
+                            .font(.headline)
+                            .foregroundStyle(Theme.textPrimary)
+                            .lineLimit(2)
+                        if isPinned {
+                            Image(systemName: "pin.fill")
+                                .font(.caption2)
+                                .foregroundStyle(Theme.accent)
+                                .accessibilityLabel("Pinned")
+                        }
+                    }
 
                     if let logline = project.logline?.nonEmpty {
                         Text(logline)

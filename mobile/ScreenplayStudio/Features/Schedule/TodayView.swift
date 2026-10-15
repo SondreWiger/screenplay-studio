@@ -115,6 +115,7 @@ final class TodayViewModel: ObservableObject {
 struct TodayView: View {
 
     @EnvironmentObject private var auth: AuthStore
+    @EnvironmentObject private var router: Router
     @StateObject private var model = TodayViewModel()
 
     var body: some View {
@@ -246,10 +247,14 @@ struct TodayView: View {
 
                 VStack(spacing: Theme.rowSpacing) {
                     ForEach(model.recentProjects) { project in
-                        NavigationLink(value: project) {
+                        Button {
+                            Haptics.tap()
+                            router.show(project)
+                        } label: {
                             ProjectRow(project: project)
                         }
                         .buttonStyle(.plain)
+                        .hoverEffect(.lift)
                     }
                 }
             }
@@ -257,7 +262,7 @@ struct TodayView: View {
             EmptyStateView(
                 symbol: "film.stack",
                 title: "Nothing here yet",
-                message: "Create a project on the Projects tab and its schedule will show up here."
+                message: "Create a project and its schedule will show up here."
             )
             .padding(.top, 20)
         }

@@ -26,6 +26,8 @@ export interface ShellNavSection {
 export interface ShellNavContext {
   signedIn: boolean;
   isElectron: boolean;
+  /** Desktop app without an account: nothing that needs the server. */
+  localOnly?: boolean;
   community: boolean;
   messages: boolean;
   companies: boolean;
@@ -44,6 +46,7 @@ const ic = 'h-[18px] w-[18px]';
  * (signed out, Electron offline, feature off).
  */
 export function buildShellNav(ctx: ShellNavContext): ShellNavSection[] {
+  if (ctx.isElectron) return buildDesktopNav(ctx);
   const sections: ShellNavSection[] = [];
 
   if (ctx.signedIn) {
@@ -63,11 +66,11 @@ export function buildShellNav(ctx: ShellNavContext): ShellNavSection[] {
   // The community is its own site with its own navigation; the studio links into it once.
   if (ctx.signedIn) {
     sections[0]?.items.push(
-      ...(ctx.community && !ctx.isElectron ? [{ label: 'Community', href: '/community', icon: <UsersRound className={ic} />, match: ['/u/'] }] : []),
+      ...(ctx.community ? [{ label: 'Community', href: '/community', icon: <UsersRound className={ic} />, match: ['/u/'] }] : []),
       { label: 'People', href: '/people', icon: <Users className={ic} /> },
       { label: 'Quotes', href: '/quotes', icon: <Quote className={ic} /> },
     );
-  } else if (ctx.community && !ctx.isElectron) {
+  } else if (ctx.community) {
     sections.push({ id: 'community', label: 'Community', items: [{ label: 'Community', href: '/community', icon: <UsersRound className={ic} /> }] });
   }
 
@@ -78,10 +81,8 @@ export function buildShellNav(ctx: ShellNavContext): ShellNavSection[] {
       { label: 'Learn', href: '/learn', icon: <BookOpen className={ic} />, match: ['/tutorials'] },
       { label: 'Writer Tools', href: '/tools', icon: <Wrench className={ic} /> },
       { label: 'Color Scripts', href: '/colors', icon: <Palette className={ic} /> },
-      ...(!ctx.isElectron ? [
-        { label: 'Blog', href: '/blog', icon: <PenTool className={ic} /> },
-        { label: 'Changelog', href: '/changelog', icon: <ScrollText className={ic} /> },
-      ] : []),
+      { label: 'Blog', href: '/blog', icon: <PenTool className={ic} /> },
+      { label: 'Changelog', href: '/changelog', icon: <ScrollText className={ic} /> },
     ],
   });
 
@@ -94,7 +95,7 @@ export function buildShellNav(ctx: ShellNavContext): ShellNavSection[] {
       { label: 'Testimonials', href: '/testimonials', icon: <Heart className={ic} /> },
       { label: 'Translations', href: '/translations', icon: <Languages className={ic} /> },
       { label: 'Legal', href: '/legal', icon: <Scale className={ic} /> },
-      ...(!ctx.isElectron ? [{ label: 'Desktop App', href: '/download', icon: <Download className={ic} /> }] : []),
+      { label: 'Desktop App', href: '/download', icon: <Download className={ic} /> },
     ],
   });
 
@@ -111,6 +112,59 @@ export function buildShellNav(ctx: ShellNavContext): ShellNavSection[] {
       ],
     });
   }
+
+  return sections.filter((s) => s.items.length > 0);
+}
+
+/**
+ * The desktop app's sidebar: the places you work, nothing else. Help, legal
+ * and the website live in the menu bar's Help menu, and anything that needs
+ * the server drops out in local mode.
+ */
+function buildDesktopNav(ctx: ShellNavContext): ShellNavSection[] {
+  const cloud = ctx.signedIn && !ctx.localOnly;
+  const sections: ShellNavSection[] = [
+    {
+      id: 'workspace',
+      label: 'Library',
+      items: [
+        { label: 'Projects', href: '/dashboard', icon: <LayoutDashboard className={ic} /> },
+        { label: 'Idea Boards', href: '/idea-boards', icon: <Lightbulb className={ic} /> },
+        ...(cloud ? [{ label: 'Quotes', href: '/quotes', icon: <Quote className={ic} /> }] : []),
+      ],
+    },
+    {
+      id: 'make',
+      label: 'Tools',
+      items: [
+        { label: 'Writer Tools', href: '/tools', icon: <Wrench className={ic} /> },
+        { label: 'Color Scripts', href: '/colors', icon: <Palette className={ic} /> },
+      ],
+    },
+  ];
+
+  if (cloud) {
+    sections.push({
+      id: 'together',
+      label: 'Together',
+      items: [
+        ...(ctx.messages ? [{ label: 'Messages', href: '/messages', icon: <MessageSquare className={ic} />, badge: 'messages' as const }] : []),
+        { label: 'Notifications', href: '/notifications', icon: <Bell className={ic} />, badge: 'notifications' as const },
+        { label: 'People', href: '/people', icon: <Users className={ic} /> },
+        ...(ctx.accountability ? [{ label: 'Accountability', href: '/accountability', icon: <Target className={ic} /> }] : []),
+        ...(ctx.companies && ctx.hasCompany ? [{ label: 'Company', href: '/company', icon: <Building2 className={ic} /> }] : []),
+      ],
+    });
+  }
+
+  sections.push({
+    id: 'account',
+    label: 'App',
+    items: [
+      { label: 'Settings', href: '/settings', icon: <Settings className={ic} />, exact: true, match: ['/settings/security', '/settings/mcp', '/settings/creator'] },
+      ...(ctx.staff && cloud ? [{ label: ctx.isAdmin ? 'Admin' : 'Mod Panel', href: '/admin', icon: <Shield className={ic} /> }] : []),
+    ],
+  });
 
   return sections.filter((s) => s.items.length > 0);
 }

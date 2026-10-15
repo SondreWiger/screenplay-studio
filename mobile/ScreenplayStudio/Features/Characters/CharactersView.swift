@@ -230,6 +230,7 @@ struct CharactersView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        .readableListWidth()
         .background(Theme.background)
         .scrollDismissesKeyboard(.immediately)
         .refreshable { await model.refresh() }

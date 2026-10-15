@@ -74,11 +74,10 @@ final class ProjectsViewModel: ObservableObject {
 
     // MARK: - Loading
 
-    func loadIfNeeded() async {
-        guard !hasLoadedFromCache else {
-            await refresh(showSpinner: false)
-            return
-        }
+    /// Paint from the disk cache, without waiting for the network. Safe to
+    /// call more than once; only the first call reads the cache.
+    func primeFromCache() async {
+        guard !hasLoadedFromCache else { return }
         hasLoadedFromCache = true
 
         if let cached = await LocalCache.shared.load([Project].self, for: LocalCache.Key.projects) {
@@ -86,7 +85,10 @@ final class ProjectsViewModel: ObservableObject {
         } else {
             isLoading = true
         }
+    }
 
+    func loadIfNeeded() async {
+        await primeFromCache()
         await refresh(showSpinner: false)
         isLoading = false
     }

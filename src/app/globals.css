@@ -1834,16 +1834,51 @@ html {
   box-shadow: 0 4px 16px rgb(0 0 0 / 0.28);
 }
 
-/* Electron Mac specific styles */
-body.is-mac-electron header {
+/* ── Desktop app window chrome ──────────────────────────────────────────
+   The preload script tags <html> with `desktop` and `desktop-<platform>`.
+   On macOS the window has no title bar (hiddenInset): the traffic lights sit
+   at the top of the sidebar, as in Mail or Notes, and the top strip of every
+   page drags the window. Windows and Linux keep their native frame. */
+html.desktop-darwin { --desktop-titlebar: 38px; }
+html.desktop-darwin.desktop-fullscreen { --desktop-titlebar: 0px; }
+
+/* A drag strip across the top of every page, under any content. */
+html.desktop-darwin body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--desktop-titlebar);
   -webkit-app-region: drag;
-  padding-left: 80px; /* Space for Mac traffic lights */
+  pointer-events: none;
 }
-body.is-mac-electron header button,
-body.is-mac-electron header a,
-body.is-mac-electron header input,
-body.is-mac-electron header [role="button"] {
+html.desktop [data-desktop-drag] { -webkit-app-region: drag; }
+
+/* Controls inside a drag area must stay clickable. */
+html.desktop :is(button, a, input, textarea, select, label, summary, [role="button"], [role="tab"],
+  [role="menuitem"], [role="switch"], [role="option"], [contenteditable="true"]) {
   -webkit-app-region: no-drag;
+}
+
+/* Room for the traffic lights above the sidebar's first row. */
+html.desktop-darwin [data-desktop-inset="sidebar"] {
+  padding-top: calc(var(--desktop-titlebar) + 6px);
+  transition: padding-top 0.2s ease;
+}
+/* A collapsed sidebar must still be wider than the three lights. */
+html.desktop-darwin:not(.desktop-fullscreen) [data-desktop-sidebar][data-collapsed="true"] {
+  width: 4.5rem;
+}
+
+/* Native apps don't let you select interface chrome by accident. */
+html.desktop :is(nav, aside, header, [role="menu"], [role="toolbar"]) {
+  -webkit-user-select: none;
+  user-select: none;
+}
+html.desktop :is(nav, aside, header) :is(input, textarea, [contenteditable="true"]) {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 /* ── Project pages: cascade each top-level block in on navigation ──

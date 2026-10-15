@@ -7,8 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronsLeft, LogIn, LogOut, Menu, MessageSquare, Search, Settings, UserRound, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useFeatureAccess } from '@/components/FeatureGate';
-import { isFeatureEnabled } from '@/lib/feature-flags';
-import { isElectronMode, isLocalMode } from '@/lib/supabase/electron-client';
+import { useDesktop } from '@/hooks/useDesktop';
 import { useAuthStore, useNotificationStore } from '@/lib/stores';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
@@ -19,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { SiteVersion } from '@/components/SiteVersion';
 import { buildShellNav, isNavItemActive, type ShellNavItem } from './nav';
 import { ShellSlotContext } from './ShellActions';
+import { DESKTOP_TOGGLE_SIDEBAR_EVENT } from '@/lib/desktop/events';
 
 const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
 const COLLAPSE_KEY = 'shell:sidebar:collapsed';
@@ -45,7 +45,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   const signedIn = !!user;
-  const isElectron = isElectronMode();
+  const { isDesktop: isElectron, isLocal } = useDesktop();
   const isAdmin = !!user && (user.id === ADMIN_UID || user.role === 'admin');
   const staff = isAdmin || user?.role === 'moderator';
   const unreadDMs = notifications.filter((n) => n.type === 'direct_message' && !n.read).length;
@@ -54,15 +54,18 @@ export function AppShell({ children }: { children: ReactNode }) {
   const sections = useMemo(() => buildShellNav({
     signedIn: !!user,
     isElectron,
-    community: canUse('community') && isFeatureEnabled('community') && user?.show_community !== false,
-    messages: isFeatureEnabled('directMessages') && !isElectron,
-    companies: isFeatureEnabled('companies'),
+    localOnly: isLocal,
+    // Feature flags that depend on the desktop app are derived from the
+    // hydration-safe hook, not read during render.
+    community: canUse('community') && !(isElectron && isLocal) && user?.show_community !== false,
+    messages: !isElectron,
+    companies: !(isElectron && isLocal),
     hasCompany: true,
     accountability: user?.show_accountability !== false,
     staff,
     isAdmin,
     username: user?.username ?? null,
-  }), [user, isElectron, canUse, staff, isAdmin]);
+  }), [user, isElectron, isLocal, canUse, staff, isAdmin]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -93,9 +96,19 @@ export function AppShell({ children }: { children: ReactNode }) {
     const onClick = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
     };
+    // View › Toggle Sidebar in the desktop app's menu bar
+    const onToggle = () => setCollapsed((c) => {
+      try { localStorage.setItem(COLLAPSE_KEY, c ? '0' : '1'); } catch { /* ignore */ }
+      return !c;
+    });
     window.addEventListener('keydown', onKey);
+    window.addEventListener(DESKTOP_TOGGLE_SIDEBAR_EVENT, onToggle);
     document.addEventListener('mousedown', onClick);
-    return () => { window.removeEventListener('keydown', onKey); document.removeEventListener('mousedown', onClick); };
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener(DESKTOP_TOGGLE_SIDEBAR_EVENT, onToggle);
+      document.removeEventListener('mousedown', onClick);
+    };
   }, []);
 
   const toggleCollapsed = () => setCollapsed((c) => {
@@ -140,7 +153,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const sidebar = (compact: boolean, idSuffix: string) => (
     <div className="flex h-full flex-col">
-      <div className={cn('flex items-center gap-3 border-b border-surface-800 p-4', compact && 'justify-center px-2')}>
+      <div className={cn('flex items-center gap-3 border-b border-surface-800 p-4', compact && 'justify-center px-2')} data-desktop-inset={idSuffix === 'desktop' ? 'sidebar' : undefined} data-desktop-drag="">
         <Link href={signedIn ? '/dashboard' : '/'} className="flex shrink-0 items-center gap-2.5" title="Screenplay Studio">
           <motion.span
             whileHover={{ rotate: -6, scale: 1.05 }}
@@ -297,7 +310,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Topbar: where you are, page actions, inbox */}
-          <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b border-surface-800 bg-surface-950/85 px-3 backdrop-blur-xl sm:px-6 md:static md:bg-transparent md:backdrop-blur-none">
+          <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b border-surface-800 bg-surface-950/85 px-3 backdrop-blur-xl sm:px-6 md:static md:bg-transparent md:backdrop-blur-none" data-desktop-drag="">
             <button onClick={() => setMobileOpen(true)} className="rounded-lg p-1.5 text-surface-400 hover:bg-surface-800/50 hover:text-white md:hidden" aria-label="Open menu">
               <Menu className="h-5 w-5" />
             </button>
@@ -320,13 +333,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
               <div ref={setSlot} className="flex items-center gap-2 [&_a]:whitespace-nowrap [&_button]:whitespace-nowrap" />
               {!isElectron && <OfflineIndicator />}
-              {signedIn && isFeatureEnabled('directMessages') && !isElectron && (
+              {signedIn && !isElectron && (
                 <Link href="/messages" className="relative hidden rounded-lg p-2 text-surface-400 transition-colors hover:bg-surface-800/50 hover:text-white sm:block" aria-label="Messages">
                   <MessageSquare className="h-5 w-5" />
                   {unreadDMs > 0 && <span className="absolute right-0.5 top-0.5 h-2 w-2 rounded-full bg-brand-500 ring-2 ring-surface-950" />}
                 </Link>
               )}
-              {user && (!isElectron || !isLocalMode()) && <NotificationBell />}
+              {user && (!isElectron || !isLocal) && <NotificationBell />}
               {!user && (
                 <Link href="/auth/register" className="rounded-xl bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-500 md:hidden">Get started</Link>
               )}
@@ -340,7 +353,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             <ErrorBoundary key={pathname}>{children}</ErrorBoundary>
           </main>
 
-          {!FULL_HEIGHT.test(pathname) && <ShellFooter isElectron={isElectron} />}
+          {/* A website footer has no place in the desktop app's window. */}
+          {!FULL_HEIGHT.test(pathname) && !isElectron && <ShellFooter isElectron={isElectron} />}
         </div>
       </div>
     </ShellSlotContext.Provider>

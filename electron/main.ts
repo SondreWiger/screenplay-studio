@@ -1,322 +1,143 @@
-import { app, BrowserWindow, ipcMain, dialog, shell, session, nativeTheme } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, session, shell, nativeTheme, type IpcMainEvent, type IpcMainInvokeEvent } from 'electron';
 import * as path from 'path';
-import * as fs from 'fs';
-import { setupMenu, addRecentProject, getRecentProjects, clearRecentProjects } from './menu';
-import { startLocalServer, stopLocalServer } from './next-server';
-import { loadWindowState, trackWindowState } from './window-state';
-import { getPreference, setPreference } from './preferences';
-
-const MARKETING_PATHS = [
-  '/blog', '/community', '/legal', '/support', '/about', '/pricing', '/pro',
-  '/testimonials', '/translations', '/download', '/colorbar', '/compare',
-  '/changelog', '/contribute', '/feedback', '/licenses', '/press', '/ref',
-  '/sitemap-visual', '/dev',
-];
+import { addRecentProject, clearRecentProjects, getRecentProjects, handleLaunchArgs, openProjectsFolder, rebuildMenus, setupMenus } from './menu';
+import { getLogPath, serverEvents, stopLocalServer } from './next-server';
+import { flushPreferences, getPreference, getSettings, setPreference, updateSettings, type DesktopSettings } from './preferences';
+import { applyUpdatePreference, checkForUpdatesManually, getUpdateStatus, installUpdate, setupAutoUpdater } from './updater';
+import {
+  applySpellcheckToAll, applyZoomToAll, broadcast, createAppWindow, getAppOrigin, isAppUrl,
+  reloadAllWindows, setWindowsChangedListener, targetWindow,
+} from './windows';
 
 const isDev = !app.isPackaged;
 const isMac = process.platform === 'darwin';
-const WEB_URL = 'https://screenplaystudio.fun';
 
-let mainWindow: BrowserWindow | null = null;
-let menuSetup = false;
-let updaterSetup = false;
+// Notifications and the jump list are tied to this id on Windows.
+if (process.platform === 'win32') app.setAppUserModelId('fun.screenplaystudio.app');
 
-// Store file path if app is launched by double-clicking a file
-let fileToOpen: string | null = null;
+// ── Files opened from Finder / Explorer ─────────────────────────
 
-// macOS: Handle 'open-file' event (fires when app is already open, or before ready)
+let pendingFiles: string[] = [];
+let appReady = false;
+
+function isOpenableFile(arg: string | undefined): arg is string {
+  return !!arg && !arg.startsWith('-') && /\.(screenplay|fountain|fdx|studio|json)$/i.test(arg);
+}
+
+function deliverFile(filePath: string) {
+  const win = targetWindow();
+  if (!win) {
+    pendingFiles.push(filePath);
+    createAppWindow({ path: '/dashboard' });
+    return;
+  }
+  if (win.isMinimized()) win.restore();
+  win.focus();
+  app.addRecentDocument(filePath);
+  // The renderer may still be loading; it asks for queued files once ready.
+  if (isAppUrl(win.webContents.getURL()) && !win.webContents.isLoading()) {
+    win.webContents.send('open-external-file', filePath);
+  } else {
+    pendingFiles.push(filePath);
+  }
+}
+
+// macOS: a file double-clicked in Finder, before or after launch.
 app.on('open-file', (event, filePath) => {
   event.preventDefault();
-  if (mainWindow && mainWindow.isReady()) {
-    mainWindow.webContents.send('open-external-file', filePath);
-  } else {
-    fileToOpen = filePath;
-  }
+  if (appReady) deliverFile(filePath);
+  else pendingFiles.push(filePath);
 });
 
-// Windows / Linux: Parse process.argv for file paths on launch
-if (process.defaultApp === false && process.argv.length >= 2) {
-  const arg = process.argv[1];
-  if (arg && arg !== '.' && !arg.startsWith('--')) {
-    fileToOpen = arg;
-  }
+// Windows / Linux: the file arrives as a command-line argument.
+if (!isMac) {
+  const fileArg = process.argv.slice(app.isPackaged ? 1 : 2).find(isOpenableFile);
+  if (fileArg) pendingFiles.push(fileArg);
 }
 
-// Auto-save interval handle
-let autoSaveInterval: ReturnType<typeof setInterval> | null = null;
+// ── IPC ────────────────────────────────────────────────────────
 
-function getDevUrl(): string {
-  return process.env.ELECTRON_DEV_URL || 'http://localhost:3000';
+/**
+ * Only the app's own pages get the desktop bridge. A window can briefly show a
+ * remote page (signing in with a provider), and that page must not be able to
+ * read or write files.
+ */
+function isTrusted(event: IpcMainEvent | IpcMainInvokeEvent): boolean {
+  const url = event.senderFrame?.url ?? '';
+  if (isAppUrl(url)) return true;
+  const origin = getAppOrigin();
+  return !!origin && url.startsWith(origin);
 }
 
-async function createWindow() {
-  // ── Restore saved window geometry ────────────────────────
-  const savedState = loadWindowState();
-
-  mainWindow = new BrowserWindow({
-    x: savedState.x,
-    y: savedState.y,
-    width: savedState.width,
-    height: savedState.height,
-    minWidth: 800,
-    minHeight: 600,
-    title: 'Screenplay Studio',
-    icon: path.join(__dirname, '../../build/icon.png'),
-    titleBarStyle: isMac ? 'hiddenInset' : 'default',
-    trafficLightPosition: isMac ? { x: 16, y: 16 } : undefined,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: false,
-      partition: 'persist:screenplay',
-    },
-    backgroundColor: isMac ? '#00000000' : '#070710',
-    vibrancy: isMac ? 'under-window' : undefined,
-    visualEffectState: isMac ? 'active' : undefined,
-    show: true, // Show immediately with loading screen
-  });
-
-  // Restore maximized state after creation
-  if (savedState.isMaximized) {
-    mainWindow.maximize();
-  }
-
-  // ── Track window geometry for next launch ────────────────
-  trackWindowState(mainWindow);
-
-  // Load a simple loading HTML first (instant)
-  mainWindow.loadURL(`data:text/html;charset=utf-8,
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <style>
-        body {
-          margin: 0;
-          padding: 0;
-          background: #070710;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          height: 100vh;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-        .loader {
-          text-align: center;
-          color: white;
-        }
-        .spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid rgba(255,95,31,0.3);
-          border-top-color: #FF5F1F;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin: 0 auto 20px;
-        }
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-        .text {
-          font-size: 14px;
-          color: rgba(255,255,255,0.6);
-        }
-      </style>
-    </head>
-    <body>
-      <div class="loader">
-        <div class="spinner"></div>
-        <div class="text">Starting Screenplay Studio...</div>
-      </div>
-    </body>
-    </html>
-  `);
-
-     // Start server in background and load real app when ready
-     if (isDev) {
-       const url = getDevUrl();
-       setTimeout(() => {
-         loadAppUrl(url);
-       }, 100);
-     } else {
-     // Start server immediately without blocking window show
-        startLocalServer().then((serverUrl) => {
-          const url = `${serverUrl}/`;
-          console.log('Local server started at', serverUrl);
-          loadAppUrl(url);
-        }).catch((err) => {
-          console.error('Failed to start local server:', err);
-          // Show offline error page instead of falling back to remote URL
-          const offlineHtml = `<!DOCTYPE html>
-<html><head><style>
-body{margin:0;padding:0;background:#070710;display:flex;align-items:center;justify-content:center;height:100vh;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:white}
-.box{text-align:center;max-width:400px;padding:40px}
-h1{font-size:20px;margin-bottom:12px}
-p{font-size:14px;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:24px}
-button{background:#FF5F1F;color:white;border:none;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer}
-button:hover{opacity:0.9}
-</style></head><body>
-<div class="box">
-  <h1>Unable to Start</h1>
-  <p>The local server failed to start. This may be due to a corrupted installation or missing files. Please try restarting the app, or reinstall from the download page.</p>
-  <button onclick="location.reload()">Retry</button>
-</div></body></html>`;
-          mainWindow?.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(offlineHtml)}`);
-        });
-     }
-
-}
-
-function loadAppUrl(url: string) {
-  if (!mainWindow) return;
-  
-  const localModePref = getPreference('ss-local-mode');
-  const onboardingCompleted = getPreference('ss-onboarding-completed');
-  const authChoice = getPreference('ss-auth-choice');
-
-  if (onboardingCompleted === '1') {
-    try {
-      const parsedUrl = new URL(url);
-      const origin = parsedUrl.origin;
-      
-      session.defaultSession.cookies.set({
-        url: origin,
-        name: 'ss-onboarding-completed',
-        value: '1',
-        path: '/',
-      });
-
-      if (authChoice) {
-        session.defaultSession.cookies.set({
-          url: origin,
-          name: 'ss-auth-choice',
-          value: authChoice,
-          path: '/',
-        });
-      }
-
-      if (localModePref === '1') {
-        session.defaultSession.cookies.set({
-          url: origin,
-          name: 'ss-local-mode',
-          value: '1',
-          path: '/',
-        });
-      }
-    } catch (err) {
-      console.error('Failed to set onboarding cookies:', err);
-    }
-  }
-
-  mainWindow.loadURL(url);
-
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-    if (autoSaveInterval) {
-      clearInterval(autoSaveInterval);
-      autoSaveInterval = null;
-    }
-  });
-
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (url === 'about:blank' || url === '') {
-      return { action: 'allow' };
-    }
-    shell.openExternal(url);
-    return { action: 'deny' };
-  });
-
-  mainWindow.webContents.on('will-navigate', (e, url) => {
-    try {
-      const parsed = new URL(url);
-      const isLocal = parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1';
-
-      if (isLocal) {
-        if (parsed.pathname === '/') {
-          e.preventDefault();
-          mainWindow?.loadURL(`${parsed.origin}/dashboard`);
-          return;
-        }
-        if (MARKETING_PATHS.some((p) => parsed.pathname === p || parsed.pathname.startsWith(`${p}/`))) {
-          e.preventDefault();
-          shell.openExternal(`https://screenplaystudio.fun${parsed.pathname}${parsed.search}`);
-          return;
-        }
-      } else if (MARKETING_PATHS.some((p) => parsed.pathname.startsWith(p))) {
-        e.preventDefault();
-        shell.openExternal(url);
-      }
-    } catch { /* ignore */ }
-  });
-
-  mainWindow.webContents.once('did-finish-load', () => {
-    if (!menuSetup && mainWindow) {
-      setupMenu(mainWindow);
-      menuSetup = true;
-    }
-    if (!updaterSetup && !isDev) {
-      setTimeout(() => {
-        import('./updater').then(({ setupAutoUpdater }) => {
-          if (mainWindow) {
-            setupAutoUpdater(mainWindow);
-            updaterSetup = true;
-          }
-        });
-      }, 5_000);
-    }
-
-    // ── Start auto-save heartbeat (every 30s) ──────────────
-    if (!autoSaveInterval && mainWindow) {
-      autoSaveInterval = setInterval(() => {
-        if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.webContents.send('auto-save-tick');
-        }
-      }, 30_000);
-    }
-
-    // ── Open external file if app was launched with one ────────
-    if (fileToOpen && mainWindow) {
-      mainWindow.webContents.send('open-external-file', fileToOpen);
-      fileToOpen = null;
-    }
+function handle(channel: string, fn: (event: IpcMainInvokeEvent, ...args: any[]) => unknown) { // eslint-disable-line @typescript-eslint/no-explicit-any
+  ipcMain.handle(channel, (event, ...args) => {
+    if (!isTrusted(event)) throw new Error('Not allowed from this page.');
+    return fn(event, ...args);
   });
 }
+
+function senderWindow(event: IpcMainInvokeEvent): BrowserWindow | undefined {
+  return BrowserWindow.fromWebContents(event.sender) ?? undefined;
+}
+
+function applySettings(next: DesktopSettings, previous: DesktopSettings) {
+  if (next.theme !== previous.theme) nativeTheme.themeSource = next.theme;
+  if (next.zoomLevel !== previous.zoomLevel) applyZoomToAll(next.zoomLevel);
+  if (next.spellcheck !== previous.spellcheck) applySpellcheckToAll(next.spellcheck);
+  if (next.autoUpdate !== previous.autoUpdate) applyUpdatePreference();
+  broadcast('desktop:settings-changed', next);
+  rebuildMenus();
+}
+
+type FileFilter = { name: string; extensions: string[] };
 
 function setupIPC() {
-  ipcMain.handle('electron:save-file', async (_event, options: { defaultPath?: string; filters?: { name: string; extensions: string[] }[] }) => {
-    return dialog.showSaveDialog(mainWindow!, {
+  handle('electron:save-file', async (event, options: { defaultPath?: string; filters?: FileFilter[] } = {}) => {
+    const win = senderWindow(event);
+    const opts = {
       defaultPath: options.defaultPath,
       filters: options.filters || [
         { name: 'Screenplay Files', extensions: ['screenplay'] },
         { name: 'All Files', extensions: ['*'] },
       ],
-    });
+    };
+    const result = win ? await dialog.showSaveDialog(win, opts) : await dialog.showSaveDialog(opts);
+    if (!result.canceled && result.filePath) app.addRecentDocument(result.filePath);
+    return result;
   });
 
-  ipcMain.handle('electron:open-file', async (_event, options?: { filters?: { name: string; extensions: string[] }[] }) => {
-    return dialog.showOpenDialog(mainWindow!, {
-      properties: ['openFile'],
+  handle('electron:open-file', async (event, options?: { filters?: FileFilter[] }) => {
+    const win = senderWindow(event);
+    const opts = {
+      properties: ['openFile' as const],
       filters: options?.filters || [
         { name: 'Screenplay Files', extensions: ['screenplay'] },
         { name: 'All Files', extensions: ['*'] },
       ],
-    });
+    };
+    const result = win ? await dialog.showOpenDialog(win, opts) : await dialog.showOpenDialog(opts);
+    if (!result.canceled && result.filePaths[0]) app.addRecentDocument(result.filePaths[0]);
+    return result;
   });
 
-  ipcMain.handle('electron:read-file', async (_event, filePath: string) => {
+  handle('electron:read-file', async (_event, filePath: string) => {
     return (await import('fs/promises')).readFile(filePath, 'utf-8');
   });
 
-  ipcMain.handle('electron:write-file', async (_event, filePath: string, content: string) => {
+  handle('electron:write-file', async (_event, filePath: string, content: string) => {
     const fsp = await import('fs/promises');
     await fsp.mkdir(path.dirname(filePath), { recursive: true });
-    await fsp.writeFile(filePath, content, 'utf-8');
+    // Write beside the target and rename over it, so a crash or full disk
+    // mid-save never leaves a truncated project file behind.
+    const tmp = `${filePath}.${process.pid}.tmp`;
+    await fsp.writeFile(tmp, content, 'utf-8');
+    await fsp.rename(tmp, filePath);
   });
 
-  ipcMain.handle('electron:get-home-dir', () => app.getPath('home'));
-  ipcMain.handle('electron:get-documents-dir', () => app.getPath('documents'));
+  handle('electron:get-home-dir', () => app.getPath('home'));
+  handle('electron:get-documents-dir', () => app.getPath('documents'));
 
-  ipcMain.handle('electron:list-dir', async (_event, dirPath: string) => {
+  handle('electron:list-dir', async (_event, dirPath: string) => {
     const fsp = await import('fs/promises');
     try {
       const entries = await fsp.readdir(dirPath, { withFileTypes: true });
@@ -326,81 +147,149 @@ function setupIPC() {
     }
   });
 
-  ipcMain.handle('electron:get-platform', () => process.platform);
+  handle('electron:get-platform', () => process.platform);
 
-  ipcMain.handle('electron:get-versions', () => ({
+  handle('electron:get-versions', () => ({
     node: process.versions.node,
     chrome: process.versions.chrome,
     electron: process.versions.electron,
     app: app.getVersion(),
   }));
 
-  ipcMain.handle('electron:set-theme', (_event, theme: 'light' | 'dark' | 'system') => {
-    nativeTheme.themeSource = theme;
+  handle('electron:set-theme', (_event, theme: 'light' | 'dark' | 'system') => {
+    const previous = getSettings();
+    applySettings(updateSettings({ theme }), previous);
   });
 
-  ipcMain.handle('electron:is-packaged', () => app.isPackaged);
+  handle('electron:is-packaged', () => app.isPackaged);
 
-  ipcMain.handle('electron:open-external', (_event, url: string) => {
-    shell.openExternal(url);
+  handle('electron:open-external', (_event, url: string) => {
+    if (/^(https?:|mailto:)/i.test(url)) void shell.openExternal(url);
   });
 
-  // ── New: User data path (for auto-save etc.) ─────────────
-  ipcMain.handle('electron:get-user-data-path', () => app.getPath('userData'));
+  handle('electron:get-user-data-path', () => app.getPath('userData'));
 
-  // ── Preferences ──────────────────────────────────────────
+  // The web app's own keys (local mode, onboarding) — synchronous because
+  // auth decides local vs cloud before its first render.
   ipcMain.on('electron:get-preference-sync', (event, key: string) => {
-    event.returnValue = getPreference(key);
+    event.returnValue = isTrusted(event) ? getPreference(key) : undefined;
+  });
+  handle('electron:set-preference', (_event, key: string, value: unknown) => {
+    if (typeof key === 'string' && key.startsWith('ss-')) setPreference(key, value);
   });
 
-  ipcMain.handle('electron:set-preference', (_event, key: string, value: any) => {
-    setPreference(key, value);
+  handle('electron:get-recent-projects', () => getRecentProjects());
+  handle('electron:add-recent-project', (_event, project: { id: string; title: string; path?: string }) => {
+    if (project && typeof project.id === 'string') addRecentProject(project);
+  });
+  handle('electron:clear-recent-projects', () => clearRecentProjects());
+
+  // ── Desktop settings and app info ───────────────────────────
+  handle('desktop:get-settings', () => getSettings());
+  handle('desktop:update-settings', (_event, patch: Partial<DesktopSettings>) => {
+    const previous = getSettings();
+    const next = updateSettings(patch || {});
+    applySettings(next, previous);
+    return next;
   });
 
-  // ── New: Recent projects ─────────────────────────────────
-  ipcMain.handle('electron:get-recent-projects', () => getRecentProjects());
+  handle('desktop:get-info', () => ({
+    version: app.getVersion(),
+    platform: process.platform,
+    arch: process.arch,
+    electron: process.versions.electron,
+    chrome: process.versions.chrome,
+    projectsFolder: path.join(app.getPath('documents'), 'ScreenplayStudio', 'projects'),
+    logPath: getLogPath(),
+    isPackaged: app.isPackaged,
+  }));
 
-  ipcMain.handle('electron:add-recent-project', (_event, project: { id: string; title: string; path?: string }) => {
-    addRecentProject(project);
-    // Rebuild menu with updated recent list
-    if (mainWindow) setupMenu(mainWindow);
+  handle('desktop:open-location', (_event, which: 'projects' | 'logs') => {
+    if (which === 'projects') openProjectsFolder();
+    else if (which === 'logs') shell.showItemInFolder(getLogPath());
   });
 
-  ipcMain.handle('electron:clear-recent-projects', () => {
-    clearRecentProjects();
-    if (mainWindow) setupMenu(mainWindow);
+  handle('desktop:new-window', (_event, appPath?: string) => {
+    createAppWindow({ path: typeof appPath === 'string' && appPath.startsWith('/') ? appPath : '/dashboard' });
+  });
+
+  handle('desktop:get-update-status', () => getUpdateStatus());
+  handle('desktop:check-for-updates', () => checkForUpdatesManually());
+  handle('desktop:install-update', () => installUpdate());
+
+  handle('desktop:set-document-edited', (event, edited: boolean) => {
+    const win = senderWindow(event);
+    if (win && isMac) win.setDocumentEdited(!!edited);
+  });
+
+  // Files that arrived before this window's page was ready.
+  handle('desktop:take-pending-files', () => {
+    const files = pendingFiles;
+    pendingFiles = [];
+    for (const f of files) app.addRecentDocument(f);
+    return files;
   });
 }
+
+// ── Lifecycle ──────────────────────────────────────────────────
 
 const gotTheLock = app.requestSingleInstanceLock();
 
 if (!gotTheLock) {
   app.quit();
 } else {
-  app.on('second-instance', (event, commandLine) => {
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
-
-      // Check if second instance was launched with a file (Windows/Linux)
-      const fileArg = commandLine.find(arg => arg && arg !== '.' && !arg.startsWith('--'));
-      if (fileArg && mainWindow.isReady()) {
-        mainWindow.webContents.send('open-external-file', fileArg);
-      }
+  app.on('second-instance', (_event, commandLine) => {
+    if (handleLaunchArgs(commandLine)) return;
+    const fileArg = commandLine.slice(1).find(isOpenableFile);
+    if (fileArg) {
+      deliverFile(fileArg);
+      return;
+    }
+    const win = targetWindow();
+    if (win) {
+      if (win.isMinimized()) win.restore();
+      win.show();
+      win.focus();
+    } else {
+      createAppWindow();
     }
   });
 
-  app.whenReady().then(async () => {
+  app.whenReady().then(() => {
+    appReady = true;
+    nativeTheme.themeSource = getSettings().theme;
+
+    // Notifications (reminders, collaborator activity) and the clipboard are
+    // the only permissions the app asks for; camera and mic for the table read
+    // and slate tools are allowed on the app's own pages.
+    session.fromPartition('persist:screenplay').setPermissionRequestHandler((contents, permission, callback, details) => {
+      const fromApp = isAppUrl(details.requestingUrl || contents.getURL());
+      const allowed = ['notifications', 'clipboard-read', 'clipboard-sanitized-write', 'media', 'fullscreen', 'pointerLock'];
+      callback(fromApp && allowed.includes(permission));
+    });
+
     setupIPC();
-    await createWindow();
+    setWindowsChangedListener(() => rebuildMenus());
+    setupMenus();
+
+    if (!handleLaunchArgs(process.argv)) createAppWindow();
+
+    if (!isDev) {
+      setTimeout(() => setupAutoUpdater(() => rebuildMenus()), 5_000);
+    }
+
+    // If the bundled server dies, start it again and bring every window back.
+    serverEvents.on('exit', () => {
+      console.error('[main] Local server exited; restarting.');
+      reloadAllWindows();
+    });
+
+    // Autosave heartbeat for the editor's on-disk copy.
+    setInterval(() => broadcast('auto-save-tick'), 30_000);
 
     app.on('activate', () => {
-      if (mainWindow) {
-        mainWindow.show();
-        mainWindow.focus();
-      } else {
-        createWindow();
-      }
+      // macOS: clicking the dock icon with no windows open opens one.
+      if (BrowserWindow.getAllWindows().length === 0) createAppWindow();
     });
   });
 }
@@ -410,11 +299,10 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
-  stopLocalServer();
-  if (autoSaveInterval) {
-    clearInterval(autoSaveInterval);
-    autoSaveInterval = null;
-  }
+  broadcast('auto-save-tick');
+  flushPreferences();
 });
 
-export { mainWindow };
+app.on('will-quit', () => {
+  stopLocalServer();
+});

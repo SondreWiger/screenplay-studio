@@ -1,166 +1,176 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Icon } from '@/components/ui/icons';
+import { motion } from 'framer-motion';
+import { ArrowRight, Cloud, HardDrive, Loader2, Lock, RefreshCw, Users } from 'lucide-react';
 import { isElectronMode } from '@/lib/supabase/electron-client';
+import { cn } from '@/lib/utils';
 
+type Choice = 'cloud' | 'local';
+
+const OPTIONS: {
+  id: Choice;
+  title: string;
+  body: string;
+  icon: typeof Cloud;
+  points: { icon: typeof Cloud; text: string }[];
+}[] = [
+  {
+    id: 'cloud',
+    title: 'Sign in',
+    body: 'Use your Screenplay Studio account.',
+    icon: Cloud,
+    points: [
+      { icon: RefreshCw, text: 'Syncs with the web, iPhone and iPad' },
+      { icon: Users, text: 'Write and plan with collaborators' },
+    ],
+  },
+  {
+    id: 'local',
+    title: 'Use without an account',
+    body: 'Everything stays on this computer.',
+    icon: HardDrive,
+    points: [
+      { icon: Lock, text: 'Nothing leaves this machine' },
+      { icon: HardDrive, text: 'Projects saved in your Documents folder' },
+    ],
+  },
+];
+
+function setCookie(name: string, value: string) {
+  document.cookie = `${name}=${value}; path=/; max-age=31536000; SameSite=Lax`;
+}
+
+function AppMark() {
+  return (
+    <svg width="72" height="72" viewBox="0 0 512 512" aria-hidden="true" className="drop-shadow-[0_14px_30px_rgba(255,95,31,0.3)]">
+      <defs>
+        <linearGradient id="onboarding-mark" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#FF5F1F" />
+          <stop offset="1" stopColor="#CC4312" />
+        </linearGradient>
+      </defs>
+      <rect x="16" y="16" width="480" height="480" rx="108" fill="url(#onboarding-mark)" />
+      <path d="M160 176h192M160 240h160M160 304h176M160 176v192" stroke="#fff" strokeWidth="22" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/**
+ * The desktop app's first-run screen: sign in, or keep everything local.
+ */
 export default function DesktopOnboarding() {
   const router = useRouter();
-  const [selectedChoice, setSelectedChoice] = useState<'login' | 'local' | null>(null);
+  const [busy, setBusy] = useState<Choice | null>(null);
 
   useEffect(() => {
     if (!isElectronMode()) {
       router.replace('/dashboard');
       return;
     }
-
-    // Check if onboarding already completed
-    const checkOnboardingStatus = async () => {
-      if (window.electron?.getPreferenceSync) {
-        const completed = window.electron.getPreferenceSync('ss-onboarding-completed');
-        const choice = window.electron.getPreferenceSync('ss-auth-choice');
-        
-        if (completed === '1' && choice) {
-          // Onboarding already done - redirect based on choice
-          if (choice === 'local') {
-            // Set local mode and go to welcome
-            if (window.electron.setPreference) {
-              window.electron.setPreference('ss-local-mode', '1');
-            }
-            localStorage.setItem('ss-local-mode', '1');
-            document.cookie = 'ss-local-mode=1; path=/; max-age=31536000; SameSite=Lax';
-            router.replace('/dashboard');
-          } else {
-            router.replace('/auth/login');
-          }
-        }
+    // Already chosen (e.g. the cookie was cleared): skip straight past this.
+    const completed = window.electron?.getPreferenceSync?.('ss-onboarding-completed');
+    const choice = window.electron?.getPreferenceSync?.('ss-auth-choice');
+    if (completed === '1' && choice) {
+      setCookie('ss-onboarding-completed', '1');
+      setCookie('ss-auth-choice', choice === 'local' ? 'local' : 'cloud');
+      if (choice === 'local') {
+        setCookie('ss-local-mode', '1');
+        window.location.replace('/dashboard');
+      } else {
+        router.replace('/auth/login');
       }
-    };
-
-    checkOnboardingStatus();
+    }
   }, [router]);
 
-   const handleChoice = async (choice: 'login' | 'local') => {
-     setSelectedChoice(choice);
+  const choose = async (choice: Choice) => {
+    if (busy) return;
+    setBusy(choice);
 
-     console.log('[DesktopOnboarding] Saving choice:', choice);
+    const bridge = window.electron;
+    await bridge?.setPreference('ss-onboarding-completed', '1');
+    await bridge?.setPreference('ss-auth-choice', choice);
+    localStorage.setItem('ss-onboarding-completed', '1');
+    localStorage.setItem('ss-auth-choice', choice);
+    setCookie('ss-onboarding-completed', '1');
+    setCookie('ss-auth-choice', choice);
 
-     // Save to localStorage (simple and reliable)
-     localStorage.setItem('ss-onboarding-completed', '1');
-     localStorage.setItem('ss-auth-choice', choice);
-     console.log('[DesktopOnboarding] Saved to localStorage');
-
-     // Save to Electron preferences
-     if (window.electron?.setPreference) {
-       window.electron.setPreference('ss-onboarding-completed', '1');
-       window.electron.setPreference('ss-auth-choice', choice);
-     }
-
-     if (choice === 'local') {
-       // Enable local mode
-       localStorage.setItem('ss-local-mode', '1');
-       // Set cookie for server-side detection
-       document.cookie = 'ss-onboarding-completed=1; path=/; max-age=31536000; SameSite=Lax';
-       document.cookie = 'ss-auth-choice=local; path=/; max-age=31536000; SameSite=Lax';
-       document.cookie = 'ss-local-mode=1; path=/; max-age=31536000; SameSite=Lax';
-       console.log('[DesktopOnboarding] Set local mode cookies');
-       
-       // Create local user
-       const { createLocalUser } = await import('@/lib/supabase/electron-client');
-       createLocalUser('Local Writer');
-       console.log('[DesktopOnboarding] Created local user');
-       
-       router.replace('/dashboard');
-     } else {
-       // Set cookies for cloud mode
-       document.cookie = 'ss-onboarding-completed=1; path=/; max-age=31536000; SameSite=Lax';
-       document.cookie = 'ss-auth-choice=cloud; path=/; max-age=31536000; SameSite=Lax';
-       router.replace('/auth/login');
-     }
-   };
-
+    if (choice === 'local') {
+      await bridge?.setPreference('ss-local-mode', '1');
+      localStorage.setItem('ss-local-mode', '1');
+      setCookie('ss-local-mode', '1');
+      const { createLocalUser } = await import('@/lib/supabase/electron-client');
+      createLocalUser('Local Writer');
+      // A full load, not a client navigation: auth already started up in
+      // cloud mode on this page and has to start again in local mode.
+      window.location.assign('/dashboard');
+    } else {
+      router.replace('/auth/login');
+    }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-transparent">
-      <div className="max-w-2xl w-full p-8 flex flex-col items-center">
-        {/* App Icon */}
-        <div className="w-24 h-24 bg-brand-500 rounded-3xl shadow-2xl flex items-center justify-center mb-8">
-          <Icon name="feather" size="xl" className="text-white" />
-        </div>
+    <div className="flex min-h-screen items-center justify-center bg-surface-950 px-6 py-16">
+      <div className="w-full max-w-3xl">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
+          className="mb-10 flex flex-col items-center text-center"
+        >
+          <AppMark />
+          <h1 className="mt-6 text-3xl font-semibold tracking-tight text-white">Welcome to Screenplay Studio</h1>
+          <p className="mt-2 max-w-md text-sm text-surface-400">
+            How would you like to work? You can switch later in Settings, and nothing you write is lost either way.
+          </p>
+        </motion.div>
 
-        <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Welcome to Screenplay Studio</h1>
-        <p className="text-surface-400 mb-12 text-center max-w-md">
-          How would you like to use the app?
-        </p>
-
-        <div className="w-full space-y-4">
-          {/* Login Option */}
-          <button
-            onClick={() => handleChoice('login')}
-            className={`w-full p-6 rounded-2xl border-2 transition-all duration-200 text-left group ${
-              selectedChoice === 'login'
-                ? 'border-brand-500 bg-brand-500/10'
-                : 'border-surface-800 bg-surface-900/50 hover:border-surface-700'
-            }`}
-          >
-            <div className="flex items-start gap-4">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                selectedChoice === 'login' ? 'bg-brand-500' : 'bg-surface-800 group-hover:bg-surface-700'
-              }`}>
-                <Icon name="cloud" className={selectedChoice === 'login' ? 'text-white' : 'text-surface-400'} />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-white mb-1">Sign In to Cloud</h3>
-                <p className="text-sm text-surface-400">
-                  Sync your projects across devices, collaborate with your team, and access cloud features.
-                </p>
-              </div>
-              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                selectedChoice === 'login' ? 'border-brand-500 bg-brand-500' : 'border-surface-700'
-              }`}>
-                {selectedChoice === 'login' && (
-                  <div className="w-2.5 h-2.5 rounded-full bg-white" />
+        <div className="grid gap-4 sm:grid-cols-2">
+          {OPTIONS.map((opt, i) => {
+            const Icon = opt.icon;
+            const isBusy = busy === opt.id;
+            return (
+              <motion.button
+                key={opt.id}
+                type="button"
+                onClick={() => choose(opt.id)}
+                disabled={!!busy}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.08 + i * 0.06, ease: [0.2, 0.8, 0.2, 1] }}
+                className={cn(
+                  'group relative flex flex-col rounded-2xl border p-6 text-left transition-colors',
+                  'border-surface-800 bg-surface-900/60 hover:border-brand-500/50 hover:bg-surface-900',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
+                  busy && !isBusy && 'opacity-50',
                 )}
-              </div>
-            </div>
-          </button>
-
-          {/* Local Option */}
-          <button
-            onClick={() => handleChoice('local')}
-            className={`w-full p-6 rounded-2xl border-2 transition-all duration-200 text-left group ${
-              selectedChoice === 'local'
-                ? 'border-brand-500 bg-brand-500/10'
-                : 'border-surface-800 bg-surface-900/50 hover:border-surface-700'
-            }`}
-          >
-            <div className="flex items-start gap-4">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                selectedChoice === 'local' ? 'bg-brand-500' : 'bg-surface-800 group-hover:bg-surface-700'
-              }`}>
-                <Icon name="hard-drive" className={selectedChoice === 'local' ? 'text-white' : 'text-surface-400'} />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-white mb-1">Use Offline Only</h3>
-                <p className="text-sm text-surface-400">
-                  Keep everything on your computer. No account needed, no cloud sync, complete privacy.
-                </p>
-              </div>
-              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                selectedChoice === 'local' ? 'border-brand-500 bg-brand-500' : 'border-surface-700'
-              }`}>
-                {selectedChoice === 'local' && (
-                  <div className="w-2.5 h-2.5 rounded-full bg-white" />
-                )}
-              </div>
-            </div>
-          </button>
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-surface-800 text-surface-300 transition-colors group-hover:bg-brand-500 group-hover:text-white">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <span className="mt-4 text-base font-semibold text-white">{opt.title}</span>
+                <span className="mt-1 text-sm text-surface-400">{opt.body}</span>
+                <ul className="mt-5 space-y-2">
+                  {opt.points.map((p) => {
+                    const PointIcon = p.icon;
+                    return (
+                      <li key={p.text} className="flex items-center gap-2 text-xs text-surface-400">
+                        <PointIcon className="h-3.5 w-3.5 shrink-0 text-surface-500" />
+                        {p.text}
+                      </li>
+                    );
+                  })}
+                </ul>
+                <span className="mt-6 flex items-center gap-1.5 text-sm font-medium text-brand-400">
+                  {isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  {isBusy ? 'One moment…' : 'Continue'}
+                  {!isBusy && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />}
+                </span>
+              </motion.button>
+            );
+          })}
         </div>
-
-        <p className="text-xs text-surface-500 mt-8 text-center">
-          You can change this preference later in Settings
-        </p>
       </div>
     </div>
   );

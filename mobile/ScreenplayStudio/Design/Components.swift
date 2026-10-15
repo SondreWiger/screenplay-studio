@@ -265,7 +265,7 @@ struct SkeletonList: View {
                         RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
                             .fill(
                                 LinearGradient(
-                                    colors: [.clear, Color.white.opacity(0.05), .clear],
+                                    colors: [.clear, Theme.fill, .clear],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
@@ -364,7 +364,7 @@ struct ProgressBar: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
-                Capsule().fill(Color.white.opacity(0.08))
+                Capsule().fill(Theme.fill)
                 Capsule()
                     .fill(tint)
                     .frame(width: max(0, min(1, fraction)) * geometry.size.width)
@@ -386,8 +386,36 @@ extension View {
             .contentShape(.rect)
     }
 
-    /// Standard horizontal inset for full-width screens.
+    /// Standard horizontal inset for full-width screens. On iPad the column is
+    /// also capped at a readable width and centred, so cards don't stretch
+    /// edge to edge across a 13-inch screen.
     func screenPadding() -> some View {
         padding(.horizontal, Theme.screenPadding)
+            .frame(maxWidth: Theme.readableWidth)
+            .frame(maxWidth: .infinity)
+    }
+
+    /// The `List` equivalent of `screenPadding()`'s width cap: centres the rows
+    /// in a readable column on iPad and does nothing on iPhone.
+    func readableListWidth() -> some View {
+        modifier(ReadableListWidth())
+    }
+}
+
+private struct ReadableListWidth: ViewModifier {
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
+    func body(content: Content) -> some View {
+        if sizeClass == .regular {
+            GeometryReader { proxy in
+                content.contentMargins(
+                    .horizontal,
+                    max(0, (proxy.size.width - Theme.readableWidth) / 2),
+                    for: .scrollContent
+                )
+            }
+        } else {
+            content
+        }
     }
 }

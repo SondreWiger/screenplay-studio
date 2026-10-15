@@ -1,8 +1,9 @@
-# Screenplay Studio for iPhone
+# Screenplay Studio for iPhone and iPad
 
 A native SwiftUI app for the writing and production tools people actually need
 away from a desk: the script, the scene breakdown, the shot list, the schedule
-and the cast.
+and the cast. One universal app — a tab bar on iPhone, a sidebar and a full
+paper page on iPad.
 
 Same Supabase backend as the web app — one account, one set of data, no export
 or import step.
@@ -31,7 +32,7 @@ mobile/
 open mobile/ScreenplayStudio.xcodeproj
 ```
 
-Pick an iPhone simulator and press ⌘R. The Supabase connection is already
+Pick an iPhone or iPad simulator and press ⌘R. The Supabase connection is already
 bundled, so it goes straight to the sign-in screen — use the same account as the
 website.
 
@@ -42,7 +43,8 @@ xcodebuild -project mobile/ScreenplayStudio.xcodeproj -scheme ScreenplayStudio -
 ```
 
 Requires Xcode 16 or newer (the project uses synchronized folder groups) and
-targets iOS 17.0 and up. iPhone only.
+targets iOS / iPadOS 17.0 and up. Universal: iPhone and iPad, with every iPad
+orientation so it works in Split View and Slide Over.
 
 ## What's in it
 
@@ -58,10 +60,69 @@ targets iOS 17.0 and up. iPhone only.
 | **Characters** | Cast list with leads and casting. |
 | **Slate** | A working clapperboard. Point it at a shot and every clap logs a take onto the shot list. |
 | **Today** | What's on today across every active project. |
+| **Settings** | Appearance (light / dark / system, ten accent colours), writing options, project-tool layout, sync, account. |
 
 Tools that stayed on the web — budget, call sheets, storyboards, rundowns,
 prompter, the broadcast and audio-drama suites — are the ones that genuinely
 need a large screen. Settings links out to them.
+
+## iPad
+
+At regular width the shell switches from tabs to a `NavigationSplitView`
+(`App/MainTabView.swift`): Projects and Today, your pinned projects, recent
+projects and Settings in the sidebar, the selected one beside it. Resize the
+window into a narrow Split View and it becomes the iPhone tab layout without
+losing your place — `Router.adoptLayout` carries the open project across.
+
+* **The script on paper.** The editor sets about 60 Courier characters per
+  line at real screenplay margins on a sheet of paper, the way the page will
+  print, instead of the compressed phone margins (Settings → Writing → Paper
+  page turns it off).
+* **Readable columns.** Card lists cap at 820pt and centre, so nothing stretches
+  across a 13-inch screen. Projects and the project hub's tools lay out as grids.
+* **Pointer.** Cards lift under the trackpad pointer.
+* **Hardware keyboard.** Hold ⌘ for the full list:
+
+  | Keys | Does |
+  | --- | --- |
+  | ⌘N | New project |
+  | ⌘1 / ⌘2 / ⌘, | Projects / Today / Settings |
+  | ⌘E | Open the project's script (from the project hub) |
+  | Tab / ⇧Tab | Next / previous element type, like Final Draft |
+  | ⌥⌘1 … ⌥⌘8 | Scene heading, action, character, dialogue, parenthetical, transition, shot, note |
+  | ⌘S | Save now |
+  | ⌘J | Jump to scene |
+  | Esc | Put the keyboard away |
+
+## Make it yours
+
+Everything here is in Settings and stored per device (`Core/AppSettings.swift`):
+
+* **Appearance** — Light, Dark or System, and one of ten accent colours. Every
+  colour in `Design/Theme.swift` is dynamic, with a light-mode shade dark
+  enough for 4.5:1 text contrast. Changing the accent rebuilds the view tree
+  (`.id(settings.accent)` in `ScreenplayStudioApp`); navigation lives in the
+  app-owned `Router`, so you stay where you were.
+* **Writing** — text size, line spacing, paper page, focus mode (dims every
+  line but the current one), typewriter scrolling, scene numbers, the element
+  bar, and keep-screen-awake.
+* **Project tools** — reorder or hide the tools on a project's home screen
+  (also from Edit on the hub).
+* **Open to** — Projects, Today, or straight back into the last project.
+* **Pinned projects** — long-press a project to pin it to the top of the list
+  and the iPad sidebar.
+
+## Also
+
+* **Home-screen quick actions** — press and hold the icon for *Continue
+  "<last project>"*, *Today* and *New Project* (`App/QuickActions.swift`).
+* **Share as Fountain** — the editor's ⋯ menu exports the script as a
+  `.fountain` file for AirDrop, Files, Mail or Final Draft.
+* **Account deletion** — Settings → Delete Account calls
+  `POST /api/user/delete-account` with the session's bearer token, as App Store
+  Review requires.
+* **Privacy manifest** — `Resources/PrivacyInfo.xcprivacy` declares no tracking,
+  the account data collected, and the UserDefaults / file-timestamp API reasons.
 
 ## Live updates
 
@@ -129,6 +190,8 @@ SwiftUI won't give you: Return creating the next element, backspace-at-zero
 merging upward, and self-sizing inside a scroll view.
 
 ## Phone-specific decisions
+
+(On iPad the editor uses real margins on a paper page instead — see above.)
 
 - **Margins are compressed to 55%.** Full screenplay margins put a character cue
   two-thirds across a 390pt screen and squeeze dialogue into a column three

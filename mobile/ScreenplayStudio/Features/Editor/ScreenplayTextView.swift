@@ -14,6 +14,8 @@ struct ScreenplayTextView: UIViewRepresentable {
     @Binding var text: String
     let elementType: ScriptElementType
     let fontSize: CGFloat
+    /// Extra leading as a fraction of the font size (Settings → Writing).
+    var lineSpacingFactor: CGFloat = 0.18
     var isFocused: Bool
 
     /// Reports intrinsic height back so the row can lay out.
@@ -22,17 +24,28 @@ struct ScreenplayTextView: UIViewRepresentable {
     /// Backspace pressed with the caret at the very start.
     let onBackspaceAtStart: () -> Void
     let onFocusChange: (Bool) -> Void
+    /// Hardware keyboard: Tab (true) / ⇧Tab (false) cycles the element type.
+    var onCycleType: (Bool) -> Void = { _ in }
+    /// Hardware keyboard: ⌥⌘1…8 picks a type directly.
+    var onSetType: (ScriptElementType) -> Void = { _ in }
+    /// Hardware keyboard: Esc puts the keyboard away.
+    var onEscape: () -> Void = {}
 
     func makeUIView(context: Context) -> UITextView {
         let textView = SelfSizingTextView()
         textView.delegate = context.coordinator
+        let coordinator = context.coordinator
+        textView.onCycleType = { [weak coordinator] forward in coordinator?.parent.onCycleType(forward) }
+        textView.onSetType = { [weak coordinator] type in coordinator?.parent.onSetType(type) }
+        textView.onEscape = { [weak coordinator] in coordinator?.parent.onEscape() }
         textView.isScrollEnabled = false
         textView.backgroundColor = .clear
         textView.textContainerInset = .zero
         textView.textContainer.lineFragmentPadding = 0
         textView.textColor = UIColor(Theme.textPrimary)
         textView.tintColor = UIColor(Theme.accent)
-        textView.keyboardAppearance = .dark
+        // Follows the app's light / dark appearance.
+        textView.keyboardAppearance = .default
         textView.keyboardDismissMode = .interactive
         textView.spellCheckingType = .yes
         textView.smartQuotesType = .yes
@@ -95,8 +108,9 @@ struct ScreenplayTextView: UIViewRepresentable {
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = Self.nsAlignment(for: elementType.alignment)
         // Courier at 12pt sets 12pt leading in the web app (`line-height: 1`);
-        // that's too tight to read on a phone, so open it up slightly.
-        paragraph.lineSpacing = fontSize * 0.18
+        // that's too tight to read on a phone, so it opens up by a little (or a
+        // lot — Settings → Writing → Line spacing).
+        paragraph.lineSpacing = fontSize * lineSpacingFactor
 
         return [
             .font: font,
@@ -218,7 +232,45 @@ struct ScreenplayTextView: UIViewRepresentable {
 
 /// `UITextView` reports a zero intrinsic size when scrolling is off; overriding
 /// it lets the row size itself without a layout pass round-trip.
+///
+/// It also carries the editor's hardware-keyboard commands, which only make
+/// sense while a line is being edited.
 private final class SelfSizingTextView: UITextView {
+
+    var onCycleType: ((Bool) -> Void)?
+    var onSetType: ((ScriptElementType) -> Void)?
+    var onEscape: (() -> Void)?
+
+    override var keyCommands: [UIKeyCommand]? {
+        var commands: [UIKeyCommand] = [
+            UIKeyCommand(title: "Next Element Type", action: #selector(cycleForward), input: "\t"),
+            UIKeyCommand(title: "Previous Element Type", action: #selector(cycleBackward), input: "\t", modifierFlags: .shift),
+            UIKeyCommand(title: "Hide Keyboard", action: #selector(escape), input: UIKeyCommand.inputEscape),
+        ]
+        for (index, type) in ScriptElementType.standardCycle.prefix(8).enumerated() {
+            commands.append(UIKeyCommand(
+                title: type.label,
+                action: #selector(setType(_:)),
+                input: "\(index + 1)",
+                modifierFlags: [.command, .alternate],
+                propertyList: index
+            ))
+        }
+        // Tab would otherwise move focus to the next control.
+        commands.forEach { $0.wantsPriorityOverSystemBehavior = true }
+        return commands
+    }
+
+    @objc private func cycleForward() { onCycleType?(true) }
+    @objc private func cycleBackward() { onCycleType?(false) }
+    @objc private func escape() { onEscape?() }
+
+    @objc private func setType(_ sender: UIKeyCommand) {
+        guard let index = sender.propertyList as? Int,
+              index < ScriptElementType.standardCycle.count else { return }
+        onSetType?(ScriptElementType.standardCycle[index])
+    }
+
     override var intrinsicContentSize: CGSize {
         guard bounds.width > 0 else { return super.intrinsicContentSize }
         let size = sizeThatFits(CGSize(width: bounds.width, height: .greatestFiniteMagnitude))

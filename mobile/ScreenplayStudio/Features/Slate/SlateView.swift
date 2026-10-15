@@ -35,9 +35,14 @@ struct SlateView: View {
             .padding(.bottom, 40)
         }
         .background(Theme.background)
+        // A clapperboard is black and white whatever the app's appearance —
+        // it has to read through a lens.
+        .environment(\.colorScheme, .dark)
         .navigationTitle("Slate")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(Theme.background, for: .navigationBar)
+        .toolbarBackground(Theme.Surface.s950, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
