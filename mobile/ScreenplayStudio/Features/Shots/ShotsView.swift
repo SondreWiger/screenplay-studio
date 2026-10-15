@@ -5,6 +5,7 @@ struct ShotsView: View {
     let projectID: String
 
     @EnvironmentObject private var auth: AuthStore
+    @EnvironmentObject private var router: Router
     @StateObject private var model: ShotsViewModel
     @State private var isPresentingNewShot = false
 
@@ -59,6 +60,31 @@ struct ShotsView: View {
                                           systemImage: shot.done ? "arrow.uturn.backward" : "checkmark")
                                 }
                                 .tint(shot.done ? Theme.textTertiary : Theme.success)
+                                Button {
+                                    slate(shot)
+                                } label: {
+                                    Label("Slate", systemImage: "camera.aperture")
+                                }
+                                .tint(Theme.warning)
+                            }
+                            .contextMenu {
+                                Button {
+                                    slate(shot)
+                                } label: {
+                                    Label("Slate this shot", systemImage: "camera.aperture")
+                                }
+                                Button {
+                                    Task { await model.toggleCompleted(shot) }
+                                } label: {
+                                    Label(shot.done ? "Mark not covered" : "Mark covered",
+                                          systemImage: shot.done ? "arrow.uturn.backward" : "checkmark.circle")
+                                }
+                                Divider()
+                                Button(role: .destructive) {
+                                    Task { await model.delete(shot) }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
                             }
                         }
                     } header: {
@@ -82,6 +108,15 @@ struct ShotsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(Theme.background, for: .navigationBar)
         .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    Haptics.tap()
+                    router.push(.slate)
+                } label: {
+                    Image(systemName: "camera.aperture").tappableArea()
+                }
+                .accessibilityLabel("Open the slate")
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     Haptics.tap()
@@ -113,6 +148,12 @@ struct ShotsView: View {
             model.startLiveUpdates()
         }
         .onDisappear { model.stopLiveUpdates() }
+    }
+
+    /// Puts the shot on the slate's board, carrying on its take count.
+    private func slate(_ shot: Shot) {
+        Haptics.tap()
+        router.push(.slateShot(id: shot.id))
     }
 
     private var rowInsets: EdgeInsets {

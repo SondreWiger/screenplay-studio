@@ -180,6 +180,10 @@ enum ProjectRoute: Hashable {
     case schedule
     case characters
     case slate
+    /// The slate, starting on a shot from the shot list.
+    case slateShot(id: String)
+    /// The slate, starting on a scene.
+    case slateScene(id: String)
     case documents
     case gear
 }

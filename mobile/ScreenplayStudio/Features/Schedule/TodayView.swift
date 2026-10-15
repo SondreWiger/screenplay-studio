@@ -126,6 +126,7 @@ struct TodayView: View {
                 if model.isLoading && model.entries.isEmpty && model.projects.isEmpty {
                     SkeletonList(rows: 3)
                 } else {
+                    onSetCard
                     todaySection
                     upcomingSection
                     recentSection
@@ -177,6 +178,54 @@ struct TodayView: View {
     }
 
     // MARK: - Sections
+
+    /// On a shoot day the slate is one tap away.
+    @ViewBuilder
+    private var onSetCard: some View {
+        if let shoot = model.today.first(where: { $0.event.resolvedType == .shooting }),
+           let project = model.projects.first(where: { $0.id == shoot.event.projectID }) {
+            Button {
+                Haptics.tap()
+                router.open(project)
+                router.push(.slate)
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "camera.aperture")
+                        .font(.title2.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 48, height: 48)
+                        .background(Theme.Brand.b500, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Shoot day · \(project.title)")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Theme.textPrimary)
+                            .lineLimit(1)
+                        Text("Open the slate. Takes log to the shot list and the camera and sound reports.")
+                            .font(.caption)
+                            .foregroundStyle(Theme.textTertiary)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.leading)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Theme.textTertiary)
+                        .accessibilityHidden(true)
+                }
+                .padding(14)
+                .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                        .strokeBorder(Theme.Brand.b500.opacity(0.45), lineWidth: 1.5)
+                )
+                .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .hoverEffect(.lift)
+            .accessibilityLabel("Shoot day for \(project.title). Open the slate.")
+        }
+    }
 
     @ViewBuilder
     private var todaySection: some View {

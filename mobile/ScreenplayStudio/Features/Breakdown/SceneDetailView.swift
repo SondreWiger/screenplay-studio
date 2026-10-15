@@ -13,6 +13,7 @@ struct SceneDetailView: View {
     let onChange: (ProductionScene) -> Void
 
     @EnvironmentObject private var network: NetworkMonitor
+    @EnvironmentObject private var router: Router
     @State private var editingCategory: BreakdownCategory?
     @State private var isEditingSynopsis = false
     @State private var synopsisDraft = ""
@@ -226,6 +227,16 @@ struct SceneDetailView: View {
                             .padding(.top, 2)
                     }
                 }
+
+                Button {
+                    Haptics.tap()
+                    router.push(.slateScene(id: scene.id))
+                } label: {
+                    Label("Slate this scene", systemImage: "camera.aperture")
+                        .font(.subheadline.weight(.semibold))
+                }
+                .buttonStyle(SecondaryButtonStyle())
+                .padding(.top, 4)
             }
         }
     }

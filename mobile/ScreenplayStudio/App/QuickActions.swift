@@ -85,6 +85,15 @@ final class QuickActions: ObservableObject {
 /// installs a scene delegate that forwards them. SwiftUI still owns the window.
 final class AppDelegate: NSObject, UIApplicationDelegate {
 
+    /// iPhone is portrait except where a screen asks otherwise (the slate
+    /// board); iPad turns freely.
+    func application(
+        _ application: UIApplication,
+        supportedInterfaceOrientationsFor window: UIWindow?
+    ) -> UIInterfaceOrientationMask {
+        OrientationLock.mask
+    }
+
     func application(
         _ application: UIApplication,
         configurationForConnecting connectingSceneSession: UISceneSession,

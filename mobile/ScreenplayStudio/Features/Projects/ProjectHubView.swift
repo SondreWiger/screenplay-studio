@@ -306,6 +306,10 @@ struct ProjectHubView: View {
             CharactersView(projectID: project.id)
         case .slate:
             SlateView(projectID: project.id, projectTitle: project.title)
+        case .slateShot(let id):
+            SlateView(projectID: project.id, projectTitle: project.title, initialShotID: id)
+        case .slateScene(let id):
+            SlateView(projectID: project.id, projectTitle: project.title, initialSceneID: id)
         case .documents:
             DocumentsView(projectID: project.id)
         case .gear:

@@ -58,7 +58,7 @@ orientation so it works in Split View and Slide Over.
 | **Shot list** | Grouped by scene, with a one-tap take counter for use while rolling. |
 | **Schedule** | An agenda of shoot days, call times and locations. |
 | **Characters** | Cast list with leads and casting. |
-| **Slate** | A working clapperboard. Point it at a shot and every clap logs a take onto the shot list. |
+| **Slate** | A timecode clapperboard for sound sync. Each clap logs a take against the shot and fills in the camera and sound reports. |
 | **Today** | What's on today across every active project. |
 | **Settings** | Appearance (light / dark / system, ten accent colours), writing options, project-tool layout, sync, account. |
 
@@ -111,6 +111,49 @@ Everything here is in Settings and stored per device (`Core/AppSettings.swift`):
 * **Open to** — Projects, Today, or straight back into the last project.
 * **Pinned projects** — long-press a project to pin it to the top of the list
   and the iPad sidebar.
+
+## Slate
+
+`Features/Slate/` is a timecode slate a camera assistant can actually use on set.
+
+* **What's being slated.** Point the board at a shot or a scene from the shot
+  list (or "Slate this shot" / "Slate this scene" from those screens, or the
+  shoot-day card on Today), or type a scene and setup in. Scene number,
+  INT/EXT, DAY/NIGHT, lens and the next take number are filled in from the
+  breakdown, and the take count carries on where the log left off.
+* **Mark → Cut → rate.** Mark claps the sticks; Cut ends the take with its
+  length; Circle / Good / NG rates it and moves to the next take. "Shot done"
+  ticks the shot off and moves to the next one, and marks the scene shot when
+  its last shot is done. Tail slates (the board goes upside down) and MOS,
+  wild and pickup takes are supported. Space marks and cuts from a keyboard.
+* **Sync.** On the clap the screen flashes white for one displayed frame and a
+  1 kHz beep plays on that same frame. The flash is committed from a
+  `CADisplayLink` callback; the beep is scheduled with `AVAudioPlayerNode` at
+  that frame's presentation time less the output latency. A per-device offset
+  (Board & sync › Beep offset, with a test clap) absorbs the rest. The board's
+  timecode freezes on the sync frame for a moment so the camera records it.
+* **Timecode.** The clock is a frame count anchored to `mach_continuous_time`,
+  which keeps running through sleep. 23.976, 24, 25, 29.97 DF/ND, 30, 48, 50,
+  59.94 DF/ND and 60 fps. Jam it to time of day, by hand (with ±1 frame
+  nudges), or from a recorder's **LTC** on the audio input — the decoder reads
+  four consecutive frames, checks the rate matches, and jams to the frame.
+  **Timecode out** sends LTC from the headphone output, phase-locked to the
+  board's clock, for a camera's audio input.
+* **Full-screen board.** Turn an iPhone sideways (or Show board, ⌘B) for a
+  black board at full brightness with LED digits; tap anywhere on it to mark.
+* **The log.** Takes are kept in Application Support (not the cache), by day,
+  with search, swipe to circle / NG / delete, editing and CSV export.
+* **Reports.** Each take is written into the project's `camera_reports` rows —
+  one per roll per day, camera and sound — with its timecode, so the web
+  app's Camera & Sound Reports fill themselves in. Entries carry a `slate_id`;
+  a sync rewrites only those, leaving rows typed on the web alone. Offline,
+  reports queue and send when the connection is back.
+
+`LTC.swift` and `Timecode.swift` are ports of `mobile/reference/*.ts`, which
+`tests/slate-timecode.test.ts` checks: drop-frame labels for every frame of an
+hour at every rate, LTC parity and sync word, and encode → decode at 44.1 and
+48 kHz with timing to within two samples, through inverted polarity, low
+level, noise and dropouts.
 
 ## Also
 

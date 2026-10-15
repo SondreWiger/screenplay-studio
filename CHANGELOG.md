@@ -31,6 +31,19 @@
 - Delete your account from Settings
 - The status bar is back, and deleting a project now asks first
 
+### Slate (iPhone & iPad)
+- A timecode slate built for sound sync: on the clap the screen flashes for exactly one frame and the sync beep plays on that same frame, with the timecode frozen on the board. A test clap and a per-device offset let you check and fine-tune it
+- Timecode at every common rate (23.976 to 60, drop-frame and non-drop), kept accurate through sleep. Jam it to time of day, type it in, or plug in the sound recorder's timecode and it jams to the frame; it can also send timecode out to a camera
+- Mark → Cut → Circle / Good / NG, with take length, tail slates, MOS, wild and pickup takes, and undo
+- Connected to the shot list and scenes: "Slate this shot" and "Slate this scene", the board fills itself in from the breakdown, takes carry on from where they left off, and "Shot done" moves to the next shot (and marks the scene shot when it's finished)
+- Every take goes into the project's Camera & Sound Reports with its timecode, including when you're offline — they catch up when you reconnect
+- Turn the phone sideways for a full-brightness, full-screen board; tap it to mark
+- A take log by day with search, editing, swipe to circle or NG, and CSV export
+- A shoot-day card on Today opens the slate in one tap
+
+### Web
+- Camera & Sound Reports show each take's timecode, and which takes came from the slate
+
 ### Printed drafts
 - Every print and export gets a 5-character draft code, printed small at the foot of each page, plus a snapshot of the script at that moment
 - New Printed Drafts page per project: pick a script, issue codes by hand, record who a copy went to, and see exactly what changed since it was printed
