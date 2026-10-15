@@ -16,6 +16,15 @@ final class ProjectHubViewModel: ObservableObject {
 
     @Published private(set) var isLoading = false
     @Published var errorMessage: String?
+    /// What the slate on this device has on its board.
+    @Published private(set) var slate: SlateSummary?
+
+    struct SlateSummary: Equatable {
+        /// "Scene 12 · 3B · take 4"
+        let board: String
+        let takesToday: Int
+        let circledToday: Int
+    }
 
     private let projectID: String
     private var hasLoaded = false
@@ -49,6 +58,29 @@ final class ProjectHubViewModel: ObservableObject {
     var pagesLabel: String? {
         guard totalPages > 0 else { return nil }
         return String(format: "%.1f pages", totalPages)
+    }
+
+    /// A shoot is on the schedule for today.
+    var isShootDay: Bool {
+        events.contains { $0.resolvedType == .shooting && Calendar.current.isDateInToday($0.startTime) }
+    }
+
+    /// Re-read after coming back from the slate.
+    func refreshSlateSummary() {
+        guard let snapshot = SlateStore.shared.load(projectID: projectID) else {
+            slate = nil
+            return
+        }
+        let state = snapshot.state
+        var board = ["Scene \(state.scene)"]
+        if !state.setup.isEmpty { board.append(state.setup) }
+        board.append("take \(state.take)")
+        let today = snapshot.takes.filter { Calendar.current.isDateInToday($0.markedAt) }
+        slate = SlateSummary(
+            board: board.joined(separator: " · "),
+            takesToday: today.count,
+            circledToday: today.filter { $0.rating == .circled }.count
+        )
     }
 
     /// The next scheduled thing, which is what someone opening the app on a

@@ -93,6 +93,8 @@ losing your place — `Router.adoptLayout` carries the open project across.
   | ⌘S | Save now |
   | ⌘J | Jump to scene |
   | Esc | Put the keyboard away |
+  | Space | Slate: mark, then cut |
+  | ⌘B | Slate: show the full-screen board |
 
 ## Make it yours
 

@@ -25,6 +25,10 @@ struct ProjectHubView: View {
             VStack(spacing: 16) {
                 summaryCard
 
+                if model.isShootDay {
+                    onSetCard
+                }
+
                 if let next = model.nextEvent {
                     NextUpCard(event: next)
                 }
@@ -46,6 +50,8 @@ struct ProjectHubView: View {
             AppSettings.shared.lastProjectID = project.id
             await model.loadIfNeeded()
         }
+        // Coming back from the slate, show what it logged.
+        .onAppear { model.refreshSlateSummary() }
         .navigationDestination(for: ProjectRoute.self) { route in
             destination(for: route)
         }
@@ -116,6 +122,62 @@ struct ProjectHubView: View {
                 }
             }
         }
+    }
+
+    // MARK: - On set
+
+    /// On a shoot day the slate leads, with what's on its board.
+    private var onSetCard: some View {
+        Button {
+            Haptics.tap()
+            router.push(.slate)
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "camera.aperture")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .background(Theme.Brand.b500, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Shoot day")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Theme.Brand.b500)
+                        .textCase(.uppercase)
+                        .tracking(0.4)
+                    Text(model.slate.map { "Slate · \($0.board)" } ?? "Open the slate")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                        .lineLimit(1)
+                    Text(slateDetail)
+                        .font(.caption)
+                        .foregroundStyle(Theme.textTertiary)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Theme.textTertiary)
+                    .accessibilityHidden(true)
+            }
+            .padding(14)
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                    .strokeBorder(Theme.Brand.b500.opacity(0.45), lineWidth: 1.5)
+            )
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .hoverEffect(.lift)
+    }
+
+    private var slateDetail: String {
+        guard let slate = model.slate, slate.takesToday > 0 else {
+            return "Every take logs to the shot list and the reports"
+        }
+        let takes = "\(slate.takesToday) take\(slate.takesToday == 1 ? "" : "s") today"
+        return slate.circledToday > 0 ? "\(takes) · \(slate.circledToday) circled" : takes
     }
 
     // MARK: - Progress
@@ -276,7 +338,10 @@ struct ProjectHubView: View {
         case .gear:
             return "Equipment tracking & checkout"
         case .slate:
-            return "Clapperboard — marks takes onto the shot list"
+            if let slate = model.slate, slate.takesToday > 0 {
+                return "\(slate.board) · \(slate.takesToday) take\(slate.takesToday == 1 ? "" : "s") today"
+            }
+            return "Timecode slate — logs takes to the shot list and reports"
         }
     }
 
