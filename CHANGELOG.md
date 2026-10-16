@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [3.1.0] - 2026-10-16
 ### Desktop app (Mac, Windows, Linux)
 - Your local projects now survive restarting the app. The bundled server used a new random port on every launch, and browser storage is per-port, so characters, ideas, shots and everything else saved in local mode started empty each time. It now keeps one port
 - Choosing "Use without an account" on first launch no longer bounces you to the sign-in page

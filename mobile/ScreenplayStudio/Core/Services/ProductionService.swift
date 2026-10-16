@@ -378,7 +378,7 @@ enum ProductionService {
         let query = PostgrestQuery("gear_checkouts")
             .select()
             .eq("project_id", projectID)
-            .is("returned_at", "null")
+            .isNull("returned_at")
             .order("checked_out_at", ascending: false)
         return try await Supabase.shared.execute(query)
     }

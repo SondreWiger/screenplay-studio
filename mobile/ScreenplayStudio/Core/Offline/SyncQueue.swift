@@ -107,7 +107,9 @@ actor SyncQueue {
                     pending.removeFirst()
                 }
                 persist()
-                if pending.first == next { break }
+                // Still at the head: stop and let the next connectivity
+                // change try again, rather than hammering it in a loop.
+                if pending.first?.id == next.id { break }
             }
         }
 

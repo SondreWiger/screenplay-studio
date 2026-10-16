@@ -33,7 +33,10 @@ struct ScriptElement: Codable, Identifiable, Hashable {
     var scriptID: String
     var elementType: ScriptElementType
     var content: String
-    var sortOrder: Int
+    /// `double precision` in the database. The web editor places a new line
+    /// halfway between its neighbours (3 and 4 → 3.5), so fractions are normal
+    /// and an integer here would fail to decode those rows.
+    var sortOrder: Double
     var sceneNumber: String?
     @Lenient var revisionColor: RevisionColor?
     var isRevised: Bool?
@@ -62,7 +65,7 @@ struct ScriptElement: Codable, Identifiable, Hashable {
         scriptID: String,
         elementType: ScriptElementType,
         content: String = "",
-        sortOrder: Int,
+        sortOrder: Double,
         sceneNumber: String? = nil
     ) {
         self.id = id
@@ -92,7 +95,7 @@ struct ScriptElementInsert: Encodable {
     var scriptID: String
     var elementType: String
     var content: String
-    var sortOrder: Int
+    var sortOrder: Double
     var createdBy: String?
 
     enum CodingKeys: String, CodingKey {
@@ -118,7 +121,7 @@ struct ScriptElementInsert: Encodable {
 struct ScriptElementPatch: Encodable {
     var content: String?
     var elementType: String?
-    var sortOrder: Int?
+    var sortOrder: Double?
     var updatedAt: Date?
 
     enum CodingKeys: String, CodingKey {

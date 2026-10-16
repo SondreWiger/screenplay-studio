@@ -44,7 +44,7 @@ struct DiagnosticsView: View {
                         if isRunningCheck { ProgressView().tint(Theme.accent) }
                     }
                     .frame(minHeight: Theme.minTouchTarget - 10)
-                    .contentShape(.rect)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .disabled(isRunningCheck)

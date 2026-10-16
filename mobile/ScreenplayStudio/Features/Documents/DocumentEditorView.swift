@@ -16,8 +16,6 @@ struct DocumentEditorView: View {
     @State private var isEditingTitle = false
     @FocusState private var isContentFocused: Bool
 
-    private var flushTask: Task<Void, Never>?
-
     enum SaveState {
         case idle, pending, saving, saved(Date), failed
     }

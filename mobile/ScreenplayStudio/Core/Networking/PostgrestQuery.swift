@@ -107,7 +107,15 @@ struct PostgrestQuery {
         var copy = self
         let direction = ascending ? "asc" : "desc"
         let nulls = nullsFirst ? "nullsfirst" : "nullslast"
-        copy.queryItems.append(URLQueryItem(name: "order", value: "\(column).\(direction).\(nulls)"))
+        let term = "\(column).\(direction).\(nulls)"
+        // PostgREST takes one comma-separated `order`, so a second call adds a
+        // tie-breaker the way supabase-js does rather than a duplicate param.
+        if let index = copy.queryItems.firstIndex(where: { $0.name == "order" }),
+           let existing = copy.queryItems[index].value {
+            copy.queryItems[index].value = "\(existing),\(term)"
+        } else {
+            copy.queryItems.append(URLQueryItem(name: "order", value: term))
+        }
         return copy
     }
 
