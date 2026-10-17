@@ -27,3 +27,6 @@ public/downloads/*.dmg
 public/downloads/*.exe
 public/downloads/*.AppImage
 tsconfig.tsbuildinfo
+
+# Local manuscripts, not for the public repo
+/*.pdf
