@@ -11,7 +11,8 @@ describe('draw_storyboard shapes', () => {
       { type: 'arrow', points: [[100, 300], [500, 300]] },
     ]);
     expect(out.bg).toHaveLength(1);
-    expect(out.bg[0].points).toHaveLength(5);
+    expect(out.bg[0].points.length).toBeGreaterThan(50);
+    expect(out.bg[0].points).toContainEqual(expect.objectContaining({ x: 120, y: 220 }));
     expect(out.char.length).toBeGreaterThanOrEqual(6);
     expect(out.cam[0].tool).toBe('arrow');
     expect(out.cam[0].arrowHead).toBe('end');

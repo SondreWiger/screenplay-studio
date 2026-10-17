@@ -57,6 +57,27 @@ function hexToRgba(hex: string, alpha: number): string {
   return hex;
 }
 
+/**
+ * Storyboards are drawn on white paper. Strokes saved in near-white chalk
+ * (the old dark canvas default) are drawn in charcoal so they stay visible.
+ */
+function paperInk(color: string): string {
+  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color.trim());
+  let r: number, g: number, b: number;
+  if (m) {
+    const h = m[1].length === 3 ? m[1].split('').map((c) => c + c).join('') : m[1];
+    r = parseInt(h.slice(0, 2), 16); g = parseInt(h.slice(2, 4), 16); b = parseInt(h.slice(4, 6), 16);
+  } else {
+    const rgb = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i.exec(color);
+    if (!rgb) return color;
+    r = +rgb[1]; g = +rgb[2]; b = +rgb[3];
+  }
+  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  if (lum < 0.85) return color;
+  const alpha = /rgba\([^)]*,\s*([\d.]+)\s*\)/i.exec(color);
+  return alpha ? `rgba(30, 41, 59, ${alpha[1]})` : '#1e293b';
+}
+
 function getPressureWidth(baseWidth: number, pressure = 0.5, isPressureSensitive = true): number {
   if (!isPressureSensitive) return baseWidth;
   // Natural response curve for Apple Pencil pressure digitizer
@@ -84,7 +105,7 @@ function renderStrokes(
 
   // Cinematic Rule of Thirds & Center Framing Grid
   if (options?.showGrid) {
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+    ctx.strokeStyle = 'rgba(15, 23, 42, 0.04)';
     ctx.lineWidth = 1;
     for (let x = 0; x < baseWidth; x += 40) {
       ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, baseHeight); ctx.stroke();
@@ -94,7 +115,7 @@ function renderStrokes(
     }
 
     // Rule of Thirds
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+    ctx.strokeStyle = 'rgba(15, 23, 42, 0.12)';
     ctx.lineWidth = 1;
     ctx.setLineDash([6, 6]);
     ctx.beginPath(); ctx.moveTo(0, baseHeight / 3); ctx.lineTo(baseWidth, baseHeight / 3); ctx.stroke();
@@ -103,7 +124,7 @@ function renderStrokes(
     ctx.beginPath(); ctx.moveTo((baseWidth * 2) / 3, 0); ctx.lineTo((baseWidth * 2) / 3, baseHeight); ctx.stroke();
 
     // Center crosshair
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+    ctx.strokeStyle = 'rgba(15, 23, 42, 0.22)';
     ctx.setLineDash([3, 3]);
     ctx.beginPath(); ctx.moveTo(baseWidth / 2, 0); ctx.lineTo(baseWidth / 2, baseHeight); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(0, baseHeight / 2); ctx.lineTo(baseWidth, baseHeight / 2); ctx.stroke();
@@ -124,8 +145,8 @@ function renderStrokes(
     const strokeColor = isEraser
       ? 'rgba(0,0,0,1)'
       : isMarker
-      ? hexToRgba(stroke.color, 0.35)
-      : stroke.color;
+      ? hexToRgba(paperInk(stroke.color), 0.35)
+      : paperInk(stroke.color);
 
     ctx.strokeStyle = strokeColor;
     ctx.fillStyle = strokeColor;
@@ -213,7 +234,7 @@ function ShotThumbnail({ shot, size }: { shot: ShotWithStoryboard; size: 'sm' | 
 
   // Show storyboard_url image
   if (shot.storyboard_url) return (
-    <div className={cn('relative bg-surface-900 flex items-center justify-center', h)}>
+    <div className={cn('relative bg-white flex items-center justify-center', h)}>
       <img src={shot.storyboard_url} alt={`Shot ${shot.shot_number}`} className="w-full h-full object-cover" loading="lazy" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
     </div>
   );
@@ -221,15 +242,15 @@ function ShotThumbnail({ shot, size }: { shot: ShotWithStoryboard; size: 'sm' | 
   // Show drawing
   const hasDrawing = Array.isArray(shot.storyboard_drawing) && shot.storyboard_drawing.length > 0;
   if (hasDrawing) return (
-    <div className={cn('relative bg-surface-900', h)}>
+    <div className={cn('relative bg-white', h)}>
       <canvas ref={canvasRef} width={W} height={H} className="w-full h-full" />
     </div>
   );
 
   // Empty placeholder
   return (
-    <div className={cn('relative bg-surface-900 flex items-center justify-center', h)}>
-      <div className="text-center text-surface-700">
+    <div className={cn('relative bg-white flex items-center justify-center', h)}>
+      <div className="text-center text-slate-400">
         <svg className="w-7 h-7 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>

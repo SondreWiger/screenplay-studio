@@ -97,6 +97,27 @@ export function hexToRgba(hex: string, alpha: number): string {
   return hex;
 }
 
+/**
+ * Storyboards are drawn on white paper. Strokes saved in near-white chalk
+ * (the old dark canvas default) are drawn in charcoal so they stay visible.
+ */
+export function paperInk(color: string): string {
+  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color.trim());
+  let r: number, g: number, b: number;
+  if (m) {
+    const h = m[1].length === 3 ? m[1].split('').map((c) => c + c).join('') : m[1];
+    r = parseInt(h.slice(0, 2), 16); g = parseInt(h.slice(2, 4), 16); b = parseInt(h.slice(4, 6), 16);
+  } else {
+    const rgb = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i.exec(color);
+    if (!rgb) return color;
+    r = +rgb[1]; g = +rgb[2]; b = +rgb[3];
+  }
+  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  if (lum < 0.85) return color;
+  const alpha = /rgba\([^)]*,\s*([\d.]+)\s*\)/i.exec(color);
+  return alpha ? `rgba(30, 41, 59, ${alpha[1]})` : '#1e293b';
+}
+
 export function getPressureWidth(baseWidth: number, pressure = 0.5, tool: BrushTool = 'ink', isPressureSensitive = true): number {
   if (!isPressureSensitive || tool === 'fineliner') return baseWidth;
   const p = Math.max(0.04, Math.min(1, pressure));
@@ -197,7 +218,7 @@ export function renderStudioCanvas(
   ctx.scale((targetWidth / baseWidth) * dpr, (targetHeight / baseHeight) * dpr);
 
   // 1. Subtle canvas background grid
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+  ctx.strokeStyle = 'rgba(15, 23, 42, 0.03)';
   ctx.lineWidth = 1;
   for (let x = 0; x < baseWidth; x += 40) {
     ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, baseHeight); ctx.stroke();
@@ -270,13 +291,13 @@ export function renderStudioCanvas(
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
-      let strokeColor = stroke.color;
+      let strokeColor = paperInk(stroke.color);
       if (isEraser) {
         strokeColor = 'rgba(0,0,0,1)';
       } else if (isMarker) {
-        strokeColor = hexToRgba(stroke.color, 0.32);
+        strokeColor = hexToRgba(paperInk(stroke.color), 0.32);
       } else if (isPencil) {
-        strokeColor = hexToRgba(stroke.color, 0.88);
+        strokeColor = hexToRgba(paperInk(stroke.color), 0.88);
       }
 
       ctx.strokeStyle = strokeColor;
@@ -447,7 +468,7 @@ export function renderStudioCanvas(
 
   // 4d. Rule of Thirds
   if (options?.showRuleOfThirds) {
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.strokeStyle = 'rgba(15, 23, 42, 0.15)';
     ctx.lineWidth = 1;
     ctx.setLineDash([6, 6]);
     ctx.beginPath(); ctx.moveTo(0, baseHeight / 3); ctx.lineTo(baseWidth, baseHeight / 3); ctx.stroke();
@@ -472,7 +493,7 @@ export function renderStudioCanvas(
 
   // 4f. Center Crosshair
   if (options?.showCenterCrosshair) {
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+    ctx.strokeStyle = 'rgba(15, 23, 42, 0.25)';
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 3]);
     ctx.beginPath(); ctx.moveTo(baseWidth / 2, 0); ctx.lineTo(baseWidth / 2, baseHeight); ctx.stroke();
@@ -489,28 +510,28 @@ export function renderStudioCanvas(
       const barH = (baseHeight - activeH) / 2;
       ctx.fillRect(0, 0, baseWidth, barH);
       ctx.fillRect(0, baseHeight - barH, baseWidth, barH);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.strokeStyle = 'rgba(15, 23, 42, 0.35)';
       ctx.strokeRect(0, barH, baseWidth, activeH);
     } else if (ratio === '1.85:1') {
       const activeH = baseWidth / 1.85;
       const barH = (baseHeight - activeH) / 2;
       ctx.fillRect(0, 0, baseWidth, barH);
       ctx.fillRect(0, baseHeight - barH, baseWidth, barH);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.strokeStyle = 'rgba(15, 23, 42, 0.35)';
       ctx.strokeRect(0, barH, baseWidth, activeH);
     } else if (ratio === '4:3') {
       const activeW = baseHeight * (4 / 3);
       const barW = (baseWidth - activeW) / 2;
       ctx.fillRect(0, 0, barW, baseHeight);
       ctx.fillRect(baseWidth - barW, 0, barW, baseHeight);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.strokeStyle = 'rgba(15, 23, 42, 0.35)';
       ctx.strokeRect(barW, 0, activeW, baseHeight);
     } else if (ratio === '9:16') {
       const activeW = baseHeight * (9 / 16);
       const barW = (baseWidth - activeW) / 2;
       ctx.fillRect(0, 0, barW, baseHeight);
       ctx.fillRect(baseWidth - barW, 0, barW, baseHeight);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.strokeStyle = 'rgba(15, 23, 42, 0.35)';
       ctx.strokeRect(barW, 0, activeW, baseHeight);
     }
   }
@@ -522,7 +543,6 @@ export function renderStudioCanvas(
 // ── Color Palette & Brush Presets ─────────────────────────────────────
 
 export const STUDIO_COLORS = [
-  { label: 'Chalk White', hex: '#ffffff' },
   { label: 'Charcoal Black', hex: '#1e293b' },
   { label: 'Action Red', hex: '#ef4444' },
   { label: 'Camera Blue', hex: '#3b82f6' },
@@ -644,7 +664,7 @@ export function StoryboardSequenceStudio({
 
   // ── Drawing Tool & Apple Pencil State ──────────────────────────────
   const [tool, setTool] = useState<BrushTool>('pencil');
-  const [color, setColor] = useState('#ffffff');
+  const [color, setColor] = useState('#1e293b');
   const [brushSize, setBrushSize] = useState(5);
   const [pressureSensitive, setPressureSensitive] = useState(true);
   const [palmRejectionMode, setPalmRejectionMode] = useState<'auto' | 'pencil-only' | 'all'>('auto');
@@ -1669,7 +1689,7 @@ export function StoryboardSequenceStudio({
         {/* Center Drawing Canvas Viewport */}
         <main className="flex-1 flex flex-col items-center justify-center p-3 sm:p-6 bg-surface-900/40 relative overflow-hidden">
           <div
-            className="relative rounded-2xl overflow-hidden bg-surface-950 border border-surface-700/80 shadow-2xl touch-none select-none"
+            className="relative rounded-2xl overflow-hidden bg-white border border-surface-700/80 shadow-2xl touch-none select-none"
             style={{
               width: '100%',
               maxWidth: '920px',
@@ -1693,7 +1713,7 @@ export function StoryboardSequenceStudio({
             {/* Apple Pencil Hover Reticle (iPad Pro M2/M4) */}
             {hoverPos && (
               <div
-                className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/80 bg-white/20 shadow-md transition-transform"
+                className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-slate-900/60 bg-slate-900/10 shadow-md transition-transform"
                 style={{
                   left: `${(hoverPos.x / 640) * 100}%`,
                   top: `${(hoverPos.y / 360) * 100}%`,
@@ -1927,7 +1947,7 @@ export function StoryboardSequenceStudio({
                   onClick={() => goToShot(shot.id)}
                   className={cn(
                     'group relative rounded-xl border overflow-hidden shrink-0 cursor-pointer transition-all flex flex-col',
-                    'w-32 h-18 bg-surface-900',
+                    'w-32 h-18 bg-white',
                     isSelected
                       ? 'border-brand-500 ring-2 ring-brand-500/40 scale-105 shadow-lg'
                       : 'border-surface-800 hover:border-surface-600'

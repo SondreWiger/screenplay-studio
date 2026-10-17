@@ -81,6 +81,22 @@ function ellipsePoints(cx: number, cy: number, rx: number, ry: number): Point[] 
   return out;
 }
 
+/**
+ * The studio smooths every stroke through the midpoints between its points, so
+ * a straight line with only its corners would come out as a rounded blob.
+ * Adding a point every few units keeps lines straight and corners sharp.
+ */
+function densify(src: Point[], step = 3): Point[] {
+  if (src.length < 2) return src;
+  const out: Point[] = [src[0]];
+  for (let i = 1; i < src.length; i++) {
+    const a = src[i - 1], b = src[i];
+    const n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / step));
+    for (let k = 1; k <= n; k++) out.push(pt(a.x + ((b.x - a.x) * k) / n, a.y + ((b.y - a.y) * k) / n));
+  }
+  return out;
+}
+
 /** Catmull-Rom through the given points, so a few control points read as a hand-drawn curve. */
 function curvePoints(src: Point[]): Point[] {
   if (src.length < 3) return src;
@@ -195,7 +211,8 @@ export function shapesToStrokes(shapes: ShapeInput[]): Record<LayerId, Stroke[]>
         throw new ToolError(`shapes[${i}].type must be line, curve, rect, ellipse, arrow or figure`);
     }
 
-    for (const points of paths) {
+    for (const raw of paths) {
+      const points = shape.type === 'curve' || shape.type === 'ellipse' ? raw : densify(raw);
       total += points.length;
       out[layer].push({
         id: randomUUID().slice(0, 8), points, color, width, tool: brush, pressureSensitive: false,
