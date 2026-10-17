@@ -42,6 +42,15 @@ From the command line:
 xcodebuild -project mobile/ScreenplayStudio.xcodeproj -scheme ScreenplayStudio -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17' build
 ```
 
+Or build and launch in one go — on the largest iPad simulator, on a connected
+iPhone (paired, Developer Mode on), or both:
+
+```bash
+mobile/run.sh ipad
+mobile/run.sh iphone "Sondre"     # any part of the phone's name; omit for the first one
+mobile/run.sh both
+```
+
 Requires Xcode 16 or newer (the project uses synchronized folder groups) and
 targets iOS / iPadOS 17.0 and up. Universal: iPhone and iPad, with every iPad
 orientation so it works in Split View and Slide Over.
