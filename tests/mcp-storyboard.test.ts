@@ -55,6 +55,40 @@ describe('draw_storyboard shapes', () => {
     expect(layers.find((l) => l.id === 'char')!.strokes).toHaveLength(1);
   });
 
+  it('draws heads, busts, hands and hatching as people and shading', () => {
+    const out = shapesToStrokes([
+      { type: 'bust', x: 320, y: 140, h: 120, view: 'three_quarter', expression: 'sad', clothing: 'hoodie' },
+      { type: 'hand', x: 100, y: 200, h: 80, hand_pose: 'grip', angle: 0, arm: 60 },
+      { type: 'head', x: 500, y: 100, h: 80, view: 'profile', facing: 'left' },
+      { type: 'hatch', x: 0, y: 300, w: 640, h: 60, spacing: 8 },
+    ]);
+    expect(out.char.length).toBeGreaterThan(15);
+    expect(out.bg.length).toBeGreaterThan(5);
+    for (const st of [...out.char, ...out.bg]) {
+      for (const p of st.points) {
+        expect(Number.isFinite(p.x) && Number.isFinite(p.y)).toBe(true);
+      }
+    }
+  });
+
+  it('keeps hatch lines inside the area they shade', () => {
+    const { bg } = shapesToStrokes([{ type: 'hatch', points: [[100, 100], [200, 100], [200, 200], [100, 200]], spacing: 10, angle: 30 }]);
+    expect(bg.length).toBeGreaterThan(5);
+    for (const st of bg) for (const p of st.points) {
+      expect(p.x).toBeGreaterThanOrEqual(99.9);
+      expect(p.x).toBeLessThanOrEqual(200.1);
+      expect(p.y).toBeGreaterThanOrEqual(99.9);
+      expect(p.y).toBeLessThanOrEqual(200.1);
+    }
+  });
+
+  it('adds a lighter second pass for rough lines', () => {
+    const plain = shapesToStrokes([{ type: 'rect', x: 0, y: 0, w: 50, h: 50 }]).bg;
+    const rough = shapesToStrokes([{ type: 'rect', x: 0, y: 0, w: 50, h: 50, rough: true }]).bg;
+    expect(rough).toHaveLength(plain.length * 2);
+    expect(rough[1].width).toBeLessThan(rough[0].width);
+  });
+
   it('advertises a schema that accepts a typical call', () => {
     const def = TOOLS_BY_NAME.get('draw_storyboard')!;
     expect(def.access).toBe('write');
