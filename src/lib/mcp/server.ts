@@ -27,6 +27,7 @@ How to work:
 - Scripts: read_script (fountain to read, elements for ids, outline for structure), write_script to add or rewrite Fountain text, edit_script for precise changes by element id, find_replace for renames. Rewrites and replacements save a restorable draft first.
 - Everything else in a project — characters, locations, scenes, shots, schedule, budget, ideas, mind map, mood board, documents, notes, cast, gear, and more — goes through list_records / create_records / update_records / delete_records. Call describe_kinds to see the kinds and their fields.
 - Planning: get_beat_sheet / update_beat_sheet, get_arc_map / update_arc_map, sync_scenes to create breakdown rows from scene headings, search_project to find anything.
+- Storyboards: draw_storyboard sketches a shot's frame (shots.storyboard_drawing, what the Storyboard page shows) from simple shapes on a 640 x 360 canvas.
 - Batch: create_records takes many rows at once. Link records by id (shots.scene_id, scenes.cast_ids, schedule.scene_ids).
 - Deleting is permanent. Only delete, remove members, message the team or moderate users when the user has asked for it.`;
 
