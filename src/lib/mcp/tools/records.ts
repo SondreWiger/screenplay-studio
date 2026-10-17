@@ -240,7 +240,9 @@ export const recordTools = [
         if (foreign.length) throw new ToolError(`${kind.parent.kind} not found: ${foreign.join(', ')}`);
       }
 
-      const created = must(await ctx.db.from(kind.table).insert(rows).select('*'), `Creating ${args.kind}`) as Record<string, unknown>[];
+      // Rows in a batch can name different columns; without defaultToNull: false
+      // PostgREST fills the gaps with NULL instead of the column defaults.
+      const created = must(await ctx.db.from(kind.table).insert(rows, { defaultToNull: false }).select('*'), `Creating ${args.kind}`) as Record<string, unknown>[];
       await ctx.audit('create_records', kind.table, created.length === 1 ? String(created[0][pk(kind)]) : null, { kind: args.kind, count: created.length, project_id: args.project_id });
       return { kind: args.kind, created: created.length, records: created.map((r) => compact(r)) };
     },
