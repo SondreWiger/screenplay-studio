@@ -29,7 +29,10 @@ final class SlateViewModel: ObservableObject {
 
     @Published private(set) var state: SlateState
     @Published private(set) var takes: [SlateTake]
-    @Published private(set) var phase: Phase = .ready
+    @Published private(set) var phase: Phase = .ready {
+        // Whatever brought the board back to ready, it's the right way up.
+        didSet { if phase == .ready, oldValue != .ready { isTailMode = false } }
+    }
     @Published private(set) var jam: TimecodeJam
     /// The clap's timecode, held on the board for a moment so the camera sees it.
     @Published private(set) var frozenTimecode: Timecode?
@@ -55,6 +58,9 @@ final class SlateViewModel: ObservableObject {
     private let displaySync = DisplaySyncTrigger()
     private var deletedTakeIDs: Set<UUID>
     private var dirtyReports: Set<SlateReportKey>
+    /// Bumped on every change to a report, so a sync only clears what it sent.
+    private var dirtyVersion: [SlateReportKey: Int] = [:]
+    private var isSyncingReports = false
     private var reportTask: Task<Void, Never>?
     private var freezeTask: Task<Void, Never>?
     private var listenTimeout: Task<Void, Never>?
@@ -72,6 +78,11 @@ final class SlateViewModel: ObservableObject {
         let snapshot = SlateStore.shared.load(projectID: projectID)
         var state = snapshot?.state ?? SlateState()
         if state.production.isEmpty { state.production = projectTitle }
+        // Never offer a take number that's already in the log for this slate.
+        if let last = snapshot?.takes.first, last.shotID == state.linkedShotID,
+           last.scene == state.scene, last.setup == state.setup, last.take >= state.take {
+            state.take = last.take + 1
+        }
 
         // A recorder jam carries over (re-anchored via the wall clock); time of
         // day is simply read again.
@@ -95,28 +106,49 @@ final class SlateViewModel: ObservableObject {
         applyPendingLink()
         syncReportsSoon(after: 0)
         await refreshContext()
-        applyPendingLink()
+        applyPendingLink(final: true)
     }
 
     /// Opened from a shot or a scene: put it on the board, carrying on its
     /// take count. Already on the board, it's left as it is.
-    private func applyPendingLink() {
+    ///
+    /// From the cache it waits for the shot's scene too, so the board gets the
+    /// right scene number; `final` is the last chance, after the refresh.
+    private func applyPendingLink(final: Bool = false) {
         if let id = pendingShotID {
-            guard let shot = shots.first(where: { $0.id == id }) else { return }
+            guard let shot = shots.first(where: { $0.id == id }) else {
+                if final {
+                    pendingShotID = nil
+                    notice = "That shot isn’t on this device yet. Connect to the internet to load the shot list."
+                }
+                return
+            }
+            if !final, let sceneID = shot.sceneID, !scenes.contains(where: { $0.id == sceneID }) { return }
             pendingShotID = nil
             if state.linkedShotID != id { link(to: shot) }
         } else if let id = pendingSceneID {
-            guard let scene = scenes.first(where: { $0.id == id }) else { return }
+            guard let scene = scenes.first(where: { $0.id == id }) else {
+                if final { pendingSceneID = nil }
+                return
+            }
             pendingSceneID = nil
             if state.linkedSceneID != id || state.linkedShotID != nil { link(to: scene) }
         }
     }
 
     func onDisappear() {
+        // Leaving mid-take finishes it, so the next visit starts on a new take.
         if case .rolling(let id) = phase { cut(id) }
+        if case .cut = phase { nextTake() }
         stopListening()
         audio.stopAll()
         persist()
+        // Send what's waiting now; the debounced send dies with the screen.
+        if !isSyncingReports, !dirtyReports.isEmpty {
+            reportTask?.cancel()
+            Task { await self.syncReports() }
+        }
+        NotificationCenter.default.post(name: SlateStore.didClose, object: projectID)
     }
 
     // MARK: - Clock
@@ -216,20 +248,27 @@ final class SlateViewModel: ObservableObject {
 
     private func beginListening() {
         do {
+            firstLTCReading = nil
             try audio.startListening { [weak self] reading in
                 self?.received(reading)
             }
             isListeningForLTC = true
-            listenTimeout?.cancel()
-            listenTimeout = Task { [weak self] in
-                try? await Task.sleep(for: .seconds(8))
-                guard let self, !Task.isCancelled, self.isListeningForLTC else { return }
-                self.stopListening()
-                self.ltcMessage = "No timecode heard. Plug the recorder's TC out into the audio input (a TRRS or Lightning/USB-C adapter) and set its output level to line."
-                Haptics.error()
-            }
+            armListenTimeout(seconds: 8)
         } catch {
             ltcMessage = error.localizedDescription
+        }
+    }
+
+    private func armListenTimeout(seconds: Double) {
+        listenTimeout?.cancel()
+        listenTimeout = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(seconds))
+            guard let self, !Task.isCancelled, self.isListeningForLTC else { return }
+            self.stopListening()
+            self.ltcMessage = self.firstLTCReading == nil
+                ? "No timecode heard. Plug the recorder's TC out into the audio input (a TRRS or Lightning/USB-C adapter) and set its output level to line."
+                : "The timecode dropped out. Check the cable and jam again."
+            Haptics.error()
         }
     }
 
@@ -240,25 +279,72 @@ final class SlateViewModel: ObservableObject {
         isListeningForLTC = false
     }
 
+    /// The first trusted frame of this listen, to measure the recorder's real
+    /// frame rate against.
+    private var firstLTCReading: SlateAudio.LTCReading?
+
     private func received(_ reading: SlateAudio.LTCReading) {
         guard isListeningForLTC else { return }
         let rate = state.frameRate
         // At 48/50/60 fps each LTC frame carries a pair of video frames.
         let ltcRate = LTC.frameRate(for: rate)
-        let mismatch = abs(reading.measuredFPS - ltcRate) / ltcRate > 0.02
-        if mismatch || reading.dropFrame != rate.isDropFrame {
-            stopListening()
-            let heard = reading.dropFrame ? String(format: "%.2f DF", reading.measuredFPS) : String(format: "%.3g", reading.measuredFPS)
-            ltcMessage = "The recorder is sending \(heard) fps, but the slate is set to \(rate.label). Match the frame rates and jam again."
-            Haptics.error()
+
+        // Coarse first, from one frame's bit timing: a different rate family,
+        // or drop-frame against non-drop.
+        if abs(reading.measuredFPS - ltcRate) / ltcRate > 0.02 || reading.dropFrame != rate.isDropFrame {
+            rejectLTC(heard: reading.measuredFPS, dropFrame: reading.dropFrame)
             return
         }
+
+        // Then exactly. 23.976 and 24, or 29.97 and 30, are 0.1% apart — a
+        // mismatch would jam and then drift 3.6 seconds an hour — so count
+        // frames over a few seconds of signal.
+        guard let first = firstLTCReading else {
+            firstLTCReading = reading
+            ltcMessage = "Reading the recorder’s timecode…"
+            armListenTimeout(seconds: 6)
+            return
+        }
+        let span = reading.frameStartClock - first.frameStartClock
+        guard span >= 3 else { return }
+        let labels = Self.ltcLabelRate(for: rate)
+        var frames = reading.timecode.frameCount(rate: labels) - first.timecode.frameCount(rate: labels)
+        if frames < 0 { frames += labels.framesPerDay }
+        let measured = Double(frames) / span
+        if abs(measured - ltcRate) / ltcRate > 0.0005 {
+            rejectLTC(heard: measured, dropFrame: reading.dropFrame)
+            return
+        }
+
         var tc = reading.timecode
         if rate.nominal > 30 { tc.frames *= 2 }
         applyJam(.jam(to: tc, at: reading.frameStartClock, rate: rate, source: .ltc))
         stopListening()
         ltcMessage = "Jammed to \(tc.formatted(rate)) from the recorder."
         Haptics.success()
+    }
+
+    private func rejectLTC(heard fps: Double, dropFrame: Bool) {
+        stopListening()
+        // Name the rate it's closest to, the way the recorder's menu does.
+        let candidates: [FrameRate] = [.fps23_976, .fps24, .fps25, .fps29_97DF, .fps29_97, .fps30]
+            .filter { $0.isDropFrame == dropFrame }
+        let heard = candidates.min { abs($0.actual - fps) < abs($1.actual - fps) }?.label
+            ?? String(format: "%.2f", fps)
+        ltcMessage = "The recorder is sending \(heard) fps timecode, but the slate is set to \(state.frameRate.label). Set them the same and jam again."
+        Haptics.error()
+    }
+
+    /// The labels LTC carries: at 48/50/60 fps, those of half the rate.
+    private static func ltcLabelRate(for rate: FrameRate) -> FrameRate {
+        switch rate {
+        case .fps48: return .fps24
+        case .fps50: return .fps25
+        case .fps59_94DF: return .fps29_97DF
+        case .fps59_94: return .fps29_97
+        case .fps60: return .fps30
+        default: return rate
+        }
     }
 
     /// LTC out of the audio output, for a camera's audio input.
@@ -496,12 +582,34 @@ final class SlateViewModel: ObservableObject {
         Haptics.tap()
     }
 
+    /// The last mark can be taken back for ten minutes — long enough to
+    /// notice a slate on the wrong shot, not long enough to lose yesterday's.
+    var canUndoMark: Bool {
+        guard let last = takes.first else { return false }
+        return Date().timeIntervalSince(last.markedAt) < 600
+    }
+
     /// Take the last mark back — a slate on the wrong shot, a camera not rolling.
     func undoLastMark() {
-        guard let last = takes.first else { return }
+        guard canUndoMark, let last = takes.first else { return }
+        let wasOnBoard = last.shotID == state.linkedShotID && last.scene == state.scene && last.setup == state.setup
         delete(last)
         phase = .ready
-        state.take = last.take
+        if wasOnBoard { state.take = last.take }
+
+        // And off the shot list's take count, if it was counted there.
+        if let shotID = last.shotID, let index = shots.firstIndex(where: { $0.id == shotID }),
+           shots[index].takesCompleted == last.take {
+            let remaining = takes.filter { $0.shotID == shotID }.map(\.take).max() ?? 0
+            shots[index].takesCompleted = remaining
+            let snapshot = shots
+            Task {
+                await write(table: "shots", id: shotID, fields: ["takes_completed": .number(Double(remaining))]) {
+                    try await ProductionService.setTakesCompleted(id: shotID, takes: remaining)
+                }
+                await LocalCache.shared.save(snapshot, for: LocalCache.Key.shots(projectID))
+            }
+        }
         persist()
     }
 
@@ -649,7 +757,8 @@ final class SlateViewModel: ObservableObject {
         guard let current = state.linkedShotID, let index = ordered.firstIndex(where: { $0.id == current }) else {
             return ordered.first { !$0.done }
         }
-        return ordered[(index + 1)...].first { !$0.done } ?? ordered[(index + 1)...].first
+        // The next one still to do, coming back round to any skipped earlier.
+        return ordered[(index + 1)...].first { !$0.done } ?? ordered[..<index].first { !$0.done }
     }
 
     func moveToNextShot() {
@@ -719,13 +828,19 @@ final class SlateViewModel: ObservableObject {
     // MARK: - Reports
 
     private func markDirty(_ take: SlateTake) {
-        for key in SlateReports.keys(for: take) { dirtyReports.insert(key) }
-        reportStatus = .waiting(dirtyReports.count)
+        for key in SlateReports.keys(for: take) {
+            dirtyReports.insert(key)
+            dirtyVersion[key, default: 0] += 1
+        }
+        reportStatus = NetworkMonitor.shared.isOnline ? .syncing : .waiting(dirtyReports.count)
         syncReportsSoon()
     }
 
     /// Debounced: a burst of edits (rate, note, cut) becomes one write.
     func syncReportsSoon(after delay: Double = 1.5) {
+        // A send in flight picks up anything changed meanwhile when it ends;
+        // cancelling it could leave a report half written.
+        guard !isSyncingReports else { return }
         reportTask?.cancel()
         guard !dirtyReports.isEmpty else { return }
         reportTask = Task { [weak self] in
@@ -736,15 +851,19 @@ final class SlateViewModel: ObservableObject {
     }
 
     func syncReports() async {
+        guard !isSyncingReports else { return }
         guard !dirtyReports.isEmpty else {
             reportStatus = .idle
             return
         }
+        isSyncingReports = true
         reportStatus = .syncing
         let keys = dirtyReports
+        let versions = dirtyVersion
         let snapshot = takes
         let removed = deletedTakeIDs
         var failure: String?
+        var wasCancelled = false
         for key in keys {
             do {
                 try await SlateReports.push(
@@ -755,17 +874,26 @@ final class SlateViewModel: ObservableObject {
                     operatorName: state.camera,
                     userID: userID
                 )
-                dirtyReports.remove(key)
+                // Changed again while it was being sent: it stays dirty.
+                if dirtyVersion[key] == versions[key] { dirtyReports.remove(key) }
             } catch is CancellationError {
-                return
+                wasCancelled = true
+                break
             } catch {
                 failure = (error as? SupabaseError)?.errorDescription ?? error.localizedDescription
             }
         }
-        if dirtyReports.isEmpty {
+        isSyncingReports = false
+
+        let changedMeanwhile = dirtyReports.contains { dirtyVersion[$0] != versions[$0] }
+        if wasCancelled {
+            reportStatus = .waiting(dirtyReports.count)
+        } else if dirtyReports.isEmpty {
             // Once every report has caught up, deletions have been applied.
             deletedTakeIDs.subtract(removed)
             reportStatus = .synced(Date())
+        } else if changedMeanwhile, failure == nil {
+            syncReportsSoon()
         } else {
             reportStatus = NetworkMonitor.shared.isOnline
                 ? .failed(failure ?? "Some reports didn’t update.")

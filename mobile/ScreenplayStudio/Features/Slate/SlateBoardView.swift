@@ -39,6 +39,14 @@ struct SlateBoardView: View {
         .onDisappear {
             ScreenBrightness.restore()
         }
+        // iOS puts brightness back when the phone locks or the app goes to
+        // the background: hand the user's level back, and boost again on return.
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+            ScreenBrightness.restore()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            ScreenBrightness.boost()
+        }
     }
 
     // MARK: - Board
@@ -71,18 +79,19 @@ struct SlateBoardView: View {
             .background(Color(hex: 0x0B0B0F))
         }
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .padding(.horizontal, 10)
-        .padding(.top, 8)
-        .padding(.bottom, 84)
+        // The board itself is the clap target while it's waiting for one —
+        // not the margin around the controls below it.
         .contentShape(.rect)
         .onTapGesture {
-            // The whole board is the clap target while it's waiting for one.
             if model.phase == .ready || model.isTailMode { model.mark() }
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Slate board. \(model.state.spokenIdentifier)")
         .accessibilityHint(model.phase == .ready ? "Double tap to mark" : "")
         .accessibilityAddTraits(.isButton)
+        .padding(.horizontal, 10)
+        .padding(.top, 8)
+        .padding(.bottom, 84)
     }
 
     private var timecode: some View {
@@ -217,21 +226,19 @@ struct SlateActionBar: View {
 
             case .rolling:
                 HStack(spacing: 8) {
-                    if !compact || !model.isTailMode {
-                        Button {
-                            Haptics.selectionChanged()
-                            model.isTailMode.toggle()
-                        } label: {
-                            Label("Tail", systemImage: "arrow.uturn.down")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(model.isTailMode ? Color.white : neutralText)
-                                .padding(.horizontal, 14)
-                                .frame(height: compact ? 56 : 64)
-                                .background(model.isTailMode ? Color(hex: 0xD97706) : neutralFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(model.isTailMode ? "Cancel tail slate" : "Tail slate this take")
+                    Button {
+                        Haptics.selectionChanged()
+                        model.isTailMode.toggle()
+                    } label: {
+                        Label("Tail", systemImage: "arrow.uturn.down")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(model.isTailMode ? Color.white : neutralText)
+                            .padding(.horizontal, 14)
+                            .frame(height: compact ? 56 : 64)
+                            .background(model.isTailMode ? Color(hex: 0xD97706) : neutralFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(model.isTailMode ? "Cancel tail slate" : "Tail slate this take")
                     if model.isTailMode {
                         bigButton("Clap tail", symbol: "hand.tap.fill", tint: Theme.Brand.b500) { model.mark() }
                     } else {

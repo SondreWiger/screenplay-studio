@@ -83,11 +83,13 @@ enum SlateReports {
 
     private struct ReportRow: Decodable {
         let id: String
+        let cameraID: String?
         let takes: [JSONValue]?
         let soundTakes: [JSONValue]?
 
         enum CodingKeys: String, CodingKey {
             case id, takes
+            case cameraID = "camera_id"
             case soundTakes = "sound_takes"
         }
     }
@@ -137,15 +139,21 @@ enum SlateReports {
         let entries = filed.map { key.kind == .camera ? cameraEntry($0) : soundEntry($0) }
 
         var query = PostgrestQuery("camera_reports")
-            .select("id,takes,sound_takes")
+            .select("id,camera_id,takes,sound_takes")
             .eq("project_id", projectID)
             .eq("report_type", key.kind.rawValue)
             .eq("report_date", key.date)
             .eq("roll_number", key.roll)
-        if let camera = key.camera { query = query.eq("camera_id", camera) }
-        let existing: [ReportRow] = try await Supabase.shared.execute(query.limit(1))
+        if let camera = key.camera {
+            // A report started on the web may not say which camera; it's
+            // still this roll's report, so fill it in rather than add another.
+            let quoted = camera.replacingOccurrences(of: "\"", with: "")
+            query = query.or("camera_id.eq.\"\(quoted)\",camera_id.is.null")
+        }
+        let existing: [ReportRow] = try await Supabase.shared.execute(query.limit(5))
+        let match = existing.first { $0.cameraID == key.camera } ?? existing.first
 
-        if let row = existing.first {
+        if let row = match {
             // Keep everything that isn't one of ours, then our current entries.
             let current = (key.kind == .camera ? row.takes : row.soundTakes) ?? []
             let kept = current.filter { entry in
@@ -154,10 +162,11 @@ enum SlateReports {
             }
             let merged: [JSONValue] = kept + entries
             let column = key.kind == .camera ? "takes" : "sound_takes"
-            let body: [String: JSONValue] = [
+            var body: [String: JSONValue] = [
                 column: .array(merged),
                 "updated_at": .string(PostgresDate.string(from: Date())),
             ]
+            if row.cameraID == nil, let camera = key.camera { body["camera_id"] = .string(camera) }
             let update = try PostgrestQuery("camera_reports").eq("id", row.id).update(body, returning: false)
             try await Supabase.shared.executeIgnoringResult(update)
         } else {

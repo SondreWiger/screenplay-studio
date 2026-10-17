@@ -50,8 +50,13 @@ struct ProjectHubView: View {
             AppSettings.shared.lastProjectID = project.id
             await model.loadIfNeeded()
         }
-        // Coming back from the slate, show what it logged.
+        // Coming back from the slate, show what it logged. The slate's own
+        // clean-up (finishing a take) can land after this screen reappears,
+        // so it also says when it has closed.
         .onAppear { model.refreshSlateSummary() }
+        .onReceive(NotificationCenter.default.publisher(for: SlateStore.didClose)) { note in
+            if note.object as? String == project.id { model.refreshSlateSummary() }
+        }
         .navigationDestination(for: ProjectRoute.self) { route in
             destination(for: route)
         }

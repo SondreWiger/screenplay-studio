@@ -736,6 +736,7 @@ struct SlateLogView: View {
     @State private var editingTake: SlateTake?
     @State private var sharedFile: SharedFile?
     @State private var isConfirmingClear = false
+    @State private var exportError: String?
 
     private var filtered: [SlateTake] {
         let term = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -839,7 +840,8 @@ struct SlateLogView: View {
                             do {
                                 sharedFile = SharedFile(url: try model.exportCSV())
                             } catch {
-                                model.notice = error.localizedDescription
+                                // The slate's own alert is under this sheet.
+                                exportError = error.localizedDescription
                             }
                         } label: {
                             Label("Export CSV…", systemImage: "square.and.arrow.up")
@@ -873,6 +875,12 @@ struct SlateLogView: View {
             } message: {
                 Text("The takes are removed from this device and from the camera and sound reports. Export the log first to keep a copy.")
             }
+            .alert(
+                "Couldn’t export the log",
+                isPresented: Binding(get: { exportError != nil }, set: { if !$0 { exportError = nil } }),
+                actions: { Button("OK", role: .cancel) { exportError = nil } },
+                message: { Text(exportError ?? "") }
+            )
             .sheet(item: $editingTake) { take in
                 TakeEditSheet(model: model, take: take)
             }

@@ -152,10 +152,17 @@ struct SlateView: View {
                     Label("Next sound roll (\(SlateViewModel.increment(model.state.soundRoll)))", systemImage: "waveform")
                 }
                 Divider()
-                Button(role: .destructive) { model.undoLastMark() } label: {
-                    Label("Undo last mark", systemImage: "arrow.uturn.backward")
+                Button {
+                    Haptics.selectionChanged()
+                    model.isTailMode.toggle()
+                } label: {
+                    Label(model.isTailMode ? "Cancel tail slate" : "Tail slate the next take", systemImage: "arrow.uturn.down")
                 }
-                .disabled(model.takes.isEmpty)
+                .disabled(model.phase != .ready)
+                Button(role: .destructive) { model.undoLastMark() } label: {
+                    Label(model.takes.first.map { "Undo last mark (\($0.label))" } ?? "Undo last mark", systemImage: "arrow.uturn.backward")
+                }
+                .disabled(!model.canUndoMark)
             } label: {
                 Image(systemName: "ellipsis.circle").tappableArea()
             }
@@ -181,7 +188,9 @@ struct SlateView: View {
                 BoardSticks(isClosed: model.sticksClosed || model.state.kind == .mos)
                     .frame(height: 40)
                 VStack(spacing: 8) {
-                    TimelineView(.animation) { _ in
+                    // Paused under the full-screen board: no point drawing it
+                    // there, and the main thread is what times the clap.
+                    TimelineView(.animation(minimumInterval: nil, paused: isShowingBoard)) { _ in
                         let tc = model.frozenTimecode ?? model.timecode(at: SlateClock.now())
                         LEDTimecode(text: tc.formatted(model.state.frameRate), frozen: model.frozenTimecode != nil)
                             .frame(height: 64)
