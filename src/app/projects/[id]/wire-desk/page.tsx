@@ -9,6 +9,7 @@ import type {
   BroadcastWireFeed, BroadcastWireStory, BroadcastWireFeedType, BroadcastWirePriority,
 } from '@/lib/types';
 import { BROADCAST_WIRE_PRIORITY_OPTIONS } from '@/lib/types';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 // Wire Desk — Real wire feed ingestion, management, and browse
 
@@ -405,7 +406,7 @@ export default function WireDeskPage({ params }: { params: { id: string } }) {
                 <div className="text-[11px] font-medium text-surface-500 uppercase mb-1">Full Text</div>
                 <div
                   className="text-sm text-surface-300 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: selectedStory.body }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedStory.body) }}
                 />
               </div>
             )}

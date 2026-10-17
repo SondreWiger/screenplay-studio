@@ -1,245 +1,29 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Badge, EmptyState, LoadingSpinner } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import type { Shot, Scene } from '@/lib/types';
+import type { Scene } from '@/lib/types';
 import { PageTitle } from '@/components/projects/PageTitle';
-import { StoryboardSequenceStudio, flattenLayersToStrokes } from '@/components/storyboard/StoryboardSequenceStudio';
+import { hasDrawing, type ShotWithStoryboard } from '@/components/storyboard/engine';
+import { StoryboardThumb } from '@/components/storyboard/StoryboardThumb';
 
-// Types
-interface Point {
-  x: number;
-  y: number;
-  pressure?: number;
-  tiltX?: number;
-  tiltY?: number;
-}
-
-interface Stroke {
-  points: Point[];
-  color: string;
-  width: number;
-  tool: 'pen' | 'marker' | 'eraser';
-  pressureSensitive?: boolean;
-}
-
-interface ReferenceImage {
-  url: string;
-  label?: string;
-}
-
-// Extended Shot with storyboard data
-interface ShotWithStoryboard extends Shot {
-  storyboard_drawing?: Stroke[];
-  storyboard_references?: ReferenceImage[];
-  storyboard_notes?: string;
-}
-
-// Drawing Utilities & Canvas Helpers
-function hexToRgba(hex: string, alpha: number): string {
-  if (!hex || !hex.startsWith('#')) return hex;
-  const h = hex.replace('#', '');
-  if (h.length === 3) {
-    const r = parseInt(h[0] + h[0], 16);
-    const g = parseInt(h[1] + h[1], 16);
-    const b = parseInt(h[2] + h[2], 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  }
-  if (h.length === 6) {
-    const r = parseInt(h.substring(0, 2), 16);
-    const g = parseInt(h.substring(2, 4), 16);
-    const b = parseInt(h.substring(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  }
-  return hex;
-}
-
-function getPressureWidth(baseWidth: number, pressure = 0.5, isPressureSensitive = true): number {
-  if (!isPressureSensitive) return baseWidth;
-  // Natural response curve for Apple Pencil pressure digitizer
-  const p = Math.max(0.04, Math.min(1, pressure));
-  const factor = 0.28 + 1.25 * Math.pow(p, 0.85);
-  return Math.max(1, baseWidth * factor);
-}
-
-function renderStrokes(
-  ctx: CanvasRenderingContext2D,
-  allStrokes: Stroke[],
-  targetWidth: number,
-  targetHeight: number,
-  baseWidth = 640,
-  baseHeight = 360,
-  options?: {
-    showGrid?: boolean;
-    dpr?: number;
-  }
-) {
-  const dpr = options?.dpr ?? 1;
-  ctx.save();
-  ctx.clearRect(0, 0, targetWidth * dpr, targetHeight * dpr);
-  ctx.scale((targetWidth / baseWidth) * dpr, (targetHeight / baseHeight) * dpr);
-
-  // Cinematic Rule of Thirds & Center Framing Grid
-  if (options?.showGrid) {
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
-    ctx.lineWidth = 1;
-    for (let x = 0; x < baseWidth; x += 40) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, baseHeight); ctx.stroke();
-    }
-    for (let y = 0; y < baseHeight; y += 40) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(baseWidth, y); ctx.stroke();
-    }
-
-    // Rule of Thirds
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([6, 6]);
-    ctx.beginPath(); ctx.moveTo(0, baseHeight / 3); ctx.lineTo(baseWidth, baseHeight / 3); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, (baseHeight * 2) / 3); ctx.lineTo(baseWidth, (baseHeight * 2) / 3); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(baseWidth / 3, 0); ctx.lineTo(baseWidth / 3, baseHeight); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo((baseWidth * 2) / 3, 0); ctx.lineTo((baseWidth * 2) / 3, baseHeight); ctx.stroke();
-
-    // Center crosshair
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
-    ctx.setLineDash([3, 3]);
-    ctx.beginPath(); ctx.moveTo(baseWidth / 2, 0); ctx.lineTo(baseWidth / 2, baseHeight); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, baseHeight / 2); ctx.lineTo(baseWidth, baseHeight / 2); ctx.stroke();
-    ctx.setLineDash([]);
-  }
-
-  // Draw strokes
-  for (const stroke of allStrokes) {
-    if (!stroke.points || stroke.points.length === 0) continue;
-
-    const isEraser = stroke.tool === 'eraser';
-    const isMarker = stroke.tool === 'marker';
-
-    ctx.globalCompositeOperation = isEraser ? 'destination-out' : 'source-over';
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    const strokeColor = isEraser
-      ? 'rgba(0,0,0,1)'
-      : isMarker
-      ? hexToRgba(stroke.color, 0.35)
-      : stroke.color;
-
-    ctx.strokeStyle = strokeColor;
-    ctx.fillStyle = strokeColor;
-
-    // Single point (tap, dot, stipple)
-    if (stroke.points.length === 1) {
-      const p = stroke.points[0];
-      const pr = p.pressure ?? 0.5;
-      const width = isEraser
-        ? stroke.width
-        : getPressureWidth(stroke.width, pr, stroke.pressureSensitive !== false);
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, Math.max(1, width / 2), 0, Math.PI * 2);
-      ctx.fill();
-      continue;
-    }
-
-    // Multi-point stroke
-    const hasPressureVariation =
-      stroke.pressureSensitive !== false &&
-      !isEraser &&
-      stroke.points.some(pt => pt.pressure !== undefined && Math.abs(pt.pressure - 0.5) > 0.04);
-
-    if (hasPressureVariation) {
-      // Dynamic pressure line segments
-      for (let i = 0; i < stroke.points.length - 1; i++) {
-        const p1 = stroke.points[i];
-        const p2 = stroke.points[i + 1];
-        const pr = ((p1.pressure ?? 0.5) + (p2.pressure ?? 0.5)) / 2;
-        ctx.lineWidth = getPressureWidth(stroke.width, pr, true);
-        ctx.beginPath();
-        ctx.moveTo(p1.x, p1.y);
-        ctx.lineTo(p2.x, p2.y);
-        ctx.stroke();
-      }
-    } else {
-      // Smooth vector-like line using quadratic Bezier curve
-      ctx.lineWidth = stroke.width;
-      ctx.beginPath();
-      ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
-
-      if (stroke.points.length > 2) {
-        for (let i = 1; i < stroke.points.length - 1; i++) {
-          const xc = (stroke.points[i].x + stroke.points[i + 1].x) / 2;
-          const yc = (stroke.points[i].y + stroke.points[i + 1].y) / 2;
-          ctx.quadraticCurveTo(stroke.points[i].x, stroke.points[i].y, xc, yc);
-        }
-        const last = stroke.points[stroke.points.length - 1];
-        const prev = stroke.points[stroke.points.length - 2];
-        ctx.quadraticCurveTo(prev.x, prev.y, last.x, last.y);
-      } else {
-        ctx.lineTo(stroke.points[1].x, stroke.points[1].y);
-      }
-      ctx.stroke();
-    }
-  }
-
-  ctx.restore();
-}
-
-// Shot Thumbnail
-function ShotThumbnail({ shot, size }: { shot: ShotWithStoryboard; size: 'sm' | 'md' | 'lg' }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const W = 320;
-  const H = 180;
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    const drawing = shot.storyboard_drawing;
-    let strokesToRender: any[] = [];
-    if (Array.isArray(drawing) && drawing.length > 0) {
-      if ('strokes' in drawing[0]) {
-        strokesToRender = flattenLayersToStrokes(drawing as any);
-      } else {
-        strokesToRender = drawing;
-      }
-    }
-    renderStrokes(ctx, strokesToRender, W, H, 640, 360, { showGrid: false });
-  }, [shot.storyboard_drawing]);
-
-  const h = size === 'sm' ? 'h-20' : size === 'md' ? 'h-32' : 'h-44';
-
-  // Show storyboard_url image
-  if (shot.storyboard_url) return (
-    <div className={cn('relative bg-surface-900 flex items-center justify-center', h)}>
-      <img src={shot.storyboard_url} alt={`Shot ${shot.shot_number}`} className="w-full h-full object-cover" loading="lazy" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+// The studio is large and only needed once someone starts drawing — load it on demand.
+const loadStudio = () => import('@/components/storyboard/StoryboardSequenceStudio');
+const StoryboardSequenceStudio = dynamic(() => loadStudio().then((m) => m.StoryboardSequenceStudio), {
+  ssr: false,
+  loading: () => (
+    <div className="fixed inset-y-0 right-0 left-0 md:left-[var(--sidebar-width,3.5rem)] z-30 flex items-center justify-center bg-surface-950">
+      <LoadingSpinner />
     </div>
-  );
+  ),
+});
 
-  // Show drawing
-  const hasDrawing = Array.isArray(shot.storyboard_drawing) && shot.storyboard_drawing.length > 0;
-  if (hasDrawing) return (
-    <div className={cn('relative bg-surface-900', h)}>
-      <canvas ref={canvasRef} width={W} height={H} className="w-full h-full" />
-    </div>
-  );
+type ViewSize = 'sm' | 'md' | 'lg';
 
-  // Empty placeholder
-  return (
-    <div className={cn('relative bg-surface-900 flex items-center justify-center', h)}>
-      <div className="text-center text-surface-700">
-        <svg className="w-7 h-7 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        {size !== 'sm' && <p className="text-[11px] mt-1">No storyboard</p>}
-      </div>
-    </div>
-  );
-}
-
-// Main
 export default function StoryboardPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
   const { members, currentProject } = useProjectStore();
@@ -248,115 +32,130 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [shots, setShots] = useState<ShotWithStoryboard[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [filterScene, setFilterScene] = useState('all');
-  const [viewSize, setViewSize] = useState<'sm' | 'md' | 'lg'>('md');
+  const [viewSize, setViewSize] = useState<ViewSize>('md');
+  const [studioShotId, setStudioShotId] = useState<string | null>(null);
 
-  // Editor state
-  const [editShot, setEditShot] = useState<ShotWithStoryboard | null>(null);
-  const [isStudioOpen, setIsStudioOpen] = useState(false);
-
-  useEffect(() => { fetchData(); }, [params.id]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
+    setLoadError(false);
     try {
       const supabase = createClient();
       const [scenesRes, shotsRes] = await Promise.all([
         supabase.from('scenes').select('*').eq('project_id', params.id).order('sort_order'),
         supabase.from('shots').select('*').eq('project_id', params.id).order('sort_order'),
       ]);
+      if (scenesRes.error || shotsRes.error) throw scenesRes.error || shotsRes.error;
       setScenes(scenesRes.data || []);
-      // Parse storyboard_drawing from JSON if stored
-      const shotsData = (shotsRes.data || []).map((s: any) => ({
-        ...s,
-        storyboard_drawing: s.storyboard_drawing || [],
-        storyboard_references: s.storyboard_references || [],
-        storyboard_notes: s.storyboard_notes || '',
-      }));
-      setShots(shotsData);
-    } catch (err) { 
-      console.error('Storyboard fetch:', err); 
-    } finally { 
-      setLoading(false); 
+      setShots(
+        (shotsRes.data || []).map((s: any) => ({
+          ...s,
+          storyboard_drawing: s.storyboard_drawing || [],
+          storyboard_references: s.storyboard_references || [],
+          storyboard_notes: s.storyboard_notes || '',
+        }))
+      );
+    } catch (err) {
+      console.error('Storyboard fetch:', err);
+      setLoadError(true);
+    } finally {
+      setLoading(false);
     }
+  }, [params.id]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  const openStudio = (shotId: string) => {
+    if (!canEdit) return;
+    setStudioShotId(shotId);
   };
 
-  const openEditor = (shot: ShotWithStoryboard) => {
-    setEditShot(shot);
-    setIsStudioOpen(true);
-  };
+  const patchShot = useCallback((shotId: string, patch: Partial<ShotWithStoryboard>) => {
+    setShots(prev => prev.map(s => (s.id === shotId ? { ...s, ...patch } : s)));
+  }, []);
 
-  // Filter shots by scene
-  const filteredShots = filterScene === 'all' ? shots : shots.filter(s => s.scene_id === filterScene);
-  
-  // Group shots by scene
-  const sceneGroups: { scene: Scene | null; shots: ShotWithStoryboard[] }[] = [];
-  if (filterScene === 'all') {
+  const sceneGroups = useMemo(() => {
+    const filtered = filterScene === 'all' ? shots : shots.filter(s => s.scene_id === filterScene);
+    if (filterScene !== 'all') {
+      return [{ scene: scenes.find(s => s.id === filterScene) || null, shots: filtered }];
+    }
     const grouped = new Map<string, ShotWithStoryboard[]>();
     const noScene: ShotWithStoryboard[] = [];
-    
-    filteredShots.forEach(shot => {
+    for (const shot of filtered) {
       if (shot.scene_id) {
         if (!grouped.has(shot.scene_id)) grouped.set(shot.scene_id, []);
         grouped.get(shot.scene_id)!.push(shot);
       } else {
         noScene.push(shot);
       }
-    });
-    
-    scenes.forEach(scene => {
+    }
+    const groups: { scene: Scene | null; shots: ShotWithStoryboard[] }[] = [];
+    for (const scene of scenes) {
       const g = grouped.get(scene.id);
-      if (g && g.length > 0) sceneGroups.push({ scene, shots: g });
-    });
-    
-    if (noScene.length) sceneGroups.push({ scene: null, shots: noScene });
-  } else {
-    sceneGroups.push({ 
-      scene: scenes.find(s => s.id === filterScene) || null, 
-      shots: filteredShots 
-    });
-  }
+      if (g?.length) groups.push({ scene, shots: g });
+    }
+    if (noScene.length) groups.push({ scene: null, shots: noScene });
+    return groups;
+  }, [shots, scenes, filterScene]);
+
+  const withContent = useMemo(() => shots.filter(s => s.storyboard_url || hasDrawing(s.storyboard_drawing)).length, [shots]);
 
   const gridCols = viewSize === 'sm' ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5'
     : viewSize === 'md' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
     : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
 
-  const withContent = shots.filter(s => s.storyboard_url || s.storyboard_drawing?.length).length;
-
-  if (loading) return <LoadingSpinner className="py-32" />;
+  if (loading) {
+    return (
+      <div className="p-3 sm:p-4 md:p-8 max-w-7xl" aria-busy>
+        <div className="h-7 w-40 rounded-lg bg-surface-900 animate-pulse mb-2" />
+        <div className="h-4 w-56 rounded bg-surface-900 animate-pulse mb-8" />
+        <div className={cn('grid gap-2 sm:gap-3', gridCols)}>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-surface-800 overflow-hidden">
+              <div className="aspect-video bg-surface-900 animate-pulse" />
+              <div className="h-10 bg-surface-950" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-3 sm:p-4 md:p-8 max-w-7xl">
       {/* Header */}
-      <div className="flex flex-col gap-3 mb-5 sm:mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <PageTitle>Storyboard</PageTitle>
-            <p className="text-xs sm:text-sm text-surface-400 mt-1">
-              {shots.length} shot{shots.length !== 1 ? 's' : ''} &middot; {withContent} with storyboard
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {canEdit && shots.length > 0 && (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => {
-                  setEditShot(shots[0] || null);
-                  setIsStudioOpen(true);
-                }}
-                className="gap-1.5 shadow-sm"
-              >
-                <span>🎬</span>
-                <span>Open Sequence Studio</span>
-              </Button>
-            )}
-            <div className="flex bg-surface-900 rounded-lg p-0.5">
-              {(['sm', 'md', 'lg'] as const).map(s => (
-                <button key={s} onClick={() => setViewSize(s)} className={cn('px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors', viewSize === s ? 'bg-surface-700 text-white' : 'text-surface-500 hover:text-white')}>
-                  {s.toUpperCase()}
-                </button>
-              ))}
-            </div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5 sm:mb-6">
+        <div>
+          <PageTitle>Storyboard</PageTitle>
+          <p className="text-xs sm:text-sm text-surface-400 mt-1">
+            {shots.length} shot{shots.length !== 1 ? 's' : ''} &middot; {withContent} with storyboard
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {canEdit && shots.length > 0 && (
+            <Button
+              variant="primary"
+              size="sm"
+              onPointerEnter={() => void loadStudio()}
+              onFocus={() => void loadStudio()}
+              onClick={() => {
+                const first = filterScene === 'all' ? shots[0] : shots.find(s => s.scene_id === filterScene) || shots[0];
+                openStudio(first.id);
+              }}
+              className="gap-1.5 shadow-sm"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487z" />
+              </svg>
+              Open Sequence Studio
+            </Button>
+          )}
+          <div className="flex bg-surface-900 rounded-lg p-0.5" role="group" aria-label="Card size">
+            {(['sm', 'md', 'lg'] as const).map(s => (
+              <button key={s} type="button" onClick={() => setViewSize(s)} aria-pressed={viewSize === s} className={cn('px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors', viewSize === s ? 'bg-surface-700 text-white' : 'text-surface-500 hover:text-white')}>
+                {s.toUpperCase()}
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -375,90 +174,100 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
         </div>
       )}
 
-      {/* Empty state */}
-      {shots.length === 0 && (
-        <EmptyState 
-          title="No shots yet" 
+      {loadError && (
+        <div className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          <span>Couldn&rsquo;t load the storyboard.</span>
+          <Button size="sm" variant="secondary" onClick={() => { setLoading(true); fetchData(); }}>Retry</Button>
+        </div>
+      )}
+
+      {!loadError && shots.length === 0 && (
+        <EmptyState
+          title="No shots yet"
           description="Create shots in the Shot List to build your storyboard. Each shot can have a storyboard drawing or image."
         />
       )}
 
-      {/* Shot groups by scene */}
       {sceneGroups.map((group, gi) => (
-        <div key={gi} className="mb-6 sm:mb-8">
-          {/* Scene header */}
-          {group.scene && (
+        <section key={group.scene?.id || `unassigned-${gi}`} className="mb-6 sm:mb-8">
+          {group.scene ? (
             <div className="flex items-center gap-2 sm:gap-3 mb-3">
-              <span className="text-xs sm:text-sm font-bold text-surface-300 shrink-0">
-                Scene {group.scene.scene_number}
-              </span>
+              <span className="text-xs sm:text-sm font-bold text-surface-300 shrink-0">Scene {group.scene.scene_number}</span>
               <Badge size="sm" variant="info">{group.scene.location_type}</Badge>
               <span className="text-xs text-surface-500 hidden sm:inline truncate">{group.scene.location_name}</span>
               <div className="flex-1 border-t border-surface-800" />
             </div>
-          )}
-          {!group.scene && group.shots.length > 0 && (
+          ) : group.shots.length > 0 && (
             <div className="flex items-center gap-3 mb-3">
               <span className="text-xs sm:text-sm text-surface-500">Unassigned Shots</span>
               <div className="flex-1 border-t border-surface-800" />
             </div>
           )}
-          
-          {/* Shot grid */}
+
           <div className={cn('grid gap-2 sm:gap-3', gridCols)}>
-            {group.shots.map((shot) => (
-              <div 
-                key={shot.id} 
-                onClick={() => canEdit && openEditor(shot)}
-                className={cn(
-                  'group rounded-xl border overflow-hidden transition-colors',
-                  canEdit && 'cursor-pointer hover:border-surface-600',
-                  (shot.storyboard_url || shot.storyboard_drawing?.length) ? 'border-surface-700' : 'border-dashed border-surface-800'
-                )}
-              >
-                <ShotThumbnail shot={shot} size={viewSize} />
-                <div className="p-2 bg-surface-950">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="text-[11px] font-bold text-surface-500 shrink-0">
-                      {shot.shot_number || '#'}
-                    </span>
-                    <Badge size="sm" variant="info" className="text-[11px]">{shot.shot_type.replace('_', ' ')}</Badge>
-                    <Badge size="sm" className="text-[11px]">{shot.shot_movement.replace('_', ' ')}</Badge>
+            {group.shots.map((shot) => {
+              const filled = !!shot.storyboard_url || hasDrawing(shot.storyboard_drawing);
+              const Card = canEdit ? 'button' : 'div';
+              return (
+                <Card
+                  key={shot.id}
+                  {...(canEdit ? { type: 'button' as const, onClick: () => openStudio(shot.id), onPointerEnter: () => void loadStudio() } : {})}
+                  className={cn(
+                    'group block w-full text-left rounded-xl border overflow-hidden transition-colors',
+                    canEdit && 'cursor-pointer hover:border-surface-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
+                    filled ? 'border-surface-700' : 'border-dashed border-surface-800'
+                  )}
+                >
+                  <div className="relative">
+                    <StoryboardThumb
+                      drawing={shot.storyboard_drawing}
+                      imageUrl={shot.storyboard_url}
+                      alt={`Shot ${shot.shot_number || ''}`}
+                      emptyLabel={viewSize === 'sm' ? '' : canEdit ? 'Tap to draw' : 'No storyboard'}
+                    />
+                    {canEdit && (
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-xs font-medium text-white">
+                        {filled ? 'Edit frame' : 'Draw frame'}
+                      </span>
+                    )}
                   </div>
-                  {shot.description && viewSize !== 'sm' && (
-                    <p className="text-[11px] text-surface-500 mt-1 line-clamp-1">{shot.description}</p>
-                  )}
-                  {shot.storyboard_notes && viewSize !== 'sm' && (
-                    <p className="text-[11px] text-surface-500 mt-0.5 line-clamp-1 italic">{shot.storyboard_notes}</p>
-                  )}
-                  {(shot.storyboard_references?.length || 0) > 0 && viewSize !== 'sm' && (
-                    <div className="flex items-center gap-1 mt-1">
-                      <svg className="w-3 h-3 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
-                      </svg>
-                      <span className="text-[11px] text-surface-500">{shot.storyboard_references!.length} ref{shot.storyboard_references!.length > 1 ? 's' : ''}</span>
+                  <div className="p-2 bg-surface-950">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-[11px] font-bold text-surface-500 shrink-0">{shot.shot_number || '#'}</span>
+                      <Badge size="sm" variant="info" className="text-[11px] capitalize">{(shot.shot_type || '').replace(/_/g, ' ')}</Badge>
+                      <Badge size="sm" className="text-[11px] capitalize">{(shot.shot_movement || '').replace(/_/g, ' ')}</Badge>
                     </div>
-                  )}
-                </div>
-              </div>
-            ))}
+                    {shot.description && viewSize !== 'sm' && (
+                      <p className="text-[11px] text-surface-500 mt-1 line-clamp-1">{shot.description}</p>
+                    )}
+                    {shot.storyboard_notes && viewSize !== 'sm' && (
+                      <p className="text-[11px] text-surface-500 mt-0.5 line-clamp-1 italic">{shot.storyboard_notes}</p>
+                    )}
+                    {(shot.storyboard_references?.length || 0) > 0 && viewSize !== 'sm' && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <svg className="w-3 h-3 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
+                        </svg>
+                        <span className="text-[11px] text-surface-500">{shot.storyboard_references!.length} ref{shot.storyboard_references!.length > 1 ? 's' : ''}</span>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
           </div>
-        </div>
+        </section>
       ))}
 
-      {/* ── Storyboard Sequence Studio ────────────────────────── */}
-      {isStudioOpen && (
+      {studioShotId && (
         <StoryboardSequenceStudio
-          isOpen={isStudioOpen}
-          onClose={() => {
-            setIsStudioOpen(false);
-            setEditShot(null);
-          }}
+          isOpen
+          onClose={() => setStudioShotId(null)}
           projectId={params.id}
-          initialShotId={editShot?.id}
+          initialShotId={studioShotId}
           scenes={scenes}
           allShots={shots}
-          onShotsUpdated={(updated) => setShots(updated)}
+          onShotPatched={patchShot}
         />
       )}
     </div>

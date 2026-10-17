@@ -10,6 +10,7 @@ import { replaceScriptElements } from '@/lib/scripts/replace-elements';
 import { isCharacterCue } from '@/lib/scripts/cues';
 import { SaveStatus } from '@/components/SaveStatus';
 import { flushSyncQueue, getSyncStatus } from '@/lib/offline/queue';
+import { sanitizeInlineHtml } from '@/lib/sanitize-html';
 import { useScriptStore, useAuthStore, usePresenceStore } from '@/lib/stores';
 import { useProjectStore } from '@/lib/stores';
 import { usePlaybackStore } from '@/lib/playbackStore';
@@ -175,9 +176,9 @@ const haptic = () => {
 // Strip HTML tags — used for length-based page/word count (content may now contain <b>/<i>/<u>)
 const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '');
 
-// Sanitise rich-text content: keep only safe formatting tags, strip everything else
-const sanitizeContentHtml = (html: string) =>
-  html.replace(/<(?!\/?(?:b|i|u|s|strong|em|br)\b)[^>]+>/gi, '');
+// Sanitise rich-text content: keep only safe formatting tags, strip everything else.
+// (The old regex kept attributes on allowed tags, so <b onanimationstart=…> ran.)
+const sanitizeContentHtml = sanitizeInlineHtml;
 
 // Modern replacement for document.execCommand() — wraps selection in formatting tags
 function applyTextFormatting(command: 'bold' | 'italic' | 'underline' | 'strikethrough' | 'removeFormat') {
@@ -2976,7 +2977,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       requestAnimationFrame(() => {
                         const div = document.getElementById(`el-${elId}`);
                         if (div) {
-                          div.innerHTML = newContent;
+                          div.innerHTML = sanitizeContentHtml(newContent);
                           div.focus();
                           const sel = window.getSelection();
                           const range = document.createRange();
@@ -3011,7 +3012,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       requestAnimationFrame(() => {
                         const div = document.getElementById(`el-${elId}`);
                         if (div) {
-                          div.innerHTML = newContent;
+                          div.innerHTML = sanitizeContentHtml(newContent);
                           div.focus();
                           const sel = window.getSelection();
                           const range = document.createRange();
@@ -3061,7 +3062,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     <span className="font-mono text-xs font-bold text-surface-500">
                       {comicNumberMap[el.id]}
                     </span>
-                    <span className="truncate" dangerouslySetInnerHTML={{ __html: el.content || (el.element_type === 'comic_page' ? 'Untitled Page' : 'Untitled Panel') }} />
+                    <span className="truncate" dangerouslySetInnerHTML={{ __html: sanitizeContentHtml(el.content || '') || (el.element_type === 'comic_page' ? 'Untitled Page' : 'Untitled Panel') }} />
                   </button>
                 ))
               ) : (
@@ -3071,7 +3072,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     setShowSceneJump(false);
                   }} className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-surface-300 hover:bg-surface-800 active:bg-surface-700 transition-colors flex items-center gap-2 min-h-[44px]">
                     <span className="text-brand-500 font-mono text-xs font-bold">{sceneNumberMap[el.id] ?? i + 1}</span>
-                    <span className="truncate" dangerouslySetInnerHTML={{ __html: el.content || 'Untitled Scene' }} />
+                    <span className="truncate" dangerouslySetInnerHTML={{ __html: sanitizeContentHtml(el.content || '') || 'Untitled Scene' }} />
                   </button>
                 ))
               )}

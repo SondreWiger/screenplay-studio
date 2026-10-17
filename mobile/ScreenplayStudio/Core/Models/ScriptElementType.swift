@@ -374,10 +374,17 @@ enum ScriptElementType: Hashable, Codable {
         .parenthetical, .transition, .shot, .note,
     ]
 
-    /// Next type when cycling with the toolbar's cycle button.
+    /// Next type when cycling with the toolbar's cycle button or Tab.
     var nextInCycle: ScriptElementType {
         let cycle = Self.standardCycle
         guard let index = cycle.firstIndex(of: self) else { return .action }
         return cycle[(index + 1) % cycle.count]
+    }
+
+    /// The type before this one — Shift-Tab.
+    var previousInCycle: ScriptElementType {
+        let cycle = Self.standardCycle
+        guard let index = cycle.firstIndex(of: self) else { return .action }
+        return cycle[(index + cycle.count - 1) % cycle.count]
     }
 }

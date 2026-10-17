@@ -4,6 +4,7 @@ import { planningTools } from './planning';
 import { projectTools } from './projects';
 import { recordTools } from './records';
 import { scriptTools } from './scripts';
+import { storyboardTools } from './storyboard';
 import { teamTools } from './team';
 
 /** Every tool, in the order clients list them. */
@@ -11,6 +12,7 @@ export const TOOLS: ToolDef[] = [
   ...projectTools,
   ...scriptTools,
   ...planningTools,
+  ...storyboardTools,
   ...recordTools,
   ...teamTools,
   ...adminTools,

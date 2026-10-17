@@ -15,11 +15,11 @@ struct ScriptEditorView: View {
     @EnvironmentObject private var settings: AppSettings
     @StateObject private var model: EditorViewModel
 
-    @State private var elementHeights: [String: CGFloat] = [:]
     @State private var isShowingSceneList = false
     @State private var isShowingStats = false
-    /// Page width measured once, used to convert margin fractions to points.
-    @State private var pageWidth: CGFloat = 0
+    /// Width of the scroll view, measured; everything about the page's
+    /// geometry follows from it.
+    @State private var containerWidth: CGFloat = 0
 
     init(projectID: String, scriptID: String, scriptTitle: String) {
         self.projectID = projectID
@@ -35,6 +35,22 @@ struct ScriptEditorView: View {
         13 * settings.clampedEditorScale
     }
 
+    /// 6.5 inches of Courier at the editor's size: the live area of a real
+    /// screenplay page.
+    private var fullPageWidth: CGFloat { fontSize * 39 }
+
+    /// Room for a whole page with margins round it — an iPad, or a large
+    /// phone in landscape. Then the script is laid out as a page, with the
+    /// real margins; narrower than that it fills the screen with compressed
+    /// ones.
+    private var showsPage: Bool {
+        containerWidth >= fullPageWidth + fontSize * 9 + 48
+    }
+
+    private var pageWidth: CGFloat {
+        showsPage ? fullPageWidth : max(0, containerWidth - 36)
+    }
+
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
@@ -43,10 +59,9 @@ struct ScriptEditorView: View {
                         ElementRow(
                             element: element,
                             pageWidth: pageWidth,
+                            marginScale: showsPage ? 1 : 0.55,
                             fontSize: fontSize,
                             isFocused: model.focusedElementID == element.id,
-                            height: elementHeights[element.id] ?? fontSize * 1.6,
-                            onHeightChange: { elementHeights[element.id] = $0 },
                             onTextChange: { model.updateContent($0, for: element.id) },
                             onReturn: { model.insertElement(after: element.id) },
                             onBackspaceAtStart: { model.mergeBackwards(from: element.id) },
@@ -59,40 +74,58 @@ struct ScriptEditorView: View {
                             onChangeType: { model.changeType($0, for: element.id) },
                             onDelete: { model.delete(id: element.id) }
                         )
+                        .equatable()
                         .id(element.id)
                     }
 
                     // Tapping the space under the last line adds a new one, the
-                    // way tapping below the text does in a notes app.
-                    Button {
-                        if let last = model.elements.last, last.isEmpty {
-                            model.focusedElementID = last.id
-                        } else {
-                            model.appendElement(type: .action)
-                        }
-                    } label: {
-                        Color.clear
-                            .frame(height: 140)
-                            .contentShape(.rect)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Add a line at the end")
-                }
-                .padding(.horizontal, 18)
-                .padding(.top, 12)
-                .background(
-                    GeometryReader { geometry in
-                        Color.clear
-                            .onAppear { pageWidth = geometry.size.width - 36 }
-                            .onChange(of: geometry.size.width) { _, width in
-                                pageWidth = width - 36
+                    // way tapping below the text does in a notes app. Hidden
+                    // until the script has loaded, so a failed load can't be
+                    // "fixed" by typing into what looks like an empty script.
+                    if !model.elements.isEmpty {
+                        Button {
+                            if let last = model.elements.last, last.isEmpty {
+                                model.focusedElementID = last.id
+                            } else {
+                                model.appendElement(type: .action)
                             }
+                        } label: {
+                            Color.clear
+                                .frame(height: 140)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Add a line at the end")
                     }
-                )
+                }
+                .frame(width: showsPage ? pageWidth : nil)
+                .padding(.horizontal, showsPage ? fontSize * 4.5 : 18)
+                .padding(.top, showsPage ? fontSize * 3 : 12)
+                .background {
+                    if showsPage {
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(Theme.Surface.s900)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                    .strokeBorder(Theme.border, lineWidth: 1)
+                            )
+                    }
+                }
+                .padding(.vertical, showsPage ? 24 : 0)
+                .frame(maxWidth: .infinity)
             }
+            .background(
+                GeometryReader { geometry in
+                    Color.clear
+                        .onAppear { containerWidth = geometry.size.width }
+                        .onChange(of: geometry.size.width) { width in
+                            containerWidth = width
+                        }
+                }
+            )
             .scrollDismissesKeyboard(.interactively)
             .background(Theme.background)
-            .onChange(of: model.focusedElementID) { _, id in
+            .onChange(of: model.focusedElementID) { id in
                 guard let id else { return }
                 withAnimation(.easeOut(duration: 0.2)) {
                     proxy.scrollTo(id, anchor: .center)
@@ -101,6 +134,8 @@ struct ScriptEditorView: View {
             .overlay {
                 if model.isLoading && model.elements.isEmpty {
                     ProgressView().tint(Theme.textTertiary)
+                } else if let error = model.errorMessage, model.elements.isEmpty {
+                    ErrorStateView(message: error) { Task { await model.retry() } }
                 }
             }
         }
@@ -249,13 +284,13 @@ struct ScriptEditorView: View {
 
 // MARK: - Element row
 
-private struct ElementRow: View {
+private struct ElementRow: View, Equatable {
     let element: ScriptElement
     let pageWidth: CGFloat
+    /// 1 on a full page; less where the screen is too narrow for real margins.
+    let marginScale: CGFloat
     let fontSize: CGFloat
     let isFocused: Bool
-    let height: CGFloat
-    let onHeightChange: (CGFloat) -> Void
     let onTextChange: (String) -> Void
     let onReturn: () -> Void
     let onBackspaceAtStart: () -> Void
@@ -264,21 +299,61 @@ private struct ElementRow: View {
     let onChangeType: (ScriptElementType) -> Void
     let onDelete: () -> Void
 
-    @State private var text: String = ""
+    @State private var text: String
+
+    init(
+        element: ScriptElement,
+        pageWidth: CGFloat,
+        marginScale: CGFloat,
+        fontSize: CGFloat,
+        isFocused: Bool,
+        onTextChange: @escaping (String) -> Void,
+        onReturn: @escaping () -> Void,
+        onBackspaceAtStart: @escaping () -> Void,
+        onFocus: @escaping () -> Void,
+        onBlur: @escaping () -> Void,
+        onChangeType: @escaping (ScriptElementType) -> Void,
+        onDelete: @escaping () -> Void
+    ) {
+        self.element = element
+        self.pageWidth = pageWidth
+        self.marginScale = marginScale
+        self.fontSize = fontSize
+        self.isFocused = isFocused
+        self.onTextChange = onTextChange
+        self.onReturn = onReturn
+        self.onBackspaceAtStart = onBackspaceAtStart
+        self.onFocus = onFocus
+        self.onBlur = onBlur
+        self.onChangeType = onChangeType
+        self.onDelete = onDelete
+        // Seeded here rather than in `onAppear`, so a row is laid out once with
+        // its text instead of empty and then again.
+        _text = State(initialValue: element.content)
+    }
+
+    /// Rows compare on what they draw. The closures are rebuilt on every
+    /// editor redraw but only ever act on this row's id, so leaving them out
+    /// lets SwiftUI skip every line a keystroke didn't touch.
+    static func == (lhs: ElementRow, rhs: ElementRow) -> Bool {
+        lhs.element == rhs.element
+            && lhs.pageWidth == rhs.pageWidth
+            && lhs.marginScale == rhs.marginScale
+            && lhs.fontSize == rhs.fontSize
+            && lhs.isFocused == rhs.isFocused
+    }
 
     /// Full screenplay margins are unreadable on a 390pt screen — a character
-    /// cue would start two-thirds of the way across. They're compressed to 55%
-    /// so the shape of the page survives without squeezing dialogue into a
-    /// column three words wide. This matches what the web app does at its
-    /// mobile breakpoint.
-    private static let marginCompression: CGFloat = 0.55
-
+    /// cue would start two-thirds of the way across. On a phone they're
+    /// compressed (`marginScale` 0.55) so the shape of the page survives
+    /// without squeezing dialogue into a column three words wide, matching
+    /// the web app's mobile breakpoint. With room for a page they're real.
     private var leadingInset: CGFloat {
-        pageWidth * element.elementType.leadingFraction * Self.marginCompression
+        pageWidth * element.elementType.leadingFraction * marginScale
     }
 
     private var trailingInset: CGFloat {
-        pageWidth * element.elementType.trailingFraction * Self.marginCompression
+        pageWidth * element.elementType.trailingFraction * marginScale
     }
 
     var body: some View {
@@ -314,12 +389,11 @@ private struct ElementRow: View {
                         elementType: element.elementType,
                         fontSize: fontSize,
                         isFocused: isFocused,
-                        onHeightChange: onHeightChange,
                         onReturn: onReturn,
                         onBackspaceAtStart: onBackspaceAtStart,
-                        onFocusChange: { $0 ? onFocus() : onBlur() }
+                        onFocusChange: { $0 ? onFocus() : onBlur() },
+                        onSetType: onChangeType
                     )
-                    .frame(height: height)
                 }
             }
             .padding(.leading, leadingInset)
@@ -362,11 +436,10 @@ private struct ElementRow: View {
                 Label("Delete line", systemImage: "trash")
             }
         }
-        .onAppear { text = element.content }
-        .onChange(of: element.content) { _, newValue in
+        .onChange(of: element.content) { newValue in
             if newValue != text { text = newValue }
         }
-        .onChange(of: text) { _, newValue in
+        .onChange(of: text) { newValue in
             onTextChange(newValue)
         }
         .accessibilityElement(children: .contain)

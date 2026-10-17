@@ -166,7 +166,7 @@ struct SectionHeader: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Theme.accent)
                 .frame(minHeight: Theme.minTouchTarget)
-                .contentShape(.rect)
+                .contentShape(Rectangle())
             }
         }
         .accessibilityElement(children: .contain)
@@ -383,11 +383,28 @@ extension View {
     /// that the whole area — not just the glyph — responds to a tap.
     func tappableArea(_ size: CGFloat = Theme.minTouchTarget) -> some View {
         frame(minWidth: size, minHeight: size)
-            .contentShape(.rect)
+            .contentShape(Rectangle())
     }
 
-    /// Standard horizontal inset for full-width screens.
-    func screenPadding() -> some View {
+    /// Standard horizontal inset for full-width screens, centred within a
+    /// readable width on an iPad.
+    func screenPadding(maxWidth: CGFloat = Theme.readableWidth) -> some View {
         padding(.horizontal, Theme.screenPadding)
+            .frame(maxWidth: maxWidth)
+            .frame(maxWidth: .infinity)
+    }
+
+    /// Reports this view's width into `width` as it changes — for `List`s,
+    /// which take their side margins from row insets rather than a frame.
+    func measuringWidth(_ width: Binding<CGFloat>) -> some View {
+        background(
+            GeometryReader { geometry in
+                Color.clear
+                    .onAppear { width.wrappedValue = geometry.size.width }
+                    .onChange(of: geometry.size.width) { newWidth in
+                        width.wrappedValue = newWidth
+                    }
+            }
+        )
     }
 }

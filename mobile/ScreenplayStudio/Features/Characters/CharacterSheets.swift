@@ -43,7 +43,7 @@ struct NewCharacterSheet: View {
                         }
                         .tint(Theme.accent)
                         .frame(minHeight: Theme.minTouchTarget)
-                        .onChange(of: isMain) { _, _ in Haptics.selectionChanged() }
+                        .onChange(of: isMain) { _ in Haptics.selectionChanged() }
                     }
 
                     VStack(alignment: .leading, spacing: 6) {

@@ -38,26 +38,45 @@ enum ScriptService {
 
     // MARK: - Elements
 
+    /// Every element of a script, in page order.
+    ///
+    /// PostgREST stops at the project's max-rows (1000 by default) without
+    /// saying so, and a feature script runs past that — so this pages until a
+    /// short page comes back, like `fetchAll` on the web. The `id` tie-breaker
+    /// keeps rows sharing a `sort_order` from repeating or vanishing between
+    /// pages.
     static func fetchElements(scriptID: String) async throws -> [ScriptElement] {
-        let query = PostgrestQuery("script_elements")
-            .select()
-            .eq("script_id", scriptID)
-            .order("sort_order")
-        return try await Supabase.shared.execute(query)
+        let pageSize = 1000
+        var rows: [ScriptElement] = []
+        while true {
+            let query = PostgrestQuery("script_elements")
+                .select()
+                .eq("script_id", scriptID)
+                .order("sort_order")
+                .order("id")
+                .range(from: rows.count, to: rows.count + pageSize - 1)
+            let page: [ScriptElement] = try await Supabase.shared.execute(query)
+            rows += page
+            if page.count < pageSize { return rows }
+        }
     }
 
+    /// Creates the element — as an upsert on its id, so a retry after a
+    /// response that never arrived (the row was written, the reply lost)
+    /// lands on the same row instead of failing on a duplicate key.
     static func insert(_ element: ScriptElement, createdBy: String?) async throws {
         let payload = [ScriptElementInsert(element: element, createdBy: createdBy)]
-        let query = try PostgrestQuery("script_elements").insert(payload, returning: false)
+        let query = try PostgrestQuery("script_elements").upsert(payload, onConflict: "id", returning: false)
         try await Supabase.shared.executeIgnoringResult(query)
     }
 
-    /// Queued variant used when the write happens offline.
+    /// Queued variant used when the write happens offline. Also an upsert,
+    /// for the same reason: a replay can follow a drain whose reply was lost.
     static func queueInsert(_ element: ScriptElement, createdBy: String?) async {
         let payload = [ScriptElementInsert(element: element, createdBy: createdBy)]
         guard let data = try? JSONEncoder.supabase.encode(payload) else { return }
         await SyncQueue.shared.enqueue(
-            PendingMutation(table: "script_elements", kind: .insert, payload: data)
+            PendingMutation(table: "script_elements", kind: .upsert, payload: data)
         )
     }
 
@@ -102,7 +121,7 @@ enum ScriptService {
             let script_id: String
             let element_type: String
             let content: String
-            let sort_order: Int
+            let sort_order: Double
         }
         let payload = elements.map {
             OrderPatch(

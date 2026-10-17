@@ -22,6 +22,7 @@ Screenplay Studio is a screenwriting and pre-production app. Its MCP server lets
 | Scripts | `list_scripts`, `create_script`, `update_script`, `read_script`, `write_script`, `edit_script`, `find_replace`, `script_stats`, `export_script` |
 | Drafts | `save_draft`, `list_drafts`, `restore_draft` |
 | Story planning | `get_beat_sheet`, `update_beat_sheet`, `get_arc_map`, `update_arc_map`, `sync_scenes` |
+| Storyboards | `draw_storyboard` |
 | Everything else | `describe_kinds`, `list_records`, `get_record`, `create_records`, `update_records`, `delete_records` |
 | Team | `list_members`, `add_member`, `update_member`, `remove_member`, `read_messages`, `send_message` |
 | Platform admin | `admin_stats`, `admin_find_users`, `admin_get_user`, `admin_update_user`, `admin_moderate_user`, `admin_reply_ticket`, `admin_notify` |
@@ -80,7 +81,7 @@ Follow this order; each step feeds the next by id.
 
 1. `sync_scenes` — one breakdown row (kind `scenes`) per scene heading, with INT/EXT, location and time of day.
 2. Read the script and fill the breakdown with `update_records` on `scenes`: `synopsis`, `cast_ids` (character ids), `props`, `costumes`, `special_effects`, `vehicles`, `stunts`, `vfx_notes`, `page_count`, `estimated_duration_minutes`. Create missing `characters` / `locations` first so you can link them (`location_id`).
-3. `shots` per scene (`scene_id`, `shot_type`, `shot_movement`, `lens`, `description`), then `storyboard` frames if wanted.
+3. `shots` per scene (`scene_id`, `shot_type`, `shot_movement`, `lens`, `description`), then sketch frames with `draw_storyboard { shot_id, shapes }`: the Storyboard page shows each shot's drawing. Canvas 640 x 360, y down; set on layer `bg`, people (`figure`) on `char`, camera `arrow`s on `cam`; frame it like the shot type. No text: captions go in `notes`. The `storyboard` kind is a separate frame list that the Storyboard page does not show.
 4. Scheduling: `shoot_days` (day_number, date, call/wrap time), then `shoot_day_scenes` and `shoot_day_cast` for each day. Group by location and time of day, keep actor days contiguous, put exteriors early. Calendar events go in `schedule`; `day_out_of_days` tracks who works which day.
 5. `call_sheets`, `gear`, `safety` (stunts, water, heights, vehicles, pyrotechnics → risk level and mitigation), `continuity`, `camera_reports`, timed `table_reads`.
 6. `budget` lines by category with `estimated_amount`; `actual_amount` as money is spent. Pro productions also have `pro_tool_records` (accounting, clearances, deliverables, ...) — `describe_kinds { kind: "pro_tool_records" }` lists each tool's fields.

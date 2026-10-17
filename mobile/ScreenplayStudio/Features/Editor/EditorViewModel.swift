@@ -36,8 +36,11 @@ final class EditorViewModel: ObservableObject {
     /// Elements created locally that the server hasn't acknowledged yet.
     private var pendingInserts: [String: ScriptElement] = [:]
     private var pendingDeletes: Set<String> = []
+    /// Set after a drag or a renumber; sent as one bulk upsert on the next save.
+    private var needsReorder = false
 
     private var flushTask: Task<Void, Never>?
+    private var cacheTask: Task<Void, Never>?
     private var liveTask: Task<Void, Never>?
 
     /// True while a collaborator's edit is arriving, so the banner can say so.
@@ -67,7 +70,7 @@ final class EditorViewModel: ObservableObject {
             )
             for await change in stream {
                 guard let self else { return }
-                await self.applyLive(change)
+                self.applyLive(change)
             }
         }
     }
@@ -78,9 +81,22 @@ final class EditorViewModel: ObservableObject {
     }
 
     private func applyLive(_ change: RealtimeChange) {
+        // Our own saves come back over the socket too. An echo that matches
+        // what's already on screen stops here, before it costs a sort, a cache
+        // write and a redraw.
+        if change.kind == .update,
+           let row = change.decoded(ScriptElement.self),
+           let index = index(of: row.id),
+           elements[index].drawsSame(as: row) {
+            return
+        }
+
+        // Merged on a copy: writing through `&elements` publishes, and so
+        // redraws the editor, even when the change ends up skipped.
+        var merged = elements
         let changed = LiveMerge.apply(
             change,
-            to: &elements,
+            to: &merged,
             skip: { [weak self] id in
                 guard let self else { return true }
                 return id == self.focusedElementID
@@ -90,8 +106,9 @@ final class EditorViewModel: ObservableObject {
             sort: { $0.sortOrder < $1.sortOrder }
         )
         guard changed else { return }
+        elements = merged
         lastRemoteEditAt = Date()
-        Task { await LocalCache.shared.save(elements, for: LocalCache.Key.elements(scriptID)) }
+        scheduleCacheSave()
     }
 
     // MARK: - Derived
@@ -157,11 +174,24 @@ final class EditorViewModel: ObservableObject {
             isLoading = true
         }
 
-        await refresh()
+        await loadFromServer()
+    }
+
+    /// Tries the server again after a failed first load.
+    func retry() async {
+        errorMessage = nil
+        isLoading = elements.isEmpty
+        await loadFromServer()
+    }
+
+    private func loadFromServer() async {
+        let fetched = await refresh()
         isLoading = false
 
-        // A brand new script starts with one empty slug line rather than a void.
-        if elements.isEmpty {
+        // A brand new script starts with one empty slug line rather than a void
+        // — but only once the server has said it really is empty. Seeding after
+        // a failed load would write a stray heading into a script that has text.
+        if fetched, elements.isEmpty {
             let first = ScriptElement(scriptID: scriptID, elementType: .sceneHeading, sortOrder: 0)
             elements = [first]
             pendingInserts[first.id] = first
@@ -170,21 +200,26 @@ final class EditorViewModel: ObservableObject {
         }
     }
 
-    func refresh() async {
+    /// Returns true when the server answered, even with no rows.
+    @discardableResult
+    func refresh() async -> Bool {
         // Don't clobber unsent local work with a server snapshot that predates it.
-        guard pendingPatches.isEmpty, pendingInserts.isEmpty, pendingDeletes.isEmpty else { return }
+        guard pendingPatches.isEmpty, pendingInserts.isEmpty, pendingDeletes.isEmpty else { return false }
 
         do {
             let fetched = try await ScriptService.fetchElements(scriptID: scriptID)
             elements = fetched
             await LocalCache.shared.save(fetched, for: LocalCache.Key.elements(scriptID))
             errorMessage = nil
+            return true
         } catch is CancellationError {
             // Left the screen.
+            return false
         } catch {
             if elements.isEmpty {
                 errorMessage = (error as? SupabaseError)?.errorDescription ?? error.localizedDescription
             }
+            return false
         }
     }
 
@@ -242,11 +277,10 @@ final class EditorViewModel: ObservableObject {
         let element = ScriptElement(
             scriptID: scriptID,
             elementType: newType,
-            sortOrder: current.sortOrder + 1
+            sortOrder: sortOrder(after: index)
         )
 
         elements.insert(element, at: index + 1)
-        renumber(from: index + 1)
         pendingInserts[element.id] = element
         focusedElementID = element.id
         Haptics.tap()
@@ -297,7 +331,6 @@ final class EditorViewModel: ObservableObject {
         }
 
         elements.remove(at: index)
-        renumber(from: max(0, index - 1))
 
         if pendingInserts.removeValue(forKey: id) == nil {
             pendingDeletes.insert(id)
@@ -311,9 +344,9 @@ final class EditorViewModel: ObservableObject {
 
     func move(from source: IndexSet, to destination: Int) {
         elements.move(fromOffsets: source, toOffset: destination)
-        renumber(from: 0)
+        renumberAll()
         Haptics.impact()
-        scheduleFlush(reorder: true)
+        scheduleFlush()
     }
 
     private func recordContentChange(_ content: String, for id: String) {
@@ -327,26 +360,37 @@ final class EditorViewModel: ObservableObject {
         }
     }
 
-    /// Rewrites `sortOrder` so it stays dense and gap-free after an edit.
-    private func renumber(from start: Int) {
-        for index in start..<elements.count where elements[index].sortOrder != index {
-            elements[index].sortOrder = index
-            let id = elements[index].id
-            if pendingInserts[id] != nil {
-                pendingInserts[id]?.sortOrder = index
-            } else {
-                var patch = pendingPatches[id] ?? ScriptElementPatch()
-                patch.sortOrder = index
-                pendingPatches[id] = patch
-            }
+    /// Where a line inserted after `index` goes: halfway to the next one, as the
+    /// web editor does, so nothing else in the script moves. Renumbering every
+    /// later line instead cost one request per line on save, and as many
+    /// realtime echoes back.
+    private func sortOrder(after index: Int) -> Double {
+        let current = elements[index].sortOrder
+        guard index + 1 < elements.count else { return current + 1 }
+        let middle = (current + elements[index + 1].sortOrder) / 2
+        if middle > current, middle < elements[index + 1].sortOrder { return middle }
+
+        // Neighbours share a value, or repeated inserts at one spot have used
+        // up the gap. Spread the script out once and try again.
+        renumberAll()
+        return elements[index].sortOrder + 0.5
+    }
+
+    /// Resets `sortOrder` to 0, 1, 2… and marks the script for one bulk
+    /// reorder on the next save.
+    private func renumberAll() {
+        for index in elements.indices where elements[index].sortOrder != Double(index) {
+            elements[index].sortOrder = Double(index)
+            pendingInserts[elements[index].id]?.sortOrder = Double(index)
         }
+        needsReorder = true
     }
 
     // MARK: - Saving
 
-    private func scheduleFlush(reorder: Bool = false) {
+    private func scheduleFlush() {
         saveState = .pending
-        Task { await LocalCache.shared.save(elements, for: LocalCache.Key.elements(scriptID)) }
+        scheduleCacheSave()
 
         flushTask?.cancel()
         let delay = AppSettings.shared.autosaveDelay(
@@ -356,13 +400,25 @@ final class EditorViewModel: ObservableObject {
         flushTask = Task { [weak self] in
             try? await Task.sleep(for: delay)
             guard !Task.isCancelled else { return }
-            await self?.flush(reorder: reorder)
+            await self?.flush()
+        }
+    }
+
+    /// Writes the script to the on-device cache a second after the last change
+    /// rather than on every keystroke, which encoded the whole script per
+    /// letter and left a backlog of copies waiting on the cache.
+    private func scheduleCacheSave() {
+        cacheTask?.cancel()
+        cacheTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(1))
+            guard !Task.isCancelled, let self else { return }
+            await LocalCache.shared.save(self.elements, for: LocalCache.Key.elements(self.scriptID))
         }
     }
 
     /// Pushes everything queued. Safe to call repeatedly.
-    func flush(reorder: Bool = false) async {
-        guard !pendingPatches.isEmpty || !pendingInserts.isEmpty || !pendingDeletes.isEmpty || reorder
+    func flush() async {
+        guard !pendingPatches.isEmpty || !pendingInserts.isEmpty || !pendingDeletes.isEmpty || needsReorder
         else { return }
 
         // No signal: park the work durably and tell the user plainly.
@@ -377,23 +433,46 @@ final class EditorViewModel: ObservableObject {
         let inserts = pendingInserts
         let patches = pendingPatches
         let deletes = pendingDeletes
+        let reorder = needsReorder
         pendingInserts.removeAll()
         pendingPatches.removeAll()
         pendingDeletes.removeAll()
+        needsReorder = false
+
+        // What actually reached the server, so a failure part-way through
+        // puts back only the rest. Re-sending finished writes is how a retry
+        // used to end in a duplicate-key error and a "Couldn't save" alert.
+        var insertedIDs = Set<String>()
+        var patchedIDs = Set<String>()
+        var deletedIDs = Set<String>()
+        var reordered = false
+
+        func putBackUnfinished() {
+            merge(
+                inserts: inserts.filter { !insertedIDs.contains($0.key) },
+                patches: patches.filter { !patchedIDs.contains($0.key) },
+                deletes: deletes.subtracting(deletedIDs),
+                reorder: reorder && !reordered
+            )
+        }
 
         do {
             // Order matters: create, then edit, then remove.
             for element in inserts.values.sorted(by: { $0.sortOrder < $1.sortOrder }) {
                 try await ScriptService.insert(element, createdBy: ownerID)
+                insertedIDs.insert(element.id)
             }
             for (id, patch) in patches {
                 try await ScriptService.update(id: id, patch: patch)
+                patchedIDs.insert(id)
             }
             for id in deletes {
                 try await ScriptService.delete(id: id)
+                deletedIDs.insert(id)
             }
             if reorder {
                 try await ScriptService.reorder(elements)
+                reordered = true
             }
 
             saveState = .saved(Date())
@@ -402,16 +481,16 @@ final class EditorViewModel: ObservableObject {
 
         } catch is CancellationError {
             // Put the work back so leaving the screen doesn't drop an edit.
-            merge(inserts: inserts, patches: patches, deletes: deletes)
+            putBackUnfinished()
             saveState = .pending
 
         } catch let error as SupabaseError where error.isRetryable || error == .offline {
-            merge(inserts: inserts, patches: patches, deletes: deletes)
+            putBackUnfinished()
             await queueEverythingOffline()
             saveState = .queuedOffline(await SyncQueue.shared.count)
 
         } catch {
-            merge(inserts: inserts, patches: patches, deletes: deletes)
+            putBackUnfinished()
             let message = (error as? SupabaseError)?.errorDescription ?? error.localizedDescription
             saveState = .failed(message)
             Haptics.error()
@@ -421,11 +500,13 @@ final class EditorViewModel: ObservableObject {
     private func merge(
         inserts: [String: ScriptElement],
         patches: [String: ScriptElementPatch],
-        deletes: Set<String>
+        deletes: Set<String>,
+        reorder: Bool
     ) {
         pendingInserts.merge(inserts) { current, _ in current }
         pendingPatches.merge(patches) { current, _ in current }
         pendingDeletes.formUnion(deletes)
+        needsReorder = needsReorder || reorder
     }
 
     private func queueEverythingOffline() async {
@@ -446,6 +527,22 @@ final class EditorViewModel: ObservableObject {
     /// Called when the editor is dismissed — never leave the screen with unsent work.
     func flushImmediately() async {
         flushTask?.cancel()
+        cacheTask?.cancel()
         await flush()
+        await LocalCache.shared.save(elements, for: LocalCache.Key.elements(scriptID))
+    }
+}
+
+private extension ScriptElement {
+    /// Same line on the page, timestamps aside — how a realtime echo of our own
+    /// save is told apart from someone else's edit.
+    func drawsSame(as other: ScriptElement) -> Bool {
+        content == other.content
+            && elementType == other.elementType
+            && sortOrder == other.sortOrder
+            && sceneNumber == other.sceneNumber
+            && revisionColor == other.revisionColor
+            && isRevised == other.isRevised
+            && isOmitted == other.isOmitted
     }
 }

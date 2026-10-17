@@ -131,7 +131,27 @@ struct SignInView: View {
             .opacity(canSubmit ? 1 : 0.5)
 
             footerLinks
+
+            legalNote
         }
+    }
+
+    /// The terms and privacy policy, linked where an account is made.
+    private var legalNote: some View {
+        // Literals, so SwiftUI renders the Markdown links.
+        Group {
+            if mode == .signUp {
+                Text("By creating an account you agree to the [Terms of use](https://screenplaystudio.fun/legal/terms) and [Privacy policy](https://screenplaystudio.fun/legal/privacy).")
+            } else {
+                Text("[Privacy policy](https://screenplaystudio.fun/legal/privacy) · [Terms of use](https://screenplaystudio.fun/legal/terms)")
+            }
+        }
+            .font(.caption)
+            .foregroundStyle(Theme.textTertiary)
+            .tint(Theme.textSecondary)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.top, 8)
     }
 
     private var primaryTitle: String {
@@ -174,7 +194,7 @@ struct SignInView: View {
         .font(.subheadline.weight(.medium))
         .foregroundStyle(Theme.accent)
         .frame(minHeight: Theme.minTouchTarget)
-        .contentShape(.rect)
+        .contentShape(Rectangle())
     }
 
     // MARK: - Confirmation notice

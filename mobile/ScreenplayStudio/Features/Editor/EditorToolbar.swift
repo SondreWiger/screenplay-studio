@@ -91,7 +91,7 @@ struct EditorToolbar: View {
                     .font(.body)
                     .foregroundStyle(Theme.textSecondary)
                     .frame(width: 52, height: Theme.minTouchTarget)
-                    .contentShape(.rect)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Hide keyboard")

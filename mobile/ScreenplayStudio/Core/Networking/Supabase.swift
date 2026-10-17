@@ -142,6 +142,47 @@ actor Supabase {
         store(nil)
     }
 
+    /// Permanently deletes the signed-in account and everything it owns.
+    ///
+    /// Goes through the web app's server route, because deleting an auth user
+    /// needs the service-role key and that must never be in a client binary.
+    /// One attempt only: a retry after a lost response would find the account
+    /// already gone and report a failure for something that worked.
+    func deleteAccount(siteURL: URL) async throws {
+        #if DEBUG
+        if DemoData.isActive {
+            store(nil)
+            return
+        }
+        #endif
+
+        let token = try await validAccessToken()
+        var request = URLRequest(url: siteURL.appendingPathComponent("api/user/delete-account"))
+        request.httpMethod = "POST"
+        request.timeoutInterval = 60
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await session.data(for: request)
+        } catch let error as URLError where [.notConnectedToInternet, .dataNotAllowed, .networkConnectionLost].contains(error.code) {
+            throw SupabaseError.offline
+        } catch {
+            throw SupabaseError.transport(error.localizedDescription)
+        }
+        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+            let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+            await Diagnostics.shared.record("delete-account", "HTTP \(status)", isFailure: true)
+            throw SupabaseError.http(status: status, message: Self.errorMessage(from: data, status: status))
+        }
+
+        refreshTask?.cancel()
+        refreshTask = nil
+        store(nil)
+    }
+
     /// Returns a valid access token, refreshing first if the current one is stale.
     func validAccessToken() async throws -> String {
         #if DEBUG

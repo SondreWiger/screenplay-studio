@@ -63,6 +63,16 @@ enum Theme {
     static let cornerRadiusSmall: CGFloat = 10
     static let rowSpacing: CGFloat = 10
     static let screenPadding: CGFloat = 16
+    /// Widest a column of text or cards gets. On an iPad, a list stretched
+    /// across 1,300pt is harder to read, not easier.
+    static let readableWidth: CGFloat = 820
+    /// Grids of cards (projects, tools) can use more of a big screen.
+    static let wideContentWidth: CGFloat = 1_180
+
+    /// Side inset that keeps a full-width list inside `readableWidth`.
+    static func listSideInset(for width: CGFloat) -> CGFloat {
+        max(screenPadding, (width - readableWidth) / 2 + screenPadding)
+    }
 }
 
 // MARK: - Colour helpers

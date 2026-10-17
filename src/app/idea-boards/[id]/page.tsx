@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { AppHeader } from '@/components/AppHeader';
 import { Button, Input, Modal, LoadingPage, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 // Types
 
@@ -824,7 +825,7 @@ function NodeBlock({
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Tracks the current HTML independently of node.content (avoids stale closure)
   const htmlRef = useRef(
-    (node.content.html as string) ?? escapeHtml((node.content.text as string) ?? '')
+    node.content.html != null ? sanitizeHtml(node.content.html as string) : escapeHtml((node.content.text as string) ?? '')
   );
 
   // (Re-)initialise contentEditable whenever node type changes (new DOM element mounted)

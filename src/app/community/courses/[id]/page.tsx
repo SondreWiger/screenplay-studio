@@ -14,6 +14,7 @@ import type {
   LessonContentArcEditor, LessonContentExample, QuizQuestion,
 } from '@/lib/types';
 import type { MindmapData } from '@/components/ArcMindmap';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 // Course Viewer / Player — /community/courses/[id]
 
@@ -39,7 +40,7 @@ function TextLesson({ content }: { content: LessonContentText }) {
   return (
     <div
       className="prose-custom text-white/70 leading-relaxed max-w-none"
-      dangerouslySetInnerHTML={{ __html: `<p class="text-white/70 leading-relaxed mb-4">${renderMarkdown(content.markdown)}</p>` }}
+      dangerouslySetInnerHTML={{ __html: sanitizeHtml(`<p class="text-white/70 leading-relaxed mb-4">${renderMarkdown(content.markdown)}</p>`) }}
     />
   );
 }

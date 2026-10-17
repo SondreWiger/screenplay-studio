@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button, Card, LoadingPage, Avatar, Textarea, toast } from '@/components/ui';
 import { timeAgo } from '@/lib/utils';
 import type { Company, CompanyBlogPost, CompanyBlogComment, Profile } from '@/lib/types';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 export default function CompanyBlogPostPage() {
   const params = useParams();
@@ -140,7 +141,7 @@ export default function CompanyBlogPostPage() {
         <p
           key={i}
           className="text-surface-300 leading-relaxed mb-4"
-          dangerouslySetInnerHTML={{ __html: processInline(trimmed) }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(processInline(trimmed)) }}
         />
       );
     });

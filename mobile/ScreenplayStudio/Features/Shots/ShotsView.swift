@@ -6,6 +6,7 @@ struct ShotsView: View {
 
     @EnvironmentObject private var auth: AuthStore
     @StateObject private var model: ShotsViewModel
+    @State private var listWidth: CGFloat = 0
     @State private var isPresentingNewShot = false
 
     init(projectID: String) {
@@ -72,6 +73,7 @@ struct ShotsView: View {
             }
         }
         .listStyle(.plain)
+        .measuringWidth($listWidth)
         .scrollContentBackground(.hidden)
         .background(Theme.background)
         .scrollDismissesKeyboard(.immediately)
@@ -115,7 +117,8 @@ struct ShotsView: View {
     }
 
     private var rowInsets: EdgeInsets {
-        EdgeInsets(top: 4, leading: Theme.screenPadding, bottom: 4, trailing: Theme.screenPadding)
+        let side = Theme.listSideInset(for: listWidth)
+        return EdgeInsets(top: 4, leading: side, bottom: 4, trailing: side)
     }
 
     // MARK: - Header pieces
@@ -140,7 +143,7 @@ struct ShotsView: View {
                 }
             }
             .pickerStyle(.segmented)
-            .onChange(of: model.grouping) { _, _ in Haptics.selectionChanged() }
+            .onChange(of: model.grouping) { _ in Haptics.selectionChanged() }
 
             Button {
                 Haptics.selectionChanged()
@@ -168,7 +171,7 @@ struct ShotsView: View {
                 .foregroundStyle(Theme.textTertiary)
                 .monospacedDigit()
         }
-        .padding(.horizontal, Theme.screenPadding)
+        .padding(.horizontal, Theme.listSideInset(for: listWidth))
         .padding(.vertical, 6)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Theme.background)

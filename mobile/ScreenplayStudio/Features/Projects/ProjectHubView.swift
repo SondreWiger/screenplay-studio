@@ -7,6 +7,7 @@ struct ProjectHubView: View {
 
     @EnvironmentObject private var auth: AuthStore
     @EnvironmentObject private var router: Router
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @StateObject private var model: ProjectHubViewModel
 
     @State private var isOpeningEditor = false
@@ -19,18 +20,24 @@ struct ProjectHubView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
-                summaryCard
-
-                if let next = model.nextEvent {
-                    NextUpCard(event: next)
+            Group {
+                if sizeClass == .regular {
+                    // iPad: the project at a glance on the left, its tools
+                    // in a grid on the right.
+                    HStack(alignment: .top, spacing: 20) {
+                        overview
+                            .frame(width: 380)
+                        toolsSection
+                            .frame(maxWidth: .infinity)
+                    }
+                } else {
+                    VStack(spacing: 16) {
+                        overview
+                        toolsSection
+                    }
                 }
-
-                progressCard
-
-                toolsSection
             }
-            .screenPadding()
+            .screenPadding(maxWidth: Theme.wideContentWidth)
             .padding(.top, 4)
             .padding(.bottom, 40)
         }
@@ -56,6 +63,18 @@ struct ProjectHubView: View {
                 },
                 onCreate: { createDraft() }
             )
+        }
+    }
+
+    private var overview: some View {
+        VStack(spacing: 16) {
+            summaryCard
+
+            if let next = model.nextEvent {
+                NextUpCard(event: next)
+            }
+
+            progressCard
         }
     }
 
@@ -143,9 +162,10 @@ struct ProjectHubView: View {
         VStack(alignment: .leading, spacing: 10) {
             SectionHeader(title: "Tools")
 
-            VStack(spacing: Theme.rowSpacing) {
-                // Script gets its own full-width row: it's the thing people open
+            LazyVGrid(columns: toolColumns, spacing: Theme.rowSpacing) {
+                // Script gets the first slot: it's the thing people open
                 // most, and it needs room for the draft name.
+                VStack(spacing: Theme.rowSpacing) {
                 Button {
                     Haptics.tap()
                     openEditor()
@@ -194,6 +214,7 @@ struct ProjectHubView: View {
                         .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous))
                     }
                     .buttonStyle(.plain)
+                }
                 }
 
                 NavigationLink(value: ProjectRoute.documents) {
@@ -275,6 +296,12 @@ struct ProjectHubView: View {
                 .buttonStyle(.plain)
             }
         }
+    }
+
+    private var toolColumns: [GridItem] {
+        sizeClass == .regular
+            ? [GridItem(.adaptive(minimum: 260), spacing: Theme.rowSpacing, alignment: .top)]
+            : [GridItem(.flexible(), alignment: .top)]
     }
 
     private var scriptSubtitle: String {

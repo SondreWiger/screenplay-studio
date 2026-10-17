@@ -87,7 +87,7 @@ struct NewEventSheet: View {
                             }
                             .tint(Theme.accent)
                             .frame(minHeight: Theme.minTouchTarget)
-                            .onChange(of: allDay) { _, _ in Haptics.selectionChanged() }
+                            .onChange(of: allDay) { _ in Haptics.selectionChanged() }
 
                             Divider().overlay(Theme.border)
 
@@ -99,7 +99,7 @@ struct NewEventSheet: View {
                             .datePickerStyle(.compact)
                             .tint(Theme.accent)
                             .frame(minHeight: Theme.minTouchTarget)
-                            .onChange(of: start) { _, newValue in
+                            .onChange(of: start) { newValue in
                                 // Keep the window valid without arguing with the user.
                                 if end <= newValue {
                                     end = newValue.addingTimeInterval(8 * 3600)

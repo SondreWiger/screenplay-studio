@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct ScreenplayStudioApp: App {
 
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var auth = AuthStore()
     @StateObject private var network = NetworkMonitor.shared
     @StateObject private var settings = AppSettings.shared
@@ -27,7 +28,7 @@ struct ScreenplayStudioApp: App {
                     Haptics.prepare()
                 }
         }
-        .onChange(of: scenePhase) { _, phase in
+        .onChange(of: scenePhase) { phase in
             guard phase == .active else { return }
             // Coming back to the foreground is the natural moment to flush any
             // writes made while the phone was offline.

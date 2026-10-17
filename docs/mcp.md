@@ -57,6 +57,7 @@ curl -s https://<your-site>/api/mcp -H "Authorization: Bearer sps_..." -H "Conte
 | Account & projects | `whoami`, `list_projects`, `get_project`, `create_project`, `update_project`, `delete_project` |
 | Scripts | `list_scripts`, `create_script`, `update_script`, `delete_script`, `read_script`, `write_script`, `edit_script`, `find_replace`, `script_stats`, `export_script`, `save_draft`, `list_drafts`, `restore_draft` |
 | Planning | `get_beat_sheet`, `update_beat_sheet`, `get_arc_map`, `update_arc_map`, `sync_scenes`, `search_project` |
+| Storyboards | `draw_storyboard` |
 | Records (every other table) | `describe_kinds`, `list_records`, `get_record`, `create_records`, `update_records`, `delete_records` |
 | Team | `list_members`, `add_member`, `update_member`, `remove_member`, `read_messages`, `send_message` |
 | Platform admin | `admin_stats`, `admin_find_users`, `admin_get_user`, `admin_update_user`, `admin_moderate_user`, `admin_reply_ticket`, `admin_notify` |

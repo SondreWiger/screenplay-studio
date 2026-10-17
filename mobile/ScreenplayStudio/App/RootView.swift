@@ -33,7 +33,7 @@ struct RootView: View {
             OfflineBanner()
         }
         // Drain the offline queue the moment connectivity comes back.
-        .onChange(of: network.isOnline) { _, isOnline in
+        .onChange(of: network.isOnline) { isOnline in
             guard isOnline else { return }
             Task { await SyncQueue.shared.drain() }
         }
@@ -68,7 +68,7 @@ private struct OfflineBanner: View {
                         .font(.footnote.weight(.semibold))
                     Text(pendingCount > 0
                          ? "Offline · \(pendingCount) change\(pendingCount == 1 ? "" : "s") waiting"
-                         : "Offline · edits are saved on this phone")
+                         : "Offline · edits are saved on this device")
                         .font(.footnote.weight(.medium))
                 }
                 .foregroundStyle(Theme.Surface.s950)

@@ -1,16 +1,26 @@
 import logger from '@/lib/logger';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
-import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+import { NextResponse, type NextRequest } from 'next/server';
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
-    const supabase = createServerSupabaseClient();
+    // The web app sends its cookie session. The iOS app has no cookies and
+    // sends its access token instead, which App Store review requires it to
+    // be able to do (in-app account deletion).
+    const bearer = req.headers.get('authorization')?.match(/^Bearer\s+(.+)$/i)?.[1];
+    const supabase = bearer
+      ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+          global: { headers: { Authorization: `Bearer ${bearer}` } },
+          auth: { persistSession: false, autoRefreshToken: false },
+        })
+      : createServerSupabaseClient();
 
     const {
       data: { user },
       error: authErr,
-    } = await supabase.auth.getUser();
+    } = bearer ? await supabase.auth.getUser(bearer) : await supabase.auth.getUser();
 
     if (authErr || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

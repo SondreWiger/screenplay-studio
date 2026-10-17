@@ -1,0 +1,118 @@
+name: Off-site backup
+
+# Nightly copy of the database (and Storage files) to a bucket at a different
+# provider, so user projects survive Supabase being down, the project being
+# deleted, or a leaked key being used to wipe it. Restore steps:
+# docs/disaster-recovery.md
+#
+# Required secrets
+#   BACKUP_DATABASE_URL     Postgres connection string (session pooler, port 5432)
+#   BACKUP_AGE_RECIPIENT    age public key (age1…); the private key lives offline
+#   BACKUP_S3_ENDPOINT      e.g. https://<account>.r2.cloudflarestorage.com
+#   BACKUP_S3_BUCKET
+#   BACKUP_S3_ACCESS_KEY_ID / BACKUP_S3_SECRET_ACCESS_KEY  (write-only token if the provider allows)
+# Optional — mirror Supabase Storage (Dashboard → Storage → S3 access keys)
+#   SUPABASE_S3_ENDPOINT    https://<ref>.supabase.co/storage/v1/s3
+#   SUPABASE_S3_REGION
+#   SUPABASE_S3_ACCESS_KEY_ID / SUPABASE_S3_SECRET_ACCESS_KEY
+#   BACKUP_STORAGE_PASSWORD encrypts the mirrored files (rclone crypt)
+
+on:
+  schedule:
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+
+# Never run two backups at once, never on pull requests (secrets stay out of forks).
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      RCLONE_CONFIG_DEST_TYPE: s3
+      RCLONE_CONFIG_DEST_PROVIDER: Other
+      RCLONE_CONFIG_DEST_ENDPOINT: ${{ secrets.BACKUP_S3_ENDPOINT }}
+      RCLONE_CONFIG_DEST_ACCESS_KEY_ID: ${{ secrets.BACKUP_S3_ACCESS_KEY_ID }}
+      RCLONE_CONFIG_DEST_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_S3_SECRET_ACCESS_KEY }}
+      RCLONE_CONFIG_DEST_NO_CHECK_BUCKET: 'true'
+      BUCKET: ${{ secrets.BACKUP_S3_BUCKET }}
+    steps:
+      - name: Install pg_dump 17, age and rclone
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17 age rclone
+
+      - name: Dump database
+        env:
+          DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          # public = projects and scripts, auth = accounts (password hashes —
+          # hence the encryption below), storage = file metadata.
+          /usr/lib/postgresql/17/bin/pg_dump "$DATABASE_URL" \
+            --format=custom --compress=9 --no-owner --no-privileges \
+            --schema=public --schema=auth --schema=storage \
+            --file=out/db.dump
+          # Fail loudly on an empty or unreadable dump rather than uploading it.
+          tables=$(/usr/lib/postgresql/17/bin/pg_restore --list out/db.dump | grep -c 'TABLE DATA' || true)
+          echo "tables with data: $tables"
+          test "$tables" -gt 50
+          ls -lh out/db.dump
+
+      - name: Encrypt
+        env:
+          AGE_RECIPIENT: ${{ secrets.BACKUP_AGE_RECIPIENT }}
+        run: |
+          set -euo pipefail
+          age --recipient "$AGE_RECIPIENT" --output out/db.dump.age out/db.dump
+          shred -u out/db.dump
+          sha256sum out/db.dump.age | tee out/db.dump.age.sha256
+
+      - name: Upload
+        run: |
+          set -euo pipefail
+          stamp=$(date -u +%Y-%m-%d)
+          rclone copyto out/db.dump.age        "dest:$BUCKET/daily/$stamp/db.dump.age"
+          rclone copyto out/db.dump.age.sha256 "dest:$BUCKET/daily/$stamp/db.dump.age.sha256"
+          # Monthly copies sit under their own prefix so a lifecycle rule can
+          # expire daily/ after ~35 days and keep monthly/ for a year.
+          if [ "$(date -u +%d)" = "01" ]; then
+            rclone copyto out/db.dump.age "dest:$BUCKET/monthly/$stamp/db.dump.age"
+          fi
+
+      - name: Mirror Supabase Storage
+        env:
+          SUPABASE_S3_ENDPOINT: ${{ secrets.SUPABASE_S3_ENDPOINT }}
+          SUPABASE_S3_REGION: ${{ secrets.SUPABASE_S3_REGION }}
+          SUPABASE_S3_ACCESS_KEY_ID: ${{ secrets.SUPABASE_S3_ACCESS_KEY_ID }}
+          SUPABASE_S3_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_S3_SECRET_ACCESS_KEY }}
+          STORAGE_PASSWORD: ${{ secrets.BACKUP_STORAGE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SUPABASE_S3_ENDPOINT" ] || [ -z "$STORAGE_PASSWORD" ]; then
+            echo "Storage mirror not configured — skipping."
+            exit 0
+          fi
+          export RCLONE_CONFIG_SUPA_TYPE=s3 RCLONE_CONFIG_SUPA_PROVIDER=Other
+          export RCLONE_CONFIG_SUPA_ENDPOINT="$SUPABASE_S3_ENDPOINT"
+          export RCLONE_CONFIG_SUPA_REGION="$SUPABASE_S3_REGION"
+          export RCLONE_CONFIG_SUPA_ACCESS_KEY_ID="$SUPABASE_S3_ACCESS_KEY_ID"
+          export RCLONE_CONFIG_SUPA_SECRET_ACCESS_KEY="$SUPABASE_S3_SECRET_ACCESS_KEY"
+          export RCLONE_CONFIG_SUPA_FORCE_PATH_STYLE=true
+          export RCLONE_CONFIG_VAULT_TYPE=crypt
+          export RCLONE_CONFIG_VAULT_REMOTE="dest:$BUCKET/storage"
+          export RCLONE_CONFIG_VAULT_PASSWORD="$(rclone obscure "$STORAGE_PASSWORD")"
+          # copy, not sync: a file deleted (or wiped) in Supabase stays in the mirror.
+          for bucket in $(rclone lsf --dirs-only supa: | tr -d '/'); do
+            rclone copy "supa:$bucket" "vault:$bucket" --transfers 16 --stats-one-line --stats 60s
+          done

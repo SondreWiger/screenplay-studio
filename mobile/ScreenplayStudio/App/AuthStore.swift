@@ -133,11 +133,41 @@ final class AuthStore: ObservableObject {
 
     func signOut() async {
         await Supabase.shared.signOut()
-        await LocalCache.shared.clearAll()
-        profile = nil
-        AppSettings.shared.lastProjectID = ""
+        await clearLocalData()
         phase = .signedOut
         Haptics.tap()
+    }
+
+    /// Deletes the account on the server, then everything about it on this
+    /// device. Returns whether it worked; on failure `errorMessage` says why.
+    func deleteAccount() async -> Bool {
+        guard !isWorking else { return false }
+        isWorking = true
+        errorMessage = nil
+        defer { isWorking = false }
+
+        do {
+            try await Supabase.shared.deleteAccount(siteURL: AppLinks.website)
+            await clearLocalData()
+            phase = .signedOut
+            Haptics.success()
+            return true
+        } catch {
+            errorMessage = Self.friendlyMessage(for: error)
+            Haptics.error()
+            return false
+        }
+    }
+
+    /// Nothing from one account may be left for the next person to sign in
+    /// on this device — least of all queued writes, which would replay under
+    /// their session.
+    private func clearLocalData() async {
+        await LocalCache.shared.clearAll()
+        await SyncQueue.shared.clear()
+        SlateStore.removeAll()
+        profile = nil
+        AppSettings.shared.lastProjectID = ""
     }
 
     // MARK: - Profile

@@ -7,6 +7,7 @@ struct ProjectsView: View {
 
     @State private var isPresentingNewProject = false
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
         ScrollView {
@@ -21,7 +22,7 @@ struct ProjectsView: View {
 
                 content
             }
-            .screenPadding()
+            .screenPadding(maxWidth: Theme.wideContentWidth)
             .padding(.top, 4)
             // Clear of the tab bar and the floating add button.
             .padding(.bottom, 96)
@@ -48,6 +49,7 @@ struct ProjectsView: View {
                         .tappableArea()
                 }
                 .accessibilityLabel("New project")
+                .keyboardShortcut("n", modifiers: .command)
             }
         }
         .navigationDestination(for: Project.self) { project in
@@ -67,7 +69,7 @@ struct ProjectsView: View {
         }
         // Coming back to the app is the moment someone expects to see what
         // changed while they were away.
-        .onChange(of: scenePhase) { _, phase in
+        .onChange(of: scenePhase) { phase in
             guard phase == .active else { return }
             Task { await model.refresh(showSpinner: false) }
         }
@@ -113,22 +115,32 @@ struct ProjectsView: View {
             .padding(.top, 40)
 
         } else {
-            ForEach(model.filteredProjects) { project in
-                NavigationLink(value: project) {
-                    ProjectRow(project: project)
-                }
-                .buttonStyle(.plain)
-                .contextMenu {
-                    statusMenu(for: project)
-                    Divider()
-                    Button(role: .destructive) {
-                        Task { await model.delete(project) }
-                    } label: {
-                        Label("Delete project", systemImage: "trash")
+            // One column on a phone; as many 340pt cards as fit on an iPad.
+            LazyVGrid(columns: columns, spacing: Theme.rowSpacing) {
+                ForEach(model.filteredProjects) { project in
+                    NavigationLink(value: project) {
+                        ProjectRow(project: project)
+                    }
+                    .buttonStyle(.plain)
+                    .hoverEffect(.lift)
+                    .contextMenu {
+                        statusMenu(for: project)
+                        Divider()
+                        Button(role: .destructive) {
+                            Task { await model.delete(project) }
+                        } label: {
+                            Label("Delete project", systemImage: "trash")
+                        }
                     }
                 }
             }
         }
+    }
+
+    private var columns: [GridItem] {
+        sizeClass == .regular
+            ? [GridItem(.adaptive(minimum: 340), spacing: Theme.rowSpacing, alignment: .top)]
+            : [GridItem(.flexible(), alignment: .top)]
     }
 
     private func statusMenu(for project: Project) -> some View {
@@ -240,9 +252,6 @@ private struct StatusFilterRow: View {
             .padding(.horizontal, 2)
             .padding(.vertical, 2)
         }
-        // A horizontal scroller inside a vertical one needs its own clip so the
-        // chips don't bleed into the screen padding.
-        .scrollClipDisabled(false)
     }
 
     private func filterChip(

@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 
 // In-memory rate limiter
 // Tracks request counts per IP per window
@@ -354,12 +355,15 @@ export async function updateSession(request: NextRequest) {
             .maybeSingle();
 
           if (activeSuspension?.expires_at && new Date(activeSuspension.expires_at) < new Date()) {
-            await supabase.from('user_bans')
+            // Service role: users can't write their own ban or moderation
+            // status (RLS on user_bans, the guard trigger on profiles).
+            const admin = createAdminSupabaseClient();
+            await admin.from('user_bans')
               .update({ is_active: false })
               .eq('user_id', user.id)
               .eq('ban_type', 'temporary')
               .eq('is_active', true);
-            await supabase.from('profiles')
+            await admin.from('profiles')
               .update({ moderation_status: 'clean', moderation_notes: 'Suspension expired' })
               .eq('id', user.id);
           } else {

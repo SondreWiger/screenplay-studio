@@ -16,16 +16,20 @@ struct ScreenplayTextView: UIViewRepresentable {
     let fontSize: CGFloat
     var isFocused: Bool
 
-    /// Reports intrinsic height back so the row can lay out.
-    let onHeightChange: (CGFloat) -> Void
     let onReturn: () -> Void
     /// Backspace pressed with the caret at the very start.
     let onBackspaceAtStart: () -> Void
     let onFocusChange: (Bool) -> Void
+    /// A hardware keyboard asked for a different element type — Tab,
+    /// Shift-Tab, or ⌘1…⌘8, the way desktop screenwriting apps work.
+    var onSetType: ((ScriptElementType) -> Void)?
 
     func makeUIView(context: Context) -> UITextView {
-        let textView = SelfSizingTextView()
+        let textView = ElementTextView()
         textView.delegate = context.coordinator
+        textView.onKeyCommand = { [weak coordinator = context.coordinator] command in
+            coordinator?.handle(command)
+        }
         textView.isScrollEnabled = false
         textView.backgroundColor = .clear
         textView.textContainerInset = .zero
@@ -37,41 +41,41 @@ struct ScreenplayTextView: UIViewRepresentable {
         textView.spellCheckingType = .yes
         textView.smartQuotesType = .yes
         textView.smartDashesType = .yes
-        // Autocorrect fights ALL-CAPS slug lines and character names.
-        textView.autocorrectionType = elementType.isUppercased ? .no : .default
         textView.returnKeyType = .default
         textView.adjustsFontForContentSizeCategory = false
         textView.accessibilityLabel = elementType.label
 
-        textView.text = text
-        apply(style: textView)
+        restyle(textView, coordinator: context.coordinator)
         return textView
     }
 
     func updateUIView(_ textView: UITextView, context: Context) {
-        context.coordinator.parent = self
+        let coordinator = context.coordinator
+        coordinator.parent = self
 
-        if textView.text != text {
-            // Preserve the caret across an external text change (undo, autosave
-            // normalisation) instead of dumping it at the end.
-            let selected = textView.selectedRange
-            textView.text = text
-            let maxLocation = (textView.text as NSString).length
-            textView.selectedRange = NSRange(
-                location: min(selected.location, maxLocation),
-                length: 0
-            )
+        // Restyling re-lays out all of the text, so it happens only when the
+        // type or size changed — not every time the editor around it redraws.
+        if coordinator.styledType != elementType || coordinator.styledFontSize != fontSize {
+            restyle(textView, coordinator: coordinator)
+        } else if textView.text != text {
+            // An external change (merge, remote edit): keep the caret where it was.
+            Self.stamp(text, on: textView, attributes: coordinator.attributes)
         }
-
-        apply(style: textView)
 
         if isFocused, !textView.isFirstResponder {
             textView.becomeFirstResponder()
         } else if !isFocused, textView.isFirstResponder {
             textView.resignFirstResponder()
         }
+    }
 
-        context.coordinator.reportHeight(of: textView)
+    /// The height this line needs at the proposed width. Measuring here, where
+    /// SwiftUI asks, replaces reporting each height back through view state —
+    /// which redrew the whole editor once per line as a script opened.
+    func sizeThatFits(_ proposal: ProposedViewSize, uiView: UITextView, context: Context) -> CGSize? {
+        guard let width = proposal.width, width.isFinite, width > 0 else { return nil }
+        let fitted = uiView.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude))
+        return CGSize(width: width, height: max(ceil(fitted.height), fontSize * 1.4))
     }
 
     /// The full attribute set for this element's type and size.
@@ -105,22 +109,35 @@ struct ScreenplayTextView: UIViewRepresentable {
         ]
     }
 
-    private func apply(style textView: UITextView) {
+    /// Applies this type's look and keyboard behaviour, and re-stamps the text
+    /// so a type change re-lays out what's already there, not just what comes next.
+    private func restyle(_ textView: UITextView, coordinator: Coordinator) {
         let attrs = attributes()
+        coordinator.attributes = attrs
+        coordinator.styledType = elementType
+        coordinator.styledFontSize = fontSize
+
         textView.font = attrs[.font] as? UIFont
-        textView.typingAttributes = attrs
         textView.textAlignment = Self.nsAlignment(for: elementType.alignment)
-
-        // Re-stamp the existing text so a type change re-lays out what's already
-        // there, not just what comes next.
-        if let existing = textView.text, !existing.isEmpty {
-            let selected = textView.selectedRange
-            textView.attributedText = NSAttributedString(string: existing, attributes: attrs)
-            textView.selectedRange = selected
-        }
-
         textView.autocapitalizationType = elementType.isUppercased ? .allCharacters : .sentences
+        // Autocorrect fights ALL-CAPS slug lines and character names.
         textView.autocorrectionType = elementType.isUppercased ? .no : .default
+        Self.stamp(text, on: textView, attributes: attrs)
+    }
+
+    /// Replaces the text with `string` in `attributes`, keeping the selection.
+    fileprivate static func stamp(
+        _ string: String,
+        on textView: UITextView,
+        attributes: [NSAttributedString.Key: Any]
+    ) {
+        let selected = textView.selectedRange
+        textView.attributedText = NSAttributedString(string: string, attributes: attributes)
+        // An empty attributed string takes the typing attributes with it.
+        textView.typingAttributes = attributes
+        let length = (string as NSString).length
+        let location = min(selected.location, length)
+        textView.selectedRange = NSRange(location: location, length: min(selected.length, length - location))
     }
 
     /// Courier New ships with iOS and is the closest match to the Courier Prime
@@ -145,24 +162,23 @@ struct ScreenplayTextView: UIViewRepresentable {
 
     final class Coordinator: NSObject, UITextViewDelegate {
         var parent: ScreenplayTextView
-        private var lastReportedHeight: CGFloat = 0
+
+        /// What the text view was last styled with, so redraws that change
+        /// neither can skip restyling.
+        var styledType: ScriptElementType?
+        var styledFontSize: CGFloat = 0
+        var attributes: [NSAttributedString.Key: Any] = [:]
 
         init(parent: ScreenplayTextView) {
             self.parent = parent
         }
 
-        func reportHeight(of textView: UITextView) {
-            let width = textView.bounds.width
-            guard width > 0 else { return }
-            let size = textView.sizeThatFits(
-                CGSize(width: width, height: .greatestFiniteMagnitude)
-            )
-            let height = max(size.height, parent.fontSize * 1.4)
-            guard abs(height - lastReportedHeight) > 0.5 else { return }
-            lastReportedHeight = height
-            // Bounce out of the layout pass before mutating SwiftUI state.
-            DispatchQueue.main.async { [onHeightChange = parent.onHeightChange] in
-                onHeightChange(height)
+        func handle(_ command: ElementTextView.Command) {
+            let current = parent.elementType
+            switch command {
+            case .nextType:     parent.onSetType?(current.nextInCycle)
+            case .previousType: parent.onSetType?(current.previousInCycle)
+            case .type(let type): if type != current { parent.onSetType?(type) }
             }
         }
 
@@ -195,15 +211,12 @@ struct ScreenplayTextView: UIViewRepresentable {
             if parent.elementType.isUppercased {
                 let uppercased = value.uppercased()
                 if uppercased != value {
-                    let selected = textView.selectedRange
-                    textView.text = uppercased
-                    textView.selectedRange = selected
+                    ScreenplayTextView.stamp(uppercased, on: textView, attributes: attributes)
                     value = uppercased
                 }
             }
 
             parent.text = value
-            reportHeight(of: textView)
         }
 
         func textViewDidBeginEditing(_ textView: UITextView) {
@@ -216,17 +229,52 @@ struct ScreenplayTextView: UIViewRepresentable {
     }
 }
 
-/// `UITextView` reports a zero intrinsic size when scrolling is off; overriding
-/// it lets the row size itself without a layout pass round-trip.
-private final class SelfSizingTextView: UITextView {
-    override var intrinsicContentSize: CGSize {
-        guard bounds.width > 0 else { return super.intrinsicContentSize }
-        let size = sizeThatFits(CGSize(width: bounds.width, height: .greatestFiniteMagnitude))
-        return CGSize(width: UIView.noIntrinsicMetric, height: size.height)
+/// Reports no intrinsic size. The height comes from `sizeThatFits`, and a
+/// natural width would let one long line push its row past the page edge.
+///
+/// Also carries the hardware-keyboard commands. They take priority over the
+/// system's Tab handling only while a script line is being edited, and show
+/// up in the ⌘-hold shortcut overlay on iPad.
+final class ElementTextView: UITextView {
+
+    enum Command {
+        case nextType, previousType
+        case type(ScriptElementType)
     }
 
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        invalidateIntrinsicContentSize()
+    var onKeyCommand: ((Command) -> Void)?
+
+    override var intrinsicContentSize: CGSize {
+        CGSize(width: UIView.noIntrinsicMetric, height: UIView.noIntrinsicMetric)
+    }
+
+    private static let commands: [UIKeyCommand] = {
+        let next = UIKeyCommand(title: "Next element type", action: #selector(nextType), input: "\t")
+        let previous = UIKeyCommand(title: "Previous element type", action: #selector(previousType), input: "\t", modifierFlags: .shift)
+        var commands = [next, previous]
+        for (index, type) in ScriptElementType.standardCycle.prefix(9).enumerated() {
+            commands.append(UIKeyCommand(
+                title: type.label,
+                action: #selector(setType(_:)),
+                input: String(index + 1),
+                modifierFlags: .command,
+                propertyList: index
+            ))
+        }
+        for command in commands { command.wantsPriorityOverSystemBehavior = true }
+        return commands
+    }()
+
+    override var keyCommands: [UIKeyCommand]? {
+        isFirstResponder ? Self.commands : nil
+    }
+
+    @objc private func nextType() { onKeyCommand?(.nextType) }
+    @objc private func previousType() { onKeyCommand?(.previousType) }
+
+    @objc private func setType(_ sender: UIKeyCommand) {
+        guard let index = sender.propertyList as? Int,
+              ScriptElementType.standardCycle.indices.contains(index) else { return }
+        onKeyCommand?(.type(ScriptElementType.standardCycle[index]))
     }
 }

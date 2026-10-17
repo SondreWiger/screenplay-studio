@@ -9,6 +9,7 @@ struct SettingsView: View {
     @State private var pendingCount = 0
     @State private var cacheClearedAt: Date?
     @State private var isConfirmingSignOut = false
+    @State private var isConfirmingDeletion = false
     @State private var isSyncing = false
 
     var body: some View {
@@ -18,9 +19,13 @@ struct SettingsView: View {
             dataSection
             aboutSection
             signOutSection
+            deleteAccountSection
         }
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
+        // A settings column the width of the screen is hard to scan on an iPad.
+        .frame(maxWidth: 720)
+        .frame(maxWidth: .infinity)
         .background(Theme.background)
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.large)
@@ -41,8 +46,25 @@ struct SettingsView: View {
         } message: {
             Text(pendingCount > 0
                  ? "\(pendingCount) unsynced change\(pendingCount == 1 ? "" : "s") will be lost."
-                 : "Cached projects on this phone will be cleared.")
+                 : "Cached projects on this device will be cleared.")
         }
+        .alert("Delete your account?", isPresented: $isConfirmingDeletion) {
+            Button("Delete account", role: .destructive) {
+                Task { await auth.deleteAccount() }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This permanently deletes your account, every project you created and everything in them, on every device and on the web. It can't be undone.")
+        }
+        .alert(
+            "Couldn't delete your account",
+            isPresented: Binding(
+                get: { auth.errorMessage != nil && !isConfirmingDeletion },
+                set: { if !$0 { auth.errorMessage = nil } }
+            ),
+            actions: { Button("OK", role: .cancel) { auth.errorMessage = nil } },
+            message: { Text(auth.errorMessage ?? "") }
+        )
     }
 
     // MARK: - Account
@@ -217,7 +239,7 @@ struct SettingsView: View {
                     }
                 }
                 .frame(minHeight: Theme.minTouchTarget - 10)
-                .contentShape(.rect)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .listRowBackground(Theme.card)
@@ -240,7 +262,7 @@ struct SettingsView: View {
         if network.shouldConserveData {
             return "On a metered or constrained connection"
         }
-        return network.isOnline ? "Everything is synced" : "Edits are saved on this phone"
+        return network.isOnline ? "Everything is synced" : "Edits are saved on this device"
     }
 
     // MARK: - About
@@ -260,22 +282,12 @@ struct SettingsView: View {
             .frame(minHeight: Theme.minTouchTarget - 10)
             .listRowBackground(Theme.card)
 
-            Link(destination: URL(string: "https://screenplaystudio.fun")!) {
-                HStack {
-                    Text("Open on the web")
-                        .font(.body)
-                        .foregroundStyle(Theme.textPrimary)
-                    Spacer()
-                    Image(systemName: "arrow.up.right.square")
-                        .font(.footnote)
-                        .foregroundStyle(Theme.textTertiary)
-                }
-                .frame(minHeight: Theme.minTouchTarget - 10)
-                .contentShape(.rect)
-            }
-            .listRowBackground(Theme.card)
+            externalLink("Open on the web", destination: AppLinks.website)
+            externalLink("Privacy policy", destination: AppLinks.privacy)
+            externalLink("Terms of use", destination: AppLinks.terms)
+            externalLink("Contact support", destination: AppLinks.support, symbol: "envelope")
 
-            Text("Tools not on the phone yet — budget, call sheets, storyboards, rundowns and the broadcast suite — are all on the web app.")
+            Text("Budget, call sheets, storyboards, rundowns and the broadcast suite are on the web app.")
                 .font(.caption)
                 .foregroundStyle(Theme.textTertiary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -295,13 +307,57 @@ struct SettingsView: View {
                     .font(.body.weight(.medium))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .frame(minHeight: Theme.minTouchTarget - 10)
-                    .contentShape(.rect)
+                    .contentShape(Rectangle())
             }
             .listRowBackground(Theme.card)
         }
     }
 
+    private var deleteAccountSection: some View {
+        Section {
+            Button(role: .destructive) {
+                Haptics.warning()
+                isConfirmingDeletion = true
+            } label: {
+                HStack {
+                    Text("Delete account")
+                        .font(.body.weight(.medium))
+                    Spacer()
+                    if auth.isWorking {
+                        ProgressView().tint(Theme.danger)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(minHeight: Theme.minTouchTarget - 10)
+                .contentShape(Rectangle())
+            }
+            .disabled(auth.isWorking)
+            .listRowBackground(Theme.card)
+        } footer: {
+            Text("Permanently removes your account and the projects you own. Projects other people shared with you stay with them.")
+                .font(.caption)
+                .foregroundStyle(Theme.textTertiary)
+        }
+    }
+
     // MARK: - Helpers
+
+    private func externalLink(_ title: String, destination: URL, symbol: String = "arrow.up.right.square") -> some View {
+        Link(destination: destination) {
+            HStack {
+                Text(title)
+                    .font(.body)
+                    .foregroundStyle(Theme.textPrimary)
+                Spacer()
+                Image(systemName: symbol)
+                    .font(.footnote)
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .frame(minHeight: Theme.minTouchTarget - 10)
+            .contentShape(Rectangle())
+        }
+        .listRowBackground(Theme.card)
+    }
 
     private static var versionString: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
@@ -332,7 +388,7 @@ struct SettingsView: View {
         .tint(Theme.accent)
         .padding(.vertical, 2)
         .listRowBackground(Theme.card)
-        .onChange(of: isOn.wrappedValue) { _, _ in Haptics.selectionChanged() }
+        .onChange(of: isOn.wrappedValue) { _ in Haptics.selectionChanged() }
     }
 
     private func syncNow() {
