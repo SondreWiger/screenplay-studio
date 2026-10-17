@@ -206,7 +206,8 @@ export function shapesToStrokes(shapes: ShapeInput[]): Record<LayerId, Stroke[]>
     const brush: Tool = shape.type === 'arrow' ? 'arrow' : shape.tool ?? (shape.type === 'hatch' ? 'pencil' : DEFAULT_TOOL[layer]);
 
     shapePaths(shape, i).forEach((p, k) => {
-      const passes = [p.smooth ? curvePoints(p.pts) : densify(p.pts)];
+      // A two-point stroke is drawn as a straight line already; only polylines need extra points to keep their corners.
+      const passes = [p.smooth ? curvePoints(p.pts) : p.pts.length === 2 ? p.pts : densify(p.pts)];
       if (shape.rough && brush !== 'arrow') passes.push(roughen(passes[0], i * 31 + k, Math.max(0.6, width * 0.5)));
       passes.forEach((points, pass) => {
         total += points.length;
