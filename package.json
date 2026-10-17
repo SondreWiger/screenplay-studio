@@ -52,7 +52,8 @@
     "sql.js": "^1.14.1",
     "tailwind-merge": "^2.6.0",
     "web-push": "^3.6.7",
-    "zustand": "^5.0.2"
+    "zustand": "^5.0.2",
+    "electron-updater": "^6.3.9"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
@@ -66,7 +67,6 @@
     "autoprefixer": "^10.4.20",
     "electron": "^33.2.0",
     "electron-builder": "^25.1.8",
-    "electron-updater": "^6.3.9",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.2.21",
     "jsdom": "^29.1.1",

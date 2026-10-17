@@ -1,8 +1,8 @@
 version: 3.1.0
 files:
   - url: ScreenplayStudio-win-x64.exe
-    sha512: Bh3zbjEh8zvD9ExHkvyJhDjC4S0p4yEavwWQPOh6TmRoTZ5dCEGLyS0XEqk9T5c3/hQtH2FwtT0KXbFYLgy+tA==
-    size: 170242305
+    sha512: X3ya/rRYop0lpWn6vUWYWpY5OvCawwccyOZY/2yJbi5HxHt4J1qUozWdjD7MmcMGCbN2l5+8hfIP2s0O4aFx4Q==
+    size: 170134489
 path: ScreenplayStudio-win-x64.exe
-sha512: Bh3zbjEh8zvD9ExHkvyJhDjC4S0p4yEavwWQPOh6TmRoTZ5dCEGLyS0XEqk9T5c3/hQtH2FwtT0KXbFYLgy+tA==
-releaseDate: '2026-10-16T18:56:17.346Z'
+sha512: X3ya/rRYop0lpWn6vUWYWpY5OvCawwccyOZY/2yJbi5HxHt4J1qUozWdjD7MmcMGCbN2l5+8hfIP2s0O4aFx4Q==
+releaseDate: '2026-10-17T10:01:38.473Z'

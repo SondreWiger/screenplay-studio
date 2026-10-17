@@ -7,6 +7,7 @@
     "output": "public/downloads",
     "buildResources": "build"
   },
+  "afterPack": "scripts/after-pack.cjs",
   "files": [
     "electron/dist/**/*",
     "build/icon.png",
