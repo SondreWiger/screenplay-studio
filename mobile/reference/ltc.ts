@@ -104,6 +104,16 @@ export class LTCEncoder {
     this.phase = this.samplesPerBit; // start exactly on a bit boundary
   }
 
+  /**
+   * Start over: the next sample begins a new frame (asked for from
+   * `nextFrame`). Used when the generator is re-aligned to a new jam.
+   */
+  reset(): void {
+    this.bitIndex = LTC_BITS;
+    this.phase = this.samplesPerBit;
+    this.midFlipped = false;
+  }
+
   /** Samples until the next frame starts, for aligning to a clock. */
   get samplesUntilFrame(): number {
     return (LTC_BITS - this.bitIndex - 1) * this.samplesPerBit + (this.samplesPerBit - this.phase);

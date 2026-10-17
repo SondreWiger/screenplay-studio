@@ -189,6 +189,10 @@ final class SlateViewModel: ObservableObject {
             applyJam(.jam(to: carried, at: now, rate: rate, source: jam.source))
         }
         audio.prepare(beepDuration: beepDuration)
+        if state.ltcOutputEnabled {
+            // The generator is built for one rate.
+            do { try audio.restartLTCOutput() } catch { notice = "Couldn’t restart timecode output: \(error.localizedDescription)" }
+        }
         Haptics.selectionChanged()
     }
 
@@ -413,10 +417,13 @@ final class SlateViewModel: ObservableObject {
                 try? await Task.sleep(for: .seconds(self?.flashDuration ?? 0.06))
                 self?.isFlashing = false
             }
-            self.audio.playBeep(
-                leavingSpeakerAt: visibleAtHost + Double(settings.syncOffsetMs) / 1000,
-                duration: self.beepDuration
-            )
+            if !settings.ltcOutputEnabled {
+                // Never into the camera's timecode track.
+                self.audio.playBeep(
+                    leavingSpeakerAt: visibleAtHost + Double(settings.syncOffsetMs) / 1000,
+                    duration: self.beepDuration
+                )
+            }
             Haptics.impact()
             self.frozenTimecode = self.jam.timecode(at: SlateClock.fromHostSeconds(visibleAtHost), rate: settings.frameRate)
             self.freezeTask?.cancel()
