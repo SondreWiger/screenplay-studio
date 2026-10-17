@@ -68,7 +68,7 @@ struct NewShotSheet: View {
                             text: $shotNumber,
                             autocapitalisation: .characters
                         )
-                        .onChange(of: shotNumber) { _ in numberIsManual = true }
+                        .onChange(of: shotNumber) { _, _ in numberIsManual = true }
 
                         LabelledField(
                             label: "Lens",

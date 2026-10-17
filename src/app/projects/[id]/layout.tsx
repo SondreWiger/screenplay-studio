@@ -37,6 +37,7 @@ import dynamic from 'next/dynamic';
 import ProjectLoading from './loading';
 import { ZEN_MODE_EVENT } from '@/lib/zen-mode';
 import { SIDEBAR_COLLAPSE_EVENT } from '@/lib/sidebar-collapse';
+import { DESKTOP_TOGGLE_SIDEBAR_EVENT } from '@/lib/desktop/events';
 import { getTourState, endTour } from '@/lib/tourState';
 import type { UsageIntent } from '@/lib/types';
 /** Canvas/editor tools that fill the viewport — they skip the page-load cascade. */
@@ -385,8 +386,14 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
       }
       // ⌘K handled globally by CommandPaletteProvider — no need to duplicate
     };
+    // View › Toggle Sidebar in the desktop app's menu bar
+    const handleToggle = () => setSidebarCollapsed((v) => !v);
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener(DESKTOP_TOGGLE_SIDEBAR_EVENT, handleToggle);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener(DESKTOP_TOGGLE_SIDEBAR_EVENT, handleToggle);
+    };
   }, []);
 
   // Keyed on the user's id, not the profile object: auth events replace the
@@ -677,7 +684,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   const sidebarContent = (mobile?: boolean) => (
     <>
       {/* ── Project Header ───────────────────────────────────── */}
-      <div className="relative overflow-hidden border-b border-surface-800/60 px-4 py-4">
+      <div className="relative overflow-hidden border-b border-surface-800/60 px-4 py-4" data-desktop-inset={mobile ? undefined : 'sidebar'} data-desktop-drag="">
         {/* Ambient glow behind the logo */}
         <div className="absolute -top-6 -left-4 w-24 h-24 rounded-full blur-2xl opacity-30 pointer-events-none"
           style={{ background: isTvProduction ? '#d97706' : isAudioDrama ? '#7c3aed' : isNovel ? '#0d9488' : 'rgb(var(--brand-600))' }} />
@@ -1120,6 +1127,8 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
           'hidden md:flex flex-col transition-[width] duration-300 ease-spring bg-surface-950 border-r border-surface-800 z-30 relative',
           sidebarCollapsed ? 'w-14' : 'w-60'
         )}
+        data-desktop-sidebar=""
+        data-collapsed={sidebarCollapsed ? 'true' : 'false'}
       >
         {sidebarContent(false)}
       </aside>

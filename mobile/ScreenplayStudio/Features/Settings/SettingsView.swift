@@ -9,27 +9,33 @@ struct SettingsView: View {
     @State private var pendingCount = 0
     @State private var cacheClearedAt: Date?
     @State private var isConfirmingSignOut = false
-    @State private var isConfirmingDeletion = false
+    @State private var isConfirmingDelete = false
+    @State private var deleteError: String?
     @State private var isSyncing = false
 
     var body: some View {
         List {
             accountSection
-            writingSection
+            personaliseSection
+            generalSection
             dataSection
             aboutSection
-            signOutSection
-            deleteAccountSection
+            accountActionsSection
         }
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
-        // A settings column the width of the screen is hard to scan on an iPad.
-        .frame(maxWidth: 720)
-        .frame(maxWidth: .infinity)
         .background(Theme.background)
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.large)
         .toolbarBackground(Theme.background, for: .navigationBar)
+        .navigationDestination(for: SettingsRoute.self) { route in
+            switch route {
+            case .appearance:   AppearanceSettingsView()
+            case .writing:      WritingSettingsView()
+            case .projectTools: HubToolsEditor()
+            case .diagnostics:  DiagnosticsView()
+            }
+        }
         .task {
             pendingCount = await SyncQueue.shared.count
             await auth.loadProfile()
@@ -39,31 +45,28 @@ struct SettingsView: View {
             isPresented: $isConfirmingSignOut,
             titleVisibility: .visible
         ) {
-            Button("Sign out", role: .destructive) {
+            Button("Sign Out", role: .destructive) {
                 Task { await auth.signOut() }
             }
             Button("Cancel", role: .cancel) {}
         } message: {
             Text(pendingCount > 0
                  ? "\(pendingCount) unsynced change\(pendingCount == 1 ? "" : "s") will be lost."
-                 : "Cached projects on this device will be cleared.")
+                 : "Projects cached on this device will be cleared. Everything stays in your account.")
         }
-        .alert("Delete your account?", isPresented: $isConfirmingDeletion) {
-            Button("Delete account", role: .destructive) {
-                Task { await auth.deleteAccount() }
+        .alert("Delete your account?", isPresented: $isConfirmingDelete) {
+            Button("Delete Account", role: .destructive) {
+                Task { deleteError = await auth.deleteAccount() }
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This permanently deletes your account, every project you created and everything in them, on every device and on the web. It can't be undone.")
+            Text("Your account, your projects and everything in them are permanently deleted, on every device. This can’t be undone.")
         }
         .alert(
-            "Couldn't delete your account",
-            isPresented: Binding(
-                get: { auth.errorMessage != nil && !isConfirmingDeletion },
-                set: { if !$0 { auth.errorMessage = nil } }
-            ),
-            actions: { Button("OK", role: .cancel) { auth.errorMessage = nil } },
-            message: { Text(auth.errorMessage ?? "") }
+            "Couldn’t delete account",
+            isPresented: Binding(get: { deleteError != nil }, set: { if !$0 { deleteError = nil } }),
+            actions: { Button("OK", role: .cancel) { deleteError = nil } },
+            message: { Text(deleteError ?? "") }
         )
     }
 
@@ -74,7 +77,7 @@ struct SettingsView: View {
             HStack(spacing: 12) {
                 Text(auth.profile?.initials ?? "?")
                     .font(.headline)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Theme.accent.readableForeground)
                     .frame(width: 48, height: 48)
                     .background(Theme.accent, in: Circle())
                     .accessibilityHidden(true)
@@ -98,63 +101,65 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - Writing
+    // MARK: - Make it yours
 
-    private var writingSection: some View {
+    private var personaliseSection: some View {
         Section {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("Script text size")
-                        .font(.body)
-                        .foregroundStyle(Theme.textPrimary)
-                    Spacer()
-                    Text("\(Int(settings.clampedEditorScale * 100))%")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(Theme.textTertiary)
-                        .monospacedDigit()
+            NavigationLink(value: SettingsRoute.appearance) {
+                SettingsRow(symbol: "paintpalette", tint: Theme.accent, title: "Appearance") {
+                    Text("\(settings.appearance.label) · \(settings.accent.label)")
                 }
-
-                Slider(
-                    value: Binding(
-                        get: { settings.clampedEditorScale },
-                        set: { settings.editorScale = $0 }
-                    ),
-                    in: 0.75...1.6,
-                    step: 0.05
-                ) {
-                    Text("Script text size")
-                } minimumValueLabel: {
-                    Image(systemName: "textformat.size.smaller")
-                        .font(.caption)
-                        .foregroundStyle(Theme.textTertiary)
-                } maximumValueLabel: {
-                    Image(systemName: "textformat.size.larger")
-                        .font(.caption)
-                        .foregroundStyle(Theme.textTertiary)
-                }
-                .tint(Theme.accent)
-
-                Text("Sits on top of the system text size, so the page can be smaller than the rest of the app when you want more words on screen.")
-                    .font(.caption)
-                    .foregroundStyle(Theme.textTertiary)
-                    .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(.vertical, 4)
             .listRowBackground(Theme.card)
 
-            settingsToggle(
-                "Element bar above keyboard",
-                detail: "The scene / action / character switcher. Turn it off if you prefer more page.",
-                isOn: $settings.showElementBar
-            )
+            NavigationLink(value: SettingsRoute.writing) {
+                SettingsRow(symbol: "pencil.line", tint: Color(hex: 0x8B5CF6), title: "Writing") {
+                    Text("\(Int(settings.clampedEditorScale * 100))%")
+                }
+            }
+            .listRowBackground(Theme.card)
 
-            settingsToggle(
-                "Haptics",
-                detail: "Feedback when you switch element type, tick a shot, or save.",
-                isOn: $settings.hapticsEnabled
-            )
+            NavigationLink(value: SettingsRoute.projectTools) {
+                SettingsRow(symbol: "square.grid.2x2", tint: Color(hex: 0x14B8A6), title: "Project Tools") {
+                    Text("\(settings.visibleHubTools.count) shown")
+                }
+            }
+            .listRowBackground(Theme.card)
         } header: {
-            sectionHeader("Writing")
+            SettingsSectionHeader("Make it yours")
+        }
+    }
+
+    // MARK: - General
+
+    private var generalSection: some View {
+        Section {
+            Picker(selection: $settings.launchDestination) {
+                ForEach(LaunchDestination.allCases) { destination in
+                    Text(destination.label).tag(destination)
+                }
+            } label: {
+                SettingsRow(symbol: "arrow.up.forward.app", tint: Color(hex: 0x3B82F6), title: "Open to")
+            }
+            .listRowBackground(Theme.card)
+
+            Toggle(isOn: $settings.hapticsEnabled) {
+                SettingsRow(symbol: "hand.tap", tint: Color(hex: 0xEC4899), title: "Haptics")
+            }
+            .tint(Theme.accent)
+            .listRowBackground(Theme.card)
+
+            Toggle(isOn: $settings.slateSoundEnabled) {
+                SettingsRow(symbol: "speaker.wave.2", tint: Color(hex: 0xF59E0B), title: "Slate clap sound")
+            }
+            .tint(Theme.accent)
+            .listRowBackground(Theme.card)
+        } header: {
+            SettingsSectionHeader("General")
+        } footer: {
+            Text("“Last project” reopens whatever you had open, so you land back on the page you were writing.")
+                .font(.caption)
+                .foregroundStyle(Theme.textTertiary)
         }
     }
 
@@ -162,17 +167,24 @@ struct SettingsView: View {
 
     private var dataSection: some View {
         Section {
-            settingsToggle(
-                "Data saver",
-                detail: "Waits longer before autosaving and skips image prefetching. Also switches on automatically on Low Data Mode.",
-                isOn: $settings.dataSaver
-            )
+            Toggle(isOn: $settings.dataSaver) {
+                VStack(alignment: .leading, spacing: 2) {
+                    SettingsRow(symbol: "antenna.radiowaves.left.and.right", tint: Color(hex: 0x22C55E), title: "Data saver")
+                    Text("Waits longer before autosaving on cellular. Turns on by itself in Low Data Mode.")
+                        .font(.caption)
+                        .foregroundStyle(Theme.textTertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.leading, 40)
+                }
+            }
+            .tint(Theme.accent)
+            .listRowBackground(Theme.card)
 
             HStack(spacing: 10) {
-                Image(systemName: network.isOnline ? "wifi" : "wifi.slash")
+                Image(systemName: network.isOnline ? "checkmark.icloud" : "icloud.slash")
                     .font(.body)
                     .foregroundStyle(network.isOnline ? Theme.success : Theme.warning)
-                    .frame(width: 24)
+                    .frame(width: 28)
                     .accessibilityHidden(true)
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -193,7 +205,7 @@ struct SettingsView: View {
                         if isSyncing {
                             ProgressView().tint(Theme.accent)
                         } else {
-                            Text("Sync")
+                            Text("Sync Now")
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(Theme.accent)
                         }
@@ -206,21 +218,13 @@ struct SettingsView: View {
             .listRowBackground(Theme.card)
             .accessibilityElement(children: .combine)
 
-            NavigationLink {
-                DiagnosticsView()
-            } label: {
-                HStack {
-                    Text("Diagnostics")
-                        .font(.body)
-                        .foregroundStyle(Theme.textPrimary)
-                    Spacer()
+            NavigationLink(value: SettingsRoute.diagnostics) {
+                SettingsRow(symbol: "stethoscope", tint: Theme.textTertiary, title: "Diagnostics") {
                     if pendingCount > 0 {
-                        Text("\(pendingCount)")
-                            .font(.caption.weight(.bold))
+                        Text("\(pendingCount) waiting")
                             .foregroundStyle(Theme.warning)
                     }
                 }
-                .frame(minHeight: Theme.minTouchTarget - 10)
             }
             .listRowBackground(Theme.card)
 
@@ -228,24 +232,20 @@ struct SettingsView: View {
                 clearCache()
             } label: {
                 HStack {
-                    Text("Clear offline cache")
-                        .font(.body)
-                        .foregroundStyle(Theme.textPrimary)
-                    Spacer()
+                    SettingsRow(symbol: "trash", tint: Theme.textTertiary, title: "Clear offline cache")
                     if cacheClearedAt != nil {
                         Image(systemName: "checkmark")
                             .font(.footnote.weight(.semibold))
                             .foregroundStyle(Theme.success)
                     }
                 }
-                .frame(minHeight: Theme.minTouchTarget - 10)
-                .contentShape(Rectangle())
+                .contentShape(.rect)
             }
             .buttonStyle(.plain)
             .listRowBackground(Theme.card)
             .disabled(pendingCount > 0)
         } header: {
-            sectionHeader("Data & sync")
+            SettingsSectionHeader("Data & sync")
         } footer: {
             if pendingCount > 0 {
                 Text("The cache can't be cleared while changes are waiting to sync.")
@@ -275,120 +275,75 @@ struct SettingsView: View {
                     .foregroundStyle(Theme.textTertiary)
                     .monospacedDigit()
             } label: {
-                Text("Version")
-                    .font(.body)
-                    .foregroundStyle(Theme.textPrimary)
+                SettingsRow(symbol: "info.circle", tint: Theme.textTertiary, title: "Version")
             }
-            .frame(minHeight: Theme.minTouchTarget - 10)
             .listRowBackground(Theme.card)
 
-            externalLink("Open on the web", destination: AppLinks.website)
-            externalLink("Privacy policy", destination: AppLinks.privacy)
-            externalLink("Terms of use", destination: AppLinks.terms)
-            externalLink("Contact support", destination: AppLinks.support, symbol: "envelope")
-
-            Text("Budget, call sheets, storyboards, rundowns and the broadcast suite are on the web app.")
+            externalLink("Open on the web", symbol: "safari", path: "")
+            externalLink("Help & tutorials", symbol: "questionmark.circle", path: "learn")
+            externalLink("Send feedback", symbol: "bubble.left.and.text.bubble.right", path: "feedback")
+            externalLink("Privacy policy", symbol: "hand.raised", path: "legal/privacy")
+            externalLink("Terms of service", symbol: "doc.plaintext", path: "legal/terms")
+        } header: {
+            SettingsSectionHeader("About")
+        } footer: {
+            Text("Budget, call sheets, storyboards, rundowns and the broadcast suite are on the web and desktop apps, with the same account.")
                 .font(.caption)
                 .foregroundStyle(Theme.textTertiary)
-                .fixedSize(horizontal: false, vertical: true)
-                .listRowBackground(Theme.card)
-        } header: {
-            sectionHeader("About")
         }
     }
 
-    private var signOutSection: some View {
+    private func externalLink(_ title: String, symbol: String, path: String) -> some View {
+        Link(destination: AuthStore.webBaseURL.appendingPathComponent(path)) {
+            HStack {
+                SettingsRow(symbol: symbol, tint: Theme.textTertiary, title: title)
+                Image(systemName: "arrow.up.right")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .contentShape(.rect)
+        }
+        .listRowBackground(Theme.card)
+    }
+
+    private var accountActionsSection: some View {
         Section {
             Button(role: .destructive) {
                 Haptics.warning()
                 isConfirmingSignOut = true
             } label: {
-                Text("Sign out")
+                Text("Sign Out")
                     .font(.body.weight(.medium))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .frame(minHeight: Theme.minTouchTarget - 10)
-                    .contentShape(Rectangle())
+                    .contentShape(.rect)
             }
             .listRowBackground(Theme.card)
-        }
-    }
 
-    private var deleteAccountSection: some View {
-        Section {
             Button(role: .destructive) {
                 Haptics.warning()
-                isConfirmingDeletion = true
+                isConfirmingDelete = true
             } label: {
                 HStack {
-                    Text("Delete account")
-                        .font(.body.weight(.medium))
+                    Text("Delete Account…")
+                        .font(.body)
                     Spacer()
-                    if auth.isWorking {
-                        ProgressView().tint(Theme.danger)
-                    }
+                    if auth.isWorking { ProgressView() }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
                 .frame(minHeight: Theme.minTouchTarget - 10)
-                .contentShape(Rectangle())
+                .contentShape(.rect)
             }
-            .disabled(auth.isWorking)
+            .disabled(auth.isWorking || !network.isOnline)
             .listRowBackground(Theme.card)
-        } footer: {
-            Text("Permanently removes your account and the projects you own. Projects other people shared with you stay with them.")
-                .font(.caption)
-                .foregroundStyle(Theme.textTertiary)
         }
     }
 
     // MARK: - Helpers
 
-    private func externalLink(_ title: String, destination: URL, symbol: String = "arrow.up.right.square") -> some View {
-        Link(destination: destination) {
-            HStack {
-                Text(title)
-                    .font(.body)
-                    .foregroundStyle(Theme.textPrimary)
-                Spacer()
-                Image(systemName: symbol)
-                    .font(.footnote)
-                    .foregroundStyle(Theme.textTertiary)
-            }
-            .frame(minHeight: Theme.minTouchTarget - 10)
-            .contentShape(Rectangle())
-        }
-        .listRowBackground(Theme.card)
-    }
-
     private static var versionString: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
         return "\(version) (\(build))"
-    }
-
-    private func sectionHeader(_ title: String) -> some View {
-        Text(title)
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(Theme.textTertiary)
-            .textCase(.uppercase)
-            .tracking(0.5)
-    }
-
-    private func settingsToggle(_ title: String, detail: String, isOn: Binding<Bool>) -> some View {
-        Toggle(isOn: isOn) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.body)
-                    .foregroundStyle(Theme.textPrimary)
-                Text(detail)
-                    .font(.caption)
-                    .foregroundStyle(Theme.textTertiary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .tint(Theme.accent)
-        .padding(.vertical, 2)
-        .listRowBackground(Theme.card)
-        .onChange(of: isOn.wrappedValue) { _ in Haptics.selectionChanged() }
     }
 
     private func syncNow() {
@@ -407,5 +362,54 @@ struct SettingsView: View {
             cacheClearedAt = Date()
             Haptics.success()
         }
+    }
+}
+
+// MARK: - Shared pieces
+
+/// An iOS Settings-style row: a tinted icon tile, a title, and an optional
+/// trailing value.
+struct SettingsRow<Value: View>: View {
+    let symbol: String
+    let tint: Color
+    let title: String
+    @ViewBuilder var value: Value
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: symbol)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.white)
+                .frame(width: 28, height: 28)
+                .background(tint, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                .accessibilityHidden(true)
+            Text(title)
+                .font(.body)
+                .foregroundStyle(Theme.textPrimary)
+            Spacer(minLength: 8)
+            value
+                .font(.subheadline)
+                .foregroundStyle(Theme.textTertiary)
+        }
+        .frame(minHeight: Theme.minTouchTarget - 8)
+    }
+}
+
+extension SettingsRow where Value == EmptyView {
+    init(symbol: String, tint: Color, title: String) {
+        self.init(symbol: symbol, tint: tint, title: title) { EmptyView() }
+    }
+}
+
+struct SettingsSectionHeader: View {
+    let title: String
+    init(_ title: String) { self.title = title }
+
+    var body: some View {
+        Text(title)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(Theme.textTertiary)
+            .textCase(.uppercase)
+            .tracking(0.5)
     }
 }

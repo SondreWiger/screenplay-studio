@@ -1,159 +1,161 @@
 import SwiftUI
 
-/// A working digital clapperboard with running timecode.
+/// The slate: a timecode clapperboard wired to the shot list.
 ///
-/// Built to be used at arm's length in front of a lens: high contrast, big
-/// numerals, red LED timecode, and a board that claps on a tap anywhere.
-/// Point it at a shot and each clap logs a take — with the frame the sticks
-/// closed on — to the shot list and the day's camera report, so the board is
-/// part of the production record rather than a prop.
-///
-/// On an iPad in landscape the board takes most of the screen with the
-/// controls and take log beside it; in portrait it stacks.
+/// This screen is the AC's control surface — what's being slated, the take
+/// flow, the timecode and the log. "Show board" (or turning an iPhone
+/// sideways) puts the board itself up full screen for the camera.
 struct SlateView: View {
 
     let projectID: String
     let projectTitle: String
 
-    @StateObject private var model: SlateViewModel
     @EnvironmentObject private var auth: AuthStore
-    @Environment(\.scenePhase) private var scenePhase
+    @EnvironmentObject private var network: NetworkMonitor
+    @StateObject private var model: SlateViewModel
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
 
-    @State private var isEditingBoard = false
+    @State private var isShowingBoard = false
+    @State private var isShowingSetup = false
     @State private var isPickingShot = false
-    @State private var isShowingTimecode = false
-    @State private var isPresenting = false
+    @State private var isShowingJam = false
+    @State private var isShowingLog = false
+    @State private var editingTake: SlateTake?
+    @State private var sharedFile: SharedFile?
 
-    init(projectID: String, projectTitle: String) {
+    /// Opened from a shot or a scene, the board starts on it.
+    init(projectID: String, projectTitle: String, initialShotID: String? = nil, initialSceneID: String? = nil) {
         self.projectID = projectID
         self.projectTitle = projectTitle
-        _model = StateObject(wrappedValue: SlateViewModel(projectID: projectID, projectTitle: projectTitle))
+        _model = StateObject(wrappedValue: SlateViewModel(
+            projectID: projectID,
+            projectTitle: projectTitle,
+            initialShotID: initialShotID,
+            initialSceneID: initialSceneID
+        ))
     }
 
     var body: some View {
-        GeometryReader { geometry in
-            let isWide = geometry.size.width > geometry.size.height && geometry.size.width >= 560
-            if isWide {
-                HStack(spacing: 0) {
-                    SlateBoard(model: model, projectTitle: projectTitle, allowsSwipeToClap: true)
-                        .padding(16)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-                    Rectangle().fill(Theme.border).frame(width: 1)
-
-                    ScrollView {
-                        panel
-                            .padding(16)
-                    }
-                    .frame(width: min(420, max(300, geometry.size.width * 0.34)))
-                    .background(Theme.background)
-                }
-            } else {
-                ScrollView {
-                    VStack(spacing: 16) {
-                        SlateBoard(model: model, projectTitle: projectTitle)
-                            .frame(height: min(geometry.size.width * 0.86, geometry.size.height * 0.58, 720))
-                        panel
-                    }
-                    .frame(maxWidth: 760)
-                    .frame(maxWidth: .infinity)
-                    .screenPadding()
-                    .padding(.top, 8)
-                    .padding(.bottom, 40)
-                }
+        ScrollView {
+            VStack(spacing: 14) {
+                miniBoard
+                nowSlating
+                SlateActionBar(model: model)
+                conditions
+                timecodeCard
+                reportRow
+                takesSection
             }
+            .screenPadding()
+            .padding(.top, 8)
+            .padding(.bottom, 40)
         }
         .background(Theme.background)
         .navigationTitle("Slate")
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(Theme.background, for: .navigationBar)
+        .toolbar(isShowingBoard ? .hidden : .visible, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
-        .toolbar { toolbar }
-        .background { SlateKeyCommands(model: model) }
-        .sheet(isPresented: $isEditingBoard) {
-            SlateEditSheet(model: model, projectTitle: projectTitle)
+        .toolbar { toolbarContent }
+        .overlay {
+            if isShowingBoard {
+                SlateBoardView(model: model) {
+                    withAnimation(.easeOut(duration: 0.2)) { isShowingBoard = false }
+                    OrientationLock.requestPortrait()
+                }
+                .transition(.opacity)
+                .zIndex(1)
+            }
+        }
+        // Turning an iPhone sideways is the natural "hold it up" gesture.
+        .onChange(of: verticalSizeClass) { _, newValue in
+            if newValue == .compact, !isShowingBoard {
+                withAnimation(.easeOut(duration: 0.2)) { isShowingBoard = true }
+            }
+        }
+        .sheet(isPresented: $isShowingSetup) {
+            SlateSetupSheet(model: model)
         }
         .sheet(isPresented: $isPickingShot) {
-            SlateShotPicker(shots: model.shots, scenes: model.scenes) { shot in
-                model.link(to: shot)
-            }
+            SlateShotPicker(model: model)
         }
-        .sheet(isPresented: $isShowingTimecode) {
-            TimecodeSettingsSheet(model: model, ltc: model.ltc)
+        .sheet(isPresented: $isShowingJam) {
+            JamSheet(model: model)
         }
-        .fullScreenCover(isPresented: $isPresenting) {
-            SlatePresentView(model: model, projectTitle: projectTitle)
+        .sheet(isPresented: $isShowingLog) {
+            SlateLogView(model: model)
         }
-        .task { await model.loadContext() }
+        .sheet(item: $editingTake) { take in
+            TakeEditSheet(model: model, take: take)
+        }
+        .sheet(item: $sharedFile) { file in
+            ActivityView(items: [file.url])
+                .presentationDetents([.medium, .large])
+                .ignoresSafeArea()
+        }
+        .alert(
+            "Slate",
+            isPresented: Binding(get: { model.notice != nil }, set: { if !$0 { model.notice = nil } }),
+            actions: { Button("OK", role: .cancel) { model.notice = nil } },
+            message: { Text(model.notice ?? "") }
+        )
+        .task {
+            model.userID = auth.userID
+            await model.onAppear()
+        }
         .onAppear {
-            model.activate(ownerID: auth.userID)
-            // Marking takes is the whole job of this screen; the screen must
-            // not dim halfway through a setup.
+            // The board has to stay lit through a setup, and an iPhone may
+            // turn sideways here to put the board up.
             UIApplication.shared.isIdleTimerDisabled = true
             OrientationLock.allowLandscape(true)
-            if model.state.maxBrightness { ScreenBrightness.boost() }
         }
         .onDisappear {
-            model.deactivate()
             UIApplication.shared.isIdleTimerDisabled = false
             OrientationLock.allowLandscape(false)
-            ScreenBrightness.restore()
+            model.onDisappear()
         }
-        .onChange(of: scenePhase) { phase in
-            switch phase {
-            case .active:
-                if model.state.maxBrightness { ScreenBrightness.boost() }
-            default:
-                // iOS keeps whatever brightness an app leaves behind.
-                ScreenBrightness.restore()
-            }
-        }
-        .onChange(of: model.state.maxBrightness) { isOn in
-            isOn ? ScreenBrightness.boost() : ScreenBrightness.restore()
+        .onChange(of: network.isOnline) { _, online in
+            if online { model.syncReportsSoon(after: 0.5) }
         }
     }
 
+    // MARK: - Toolbar
+
     @ToolbarContentBuilder
-    private var toolbar: some ToolbarContent {
-        ToolbarItemGroup(placement: .topBarTrailing) {
+    private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
             Button {
                 Haptics.tap()
-                isPresenting = true
+                withAnimation(.easeOut(duration: 0.2)) { isShowingBoard = true }
             } label: {
-                Image(systemName: "arrow.up.left.and.arrow.down.right").tappableArea()
+                Label("Show board", systemImage: "rectangle.inset.filled")
             }
-            .accessibilityLabel("Full-screen board")
-            .keyboardShortcut("f", modifiers: .command)
-
+            .keyboardShortcut("b", modifiers: .command)
+        }
+        ToolbarItem(placement: .topBarTrailing) {
             Menu {
-                Button {
-                    isEditingBoard = true
-                } label: {
-                    Label("Edit board", systemImage: "square.and.pencil")
+                Button { isShowingSetup = true } label: {
+                    Label("Board & sync setup", systemImage: "slider.horizontal.3")
                 }
-                Button {
-                    isShowingTimecode = true
-                } label: {
-                    Label("Timecode", systemImage: "clock.badge.checkmark")
+                Button { isShowingLog = true } label: {
+                    Label("Take log", systemImage: "list.bullet.rectangle")
+                }
+                Button { export() } label: {
+                    Label("Export log as CSV…", systemImage: "square.and.arrow.up")
+                }
+                .disabled(model.takes.isEmpty)
+                Divider()
+                Button { model.nextRoll() } label: {
+                    Label("Next camera roll (\(SlateViewModel.increment(model.state.roll)))", systemImage: "film.stack")
+                }
+                Button { model.nextSoundRoll() } label: {
+                    Label("Next sound roll (\(SlateViewModel.increment(model.state.soundRoll)))", systemImage: "waveform")
                 }
                 Divider()
-                Button {
-                    model.nextSetup()
-                } label: {
-                    Label("Next setup", systemImage: "forward.end")
+                Button(role: .destructive) { model.undoLastMark() } label: {
+                    Label("Undo last mark", systemImage: "arrow.uturn.backward")
                 }
-                Button {
-                    model.nextRoll()
-                } label: {
-                    Label("Next roll", systemImage: "arrow.triangle.2.circlepath")
-                }
-                Divider()
-                Toggle(isOn: Binding(
-                    get: { AppSettings.shared.slateSoundEnabled },
-                    set: { AppSettings.shared.slateSoundEnabled = $0 }
-                )) {
-                    Label("Clap sound", systemImage: "speaker.wave.2")
-                }
+                .disabled(model.takes.isEmpty)
             } label: {
                 Image(systemName: "ellipsis.circle").tappableArea()
             }
@@ -161,103 +163,418 @@ struct SlateView: View {
         }
     }
 
-    private var panel: some View {
-        SlateControlPanel(
-            model: model,
-            ltc: model.ltc,
-            onEditBoard: { isEditingBoard = true },
-            onPickShot: { isPickingShot = true },
-            onTimecode: { isShowingTimecode = true }
-        )
-    }
-}
-
-// MARK: - Present mode
-
-/// The board and nothing else, for holding up in front of a lens. Tap or
-/// swipe down anywhere to clap; the two faint controls in the corners are
-/// the only way out.
-struct SlatePresentView: View {
-
-    @ObservedObject var model: SlateViewModel
-    let projectTitle: String
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
-
-            SlateBoard(model: model, projectTitle: projectTitle, allowsSwipeToClap: true)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+    private func export() {
+        do {
+            sharedFile = SharedFile(url: try model.exportCSV())
+        } catch {
+            model.notice = error.localizedDescription
         }
-        .overlay(alignment: .topLeading) {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.body.weight(.bold))
-                    .foregroundStyle(.white.opacity(0.55))
-                    .frame(width: 44, height: 44)
-                    .background(.black.opacity(0.4), in: Circle())
-            }
-            .padding(14)
-            .accessibilityLabel("Close full-screen board")
-            .keyboardShortcut(.cancelAction)
-        }
-        .overlay(alignment: .topTrailing) {
-            HStack(spacing: 6) {
-                cornerButton("minus", label: "Previous take") { model.adjustTake(by: -1) }
-                cornerButton("plus", label: "Next take") { model.adjustTake(by: 1) }
-            }
-            .padding(14)
-        }
-        .background { SlateKeyCommands(model: model) }
-        .statusBarHidden()
-        .persistentSystemOverlays(.hidden)
-        .preferredColorScheme(.dark)
     }
 
-    private func cornerButton(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {
+    // MARK: - Mini board
+
+    private var miniBoard: some View {
+        Button {
+            withAnimation(.easeOut(duration: 0.2)) { isShowingBoard = true }
+        } label: {
+            VStack(spacing: 0) {
+                BoardSticks(isClosed: model.sticksClosed || model.state.kind == .mos)
+                    .frame(height: 40)
+                VStack(spacing: 8) {
+                    TimelineView(.animation) { _ in
+                        let tc = model.frozenTimecode ?? model.timecode(at: SlateClock.now())
+                        LEDTimecode(text: tc.formatted(model.state.frameRate), frozen: model.frozenTimecode != nil)
+                            .frame(height: 64)
+                    }
+                    HStack(spacing: 0) {
+                        miniField("Scene", model.state.scene)
+                        miniField("Shot", model.state.setup.nonEmpty ?? "—")
+                        miniField("Take", "\(model.state.take)", accent: true)
+                        miniField("Roll", model.state.roll)
+                    }
+                }
+                .padding(12)
+                .background(Color(hex: 0x0B0B0F))
+            }
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
+            .overlay(alignment: .topTrailing) {
+                Image(systemName: "arrow.up.left.and.arrow.down.right")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.white.opacity(0.7))
+                    .padding(8)
+                    .background(.black.opacity(0.5), in: Circle())
+                    .padding(8)
+            }
+            .overlay {
+                if model.isFlashing { Color.white.allowsHitTesting(false) }
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Board: \(model.state.spokenIdentifier). Opens the full-screen board.")
+    }
+
+    private func miniField(_ label: String, _ value: String, accent: Bool = false) -> some View {
+        VStack(spacing: 1) {
+            Text(label.uppercased())
+                .font(.system(size: 8, weight: .bold))
+                .foregroundStyle(.white.opacity(0.45))
+            Text(value)
+                .font(.system(size: 20, weight: .heavy, design: .monospaced))
+                .foregroundStyle(accent ? Theme.Brand.b400 : .white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Now slating
+
+    private var nowSlating: some View {
+        Card(padding: 12) {
+            VStack(alignment: .leading, spacing: 10) {
+                Button {
+                    Haptics.tap()
+                    isPickingShot = true
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: model.linkedShot != nil ? "camera.fill" : "list.bullet.rectangle")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(Theme.accent)
+                            .frame(width: 32, height: 32)
+                            .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .accessibilityHidden(true)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(slatingTitle)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(Theme.textPrimary)
+                                .lineLimit(1)
+                            Text(slatingSubtitle)
+                                .font(.caption)
+                                .foregroundStyle(Theme.textTertiary)
+                                .lineLimit(2)
+                        }
+                        Spacer(minLength: 0)
+                        Text("Change")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(Theme.accent)
+                    }
+                    .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+
+                if model.linkedShot != nil {
+                    HStack(spacing: 8) {
+                        smallButton("Shot done", symbol: "checkmark.circle") { model.completeShotAndAdvance() }
+                        smallButton(model.nextShot.map { "Next: \($0.displayNumber)" } ?? "Next shot", symbol: "forward.end") {
+                            model.moveToNextShot()
+                        }
+                        .disabled(model.nextShot == nil)
+                    }
+                }
+            }
+        }
+    }
+
+    private var slatingTitle: String {
+        if let shot = model.linkedShot {
+            return "Scene \(model.state.scene) · Shot \(shot.displayNumber)"
+        }
+        if let scene = model.linkedScene {
+            return "Scene \(scene.sceneNumber ?? model.state.scene)"
+        }
+        return model.shots.isEmpty ? "Scene \(model.state.scene)" : "Pick what you're shooting"
+    }
+
+    private var slatingSubtitle: String {
+        if let shot = model.linkedShot {
+            var parts: [String] = []
+            if let description = shot.description?.nonEmpty { parts.append(description) }
+            if !shot.techSummary.isEmpty { parts.append(shot.techSummary) }
+            return parts.joined(separator: " · ").nonEmpty ?? "Takes log against this shot"
+        }
+        if let scene = model.linkedScene { return scene.displayHeading }
+        return model.shots.isEmpty
+            ? "Add shots to the shot list to log takes against them."
+            : "Choose a shot from the shot list, so every take logs against it."
+    }
+
+    private func smallButton(_ title: String, symbol: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: symbol)
-                .font(.body.weight(.bold))
-                .foregroundStyle(.white.opacity(0.55))
-                .frame(width: 44, height: 44)
-                .background(.black.opacity(0.4), in: Circle())
+            Label(title, systemImage: symbol)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(Theme.textPrimary)
+                .lineLimit(1)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 40)
+                .background(Theme.elevated, in: RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous))
         }
-        .accessibilityLabel(label)
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Conditions
+
+    private var conditions: some View {
+        VStack(spacing: 10) {
+            Picker("Take type", selection: Binding(
+                get: { model.state.kind },
+                set: { kind in model.update { $0.kind = kind }; Haptics.selectionChanged() }
+            )) {
+                ForEach(TakeKind.allCases) { kind in
+                    Text(kind.label).tag(kind)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            HStack(spacing: 10) {
+                takeStepper
+                toggleChip(model.state.isInterior ? "INT" : "EXT", accessibility: "Interior or exterior") {
+                    model.update { $0.isInterior.toggle() }
+                }
+                toggleChip(model.state.isDay ? "DAY" : "NIGHT", accessibility: "Day or night") {
+                    model.update { $0.isDay.toggle() }
+                }
+            }
+        }
+    }
+
+    private var takeStepper: some View {
+        HStack(spacing: 0) {
+            Button { model.adjustTake(by: -1) } label: {
+                Image(systemName: "minus").frame(maxWidth: .infinity, minHeight: Theme.minTouchTarget)
+            }
+            .accessibilityLabel("Previous take number")
+            Text("T\(model.state.take)")
+                .font(.subheadline.weight(.bold).monospacedDigit())
+                .foregroundStyle(Theme.textPrimary)
+                .frame(minWidth: 40)
+            Button { model.adjustTake(by: 1) } label: {
+                Image(systemName: "plus").frame(maxWidth: .infinity, minHeight: Theme.minTouchTarget)
+            }
+            .accessibilityLabel("Next take number")
+        }
+        .font(.body.weight(.bold))
+        .foregroundStyle(Theme.textSecondary)
+        .buttonStyle(.plain)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous).strokeBorder(Theme.border))
+        .disabled(model.phase != .ready)
+    }
+
+    private func toggleChip(_ title: String, accessibility: String, action: @escaping () -> Void) -> some View {
+        Button {
+            Haptics.selectionChanged()
+            action()
+        } label: {
+            Text(title)
+                .font(.footnote.weight(.bold).monospaced())
+                .foregroundStyle(Theme.textPrimary)
+                .frame(maxWidth: .infinity, minHeight: Theme.minTouchTarget)
+                .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous).strokeBorder(Theme.border))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(accessibility): \(title)")
+    }
+
+    // MARK: - Timecode
+
+    private var timecodeCard: some View {
+        Card(padding: 12) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .firstTextBaseline) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Timecode")
+                            .font(.headline)
+                            .foregroundStyle(Theme.textPrimary)
+                        Text("\(model.state.frameRate.label) fps · \(model.timecodeSourceLabel)")
+                            .font(.caption)
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                    Spacer()
+                    Button("Jam…") { isShowingJam = true }
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.accent)
+                        .frame(minHeight: Theme.minTouchTarget)
+                }
+
+                if let message = model.ltcMessage {
+                    Text(message)
+                        .font(.caption)
+                        .foregroundStyle(model.isListeningForLTC ? Theme.textSecondary : Theme.textTertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Toggle(isOn: Binding(get: { model.state.ltcOutputEnabled }, set: { model.setLTCOutput($0) })) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Timecode out (LTC)")
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.textPrimary)
+                        Text("Sends the board’s timecode out of the headphone output into a camera’s audio input. The sync beep is off while it runs.")
+                            .font(.caption)
+                            .foregroundStyle(Theme.textTertiary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .tint(Theme.accent)
+            }
+        }
+    }
+
+    // MARK: - Reports
+
+    private var reportRow: some View {
+        HStack(spacing: 10) {
+            Image(systemName: reportSymbol)
+                .foregroundStyle(reportTint)
+                .frame(width: 24)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Camera & sound reports")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(Theme.textPrimary)
+                Text(reportText)
+                    .font(.caption)
+                    .foregroundStyle(Theme.textTertiary)
+                    .lineLimit(2)
+            }
+            Spacer(minLength: 0)
+            if case .failed = model.reportStatus {
+                Button("Retry") { Task { await model.syncReports() } }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.accent)
+            } else if case .syncing = model.reportStatus {
+                ProgressView().tint(Theme.textTertiary)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous))
+        .accessibilityElement(children: .combine)
+    }
+
+    private var reportSymbol: String {
+        switch model.reportStatus {
+        case .idle, .synced: return "checkmark.icloud"
+        case .syncing: return "arrow.triangle.2.circlepath.icloud"
+        case .waiting: return "icloud.slash"
+        case .failed: return "exclamationmark.icloud"
+        }
+    }
+
+    private var reportTint: Color {
+        switch model.reportStatus {
+        case .idle, .synced, .syncing: return Theme.success
+        case .waiting: return Theme.warning
+        case .failed: return Theme.danger
+        }
+    }
+
+    private var reportText: String {
+        switch model.reportStatus {
+        case .idle:
+            return model.takes.isEmpty ? "Each take is written to the project’s reports." : "Up to date."
+        case .syncing:
+            return "Updating…"
+        case .waiting(let count):
+            return "\(count) report\(count == 1 ? "" : "s") waiting for a connection."
+        case .synced(let date):
+            return "Up to date · \(date.formatted(date: .omitted, time: .shortened))"
+        case .failed(let message):
+            return message
+        }
+    }
+
+    // MARK: - Takes
+
+    private var takesSection: some View {
+        let takes = model.takesOnBoard
+        return VStack(alignment: .leading, spacing: 10) {
+            SectionHeader(
+                title: model.linkedShot != nil ? "This shot" : "Scene \(model.state.scene)",
+                subtitle: takes.isEmpty ? "No takes yet" : "\(takes.count) take\(takes.count == 1 ? "" : "s") · \(takes.filter { $0.rating == .circled }.count) circled",
+                actionTitle: model.takes.isEmpty ? nil : "All takes"
+            ) {
+                isShowingLog = true
+            }
+
+            VStack(spacing: 6) {
+                ForEach(takes.prefix(15)) { take in
+                    TakeRow(take: take, isCurrent: model.currentTake?.id == take.id) {
+                        editingTake = take
+                    } onRate: { rating in
+                        model.setRating(rating, for: take)
+                    }
+                }
+            }
+        }
     }
 }
 
-// MARK: - Keyboard
+// MARK: - Take row
 
-/// Hardware-keyboard and remote control of the board. Bluetooth camera
-/// remotes and page turners send Space, Return or Page Down, so any of
-/// them claps — an AC can slate from behind the camera.
-private struct SlateKeyCommands: View {
-    @ObservedObject var model: SlateViewModel
+struct TakeRow: View {
+    let take: SlateTake
+    var isCurrent = false
+    let onOpen: () -> Void
+    let onRate: (TakeRating) -> Void
 
     var body: some View {
-        ZStack {
-            Button("Mark") { model.mark() }
-                .keyboardShortcut(.space, modifiers: [])
-            Button("Mark") { model.mark() }
-                .keyboardShortcut(.return, modifiers: [])
-            Button("Mark") { model.mark() }
-                .keyboardShortcut(.pageDown, modifiers: [])
-            Button("Next take") { model.adjustTake(by: 1) }
-                .keyboardShortcut(.upArrow, modifiers: [])
-            Button("Previous take") { model.adjustTake(by: -1) }
-                .keyboardShortcut(.downArrow, modifiers: [])
-            Button("Next setup") { model.nextSetup() }
-                .keyboardShortcut("n", modifiers: .command)
-            Button("Next roll") { model.nextRoll() }
-                .keyboardShortcut("r", modifiers: [.command, .shift])
+        Button(action: onOpen) {
+            HStack(spacing: 10) {
+                Button {
+                    onRate(.circled)
+                } label: {
+                    Image(systemName: take.rating == .circled ? "circle.circle.fill" : "circle")
+                        .font(.title3)
+                        .foregroundStyle(take.rating == .circled ? Theme.success : Theme.textTertiary)
+                        .tappableArea(36)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(take.rating == .circled ? "Uncircle take" : "Circle take")
+
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Text("Take \(take.take)")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Theme.textPrimary)
+                        if take.kind != .sync { Chip(text: take.kind.label, tint: Theme.warning) }
+                        if take.isTailSlate { Chip(text: "TAIL", tint: Theme.textTertiary) }
+                        if take.rating == .ng || take.rating == .falseStart {
+                            Chip(text: take.rating.label, tint: Theme.danger)
+                        } else if take.rating == .good {
+                            Chip(text: "Good", tint: Color(hex: 0x3B82F6))
+                        }
+                        if isCurrent { Chip(text: "Now", tint: Theme.accent, prominent: true) }
+                    }
+                    HStack(spacing: 8) {
+                        if let tc = take.timecode {
+                            Text(tc).monospacedDigit()
+                        }
+                        if let duration = take.duration {
+                            Text(String(format: "%d:%02d", Int(duration) / 60, Int(duration) % 60)).monospacedDigit()
+                        }
+                        if let note = take.note?.nonEmpty {
+                            Text(note).lineLimit(1)
+                        }
+                    }
+                    .font(.caption)
+                    .foregroundStyle(Theme.textTertiary)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous)
+                    .strokeBorder(isCurrent ? Theme.accent.opacity(0.6) : .clear, lineWidth: 1.5)
+            )
         }
-        .opacity(0)
-        .frame(width: 0, height: 0)
-        .accessibilityHidden(true)
-        .allowsHitTesting(false)
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Take \(take.take), \(take.rating.label)\(take.timecode.map { ", timecode \($0)" } ?? "")")
     }
 }

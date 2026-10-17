@@ -1,26 +1,32 @@
 import logger from '@/lib/logger';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
-import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+/**
+ * The web app is signed in with cookies; the iPhone and iPad app sends its
+ * access token as `Authorization: Bearer …`. Either identifies the user.
+ */
+function clientFor(req: NextRequest) {
+  const header = req.headers.get('authorization');
+  const token = header?.startsWith('Bearer ') ? header.slice(7).trim() : '';
+  if (!token) return { supabase: createServerSupabaseClient(), token: undefined };
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  return { supabase, token };
+}
 
 export async function POST(req: NextRequest) {
   try {
-    // The web app sends its cookie session. The iOS app has no cookies and
-    // sends its access token instead, which App Store review requires it to
-    // be able to do (in-app account deletion).
-    const bearer = req.headers.get('authorization')?.match(/^Bearer\s+(.+)$/i)?.[1];
-    const supabase = bearer
-      ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
-          global: { headers: { Authorization: `Bearer ${bearer}` } },
-          auth: { persistSession: false, autoRefreshToken: false },
-        })
-      : createServerSupabaseClient();
+    const { supabase, token } = clientFor(req);
 
     const {
       data: { user },
       error: authErr,
-    } = bearer ? await supabase.auth.getUser(bearer) : await supabase.auth.getUser();
+    } = token ? await supabase.auth.getUser(token) : await supabase.auth.getUser();
 
     if (authErr || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

@@ -25,6 +25,14 @@ interface CameraTake {
   type: string;
   circle: boolean;
   notes: string;
+  /** Timecode at the clap. */
+  timecode?: string;
+  /** Timecode at an end-board. */
+  tail_timecode?: string;
+  day_night?: string;
+  rating?: string;
+  /** Set on takes logged by the iOS slate, which owns them. */
+  slate_id?: string;
 }
 
 interface SoundTake {
@@ -35,7 +43,12 @@ interface SoundTake {
   track2: string;
   wild_track: boolean;
   notes: string;
+  timecode?: string;
+  circle?: boolean;
+  slate_id?: string;
 }
+
+const SLATE_HINT = 'Logged by the slate in the iOS app. It rewrites this take the next time it syncs the roll, so change it there.';
 
 interface Report {
   id: string;
@@ -53,8 +66,8 @@ interface Report {
   created_at: string;
 }
 
-const BLANK_CAM_TAKE: CameraTake = { scene: '', setup: '', take: '', lens: '', stop: '', filter: '', focus_dist: '', int_ext: 'INT', type: 'SYNC', circle: false, notes: '' };
-const BLANK_SND_TAKE: SoundTake = { roll: '', scene: '', take: '', track1: '', track2: '', wild_track: false, notes: '' };
+const BLANK_CAM_TAKE: CameraTake = { scene: '', setup: '', take: '', lens: '', stop: '', filter: '', focus_dist: '', int_ext: 'INT', type: 'SYNC', circle: false, notes: '', timecode: '' };
+const BLANK_SND_TAKE: SoundTake = { roll: '', scene: '', take: '', track1: '', track2: '', wild_track: false, notes: '', timecode: '' };
 
 export default function CameraReportsPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -203,15 +216,22 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
           <table className="w-full text-xs">
             <thead className="bg-surface-800/40 text-surface-500 text-[11px] uppercase tracking-[0.04em]">
               <tr>
-                {['Scene', 'Setup', 'Take', 'Lens', 'f/', 'Filter', 'Focus', 'I/E', 'Type', '✓ Circle', 'Notes', ''].map((h) => (
+                {['Scene', 'Setup', 'Take', 'Timecode', 'Lens', 'f/', 'Filter', 'Focus', 'I/E', 'Type', '✓ Circle', 'Notes', ''].map((h) => (
                   <th key={h} className="px-2 py-2.5 text-left whitespace-nowrap font-semibold">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {camTakes.map((t, i) => (
-                <tr key={i} className={cn('border-t border-surface-800/60 transition-colors', t.circle ? 'bg-orange-500/5' : 'hover:bg-surface-800/20')}>
-                  {(['scene', 'setup', 'take', 'lens', 'stop', 'filter', 'focus_dist'] as const).map((f) => (
+                <tr key={i} title={t.slate_id ? SLATE_HINT : undefined} className={cn('border-t border-surface-800/60 transition-colors', t.circle ? 'bg-orange-500/5' : 'hover:bg-surface-800/20')}>
+                  {(['scene', 'setup', 'take'] as const).map((f) => (
+                    <td key={f} className="px-1.5 py-2">
+                      <input value={t[f]} onChange={(e) => updateCamTake(i, f, e.target.value)}
+                        className="w-16 bg-surface-800/60 border border-surface-700/40 rounded-md px-2 py-1.5 text-white text-xs focus:outline-none focus:border-orange-500/50 focus:bg-surface-800" />
+                    </td>
+                  ))}
+                  <TimecodeCell value={t.timecode} tail={t.tail_timecode} fromSlate={!!t.slate_id} onChange={(v) => updateCamTake(i, 'timecode', v)} />
+                  {(['lens', 'stop', 'filter', 'focus_dist'] as const).map((f) => (
                     <td key={f} className="px-1.5 py-2">
                       <input value={t[f]} onChange={(e) => updateCamTake(i, f, e.target.value)}
                         className="w-16 bg-surface-800/60 border border-surface-700/40 rounded-md px-2 py-1.5 text-white text-xs focus:outline-none focus:border-orange-500/50 focus:bg-surface-800" />
@@ -266,15 +286,22 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
           <table className="w-full text-xs">
             <thead className="bg-surface-800/40 text-surface-500 text-[11px] uppercase tracking-[0.04em]">
               <tr>
-                {['Roll', 'Scene', 'Take', 'Track 1', 'Track 2', 'Wild Track', 'Notes', ''].map((h) => (
+                {['Roll', 'Scene', 'Take', 'Timecode', 'Track 1', 'Track 2', 'Wild Track', 'Notes', ''].map((h) => (
                   <th key={h} className="px-2 py-2.5 text-left font-semibold whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {sndTakes.map((t, i) => (
-                <tr key={i} className={cn('border-t border-surface-800/60 transition-colors', t.wild_track ? 'bg-purple-500/5' : 'hover:bg-surface-800/20')}>
-                  {(['roll', 'scene', 'take', 'track1', 'track2'] as const).map((f) => (
+                <tr key={i} title={t.slate_id ? SLATE_HINT : undefined} className={cn('border-t border-surface-800/60 transition-colors', t.wild_track ? 'bg-purple-500/5' : t.circle ? 'bg-orange-500/5' : 'hover:bg-surface-800/20')}>
+                  {(['roll', 'scene', 'take'] as const).map((f) => (
+                    <td key={f} className="px-1.5 py-2">
+                      <input value={t[f]} onChange={(e) => updateSndTake(i, f, e.target.value)}
+                        className="w-20 bg-surface-800/60 border border-surface-700/40 rounded-md px-2 py-1.5 text-white text-xs focus:outline-none focus:border-orange-500/50 focus:bg-surface-800" />
+                    </td>
+                  ))}
+                  <TimecodeCell value={t.timecode} fromSlate={!!t.slate_id} onChange={(v) => updateSndTake(i, 'timecode', v)} />
+                  {(['track1', 'track2'] as const).map((f) => (
                     <td key={f} className="px-1.5 py-2">
                       <input value={t[f]} onChange={(e) => updateSndTake(i, f, e.target.value)}
                         className="w-20 bg-surface-800/60 border border-surface-700/40 rounded-md px-2 py-1.5 text-white text-xs focus:outline-none focus:border-orange-500/50 focus:bg-surface-800" />
@@ -355,8 +382,9 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
       ) : (
         <div className="space-y-3">
           {(activeTab === 'camera' ? cameraReports : soundReports).map((r) => {
-            const takes = activeTab === 'camera' ? r.takes ?? [] : r.sound_takes ?? [];
-            const circled = activeTab === 'camera' ? (r.takes ?? []).filter((t) => t.circle).length : 0;
+            const takes: Array<CameraTake | SoundTake> = activeTab === 'camera' ? r.takes ?? [] : r.sound_takes ?? [];
+            const circled = takes.filter((t) => t.circle).length;
+            const slated = takes.filter((t) => t.slate_id).length;
             return (
               <Card key={r.id} className="group p-4">
                 <div className="flex items-center justify-between gap-4">
@@ -365,6 +393,11 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
                       <span className="text-sm font-bold text-white">{r.roll_number ? `Roll ${r.roll_number}` : 'No Roll #'}</span>
                       {r.report_date && <span className="text-xs text-surface-500">{r.report_date}</span>}
                       {r.camera_id && <span className="text-xs px-2 py-0.5 bg-blue-500/10 text-blue-300 rounded">{r.camera_id}</span>}
+                      {slated > 0 && (
+                        <span className="text-xs px-2 py-0.5 bg-orange-500/10 text-orange-300 rounded" title={SLATE_HINT}>
+                          {slated === takes.length ? 'From the slate' : `${slated} from the slate`}
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-surface-500 mt-0.5">
                       {takes.length} takes{circled > 0 ? ` · ${circled} circled` : ''}
@@ -387,5 +420,30 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
       )}
       <ConfirmDialog />
     </div>
+  );
+}
+
+/** The sync timecode, typed or logged by the slate, with the end-board below it. */
+function TimecodeCell({ value, tail, fromSlate, onChange }: {
+  value?: string;
+  tail?: string;
+  fromSlate: boolean;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <td className="px-1.5 py-2 align-top">
+      <input
+        value={value ?? ''}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="00:00:00:00"
+        aria-label="Timecode"
+        className="w-28 bg-surface-800/60 border border-surface-700/40 rounded-md px-2 py-1.5 text-white text-xs font-mono tabular-nums focus:outline-none focus:border-orange-500/50 focus:bg-surface-800"
+      />
+      {(tail || fromSlate) && (
+        <span className="mt-0.5 block text-[10px] text-surface-500 font-mono whitespace-nowrap">
+          {tail ? `tail ${tail}` : 'slate'}
+        </span>
+      )}
+    </td>
   );
 }

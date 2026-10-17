@@ -27,6 +27,7 @@ public/downloads/*.dmg
 public/downloads/*.exe
 public/downloads/*.AppImage
 tsconfig.tsbuildinfo
+public/downloads/*.ipa
 
 # Local manuscripts, not for the public repo
 /*.pdf

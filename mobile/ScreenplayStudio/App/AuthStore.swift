@@ -133,41 +133,50 @@ final class AuthStore: ObservableObject {
 
     func signOut() async {
         await Supabase.shared.signOut()
-        await clearLocalData()
+        await LocalCache.shared.clearAll()
+        profile = nil
+        AppSettings.shared.lastProjectID = ""
         phase = .signedOut
         Haptics.tap()
     }
 
-    /// Deletes the account on the server, then everything about it on this
-    /// device. Returns whether it worked; on failure `errorMessage` says why.
-    func deleteAccount() async -> Bool {
-        guard !isWorking else { return false }
+    // MARK: - Account deletion
+
+    /// The website that hosts the account endpoints.
+    static let webBaseURL = URL(string: "https://screenplaystudio.fun")!
+
+    /// Permanently deletes the account and everything it owns, then signs out.
+    /// Returns an error message to show, or nil on success.
+    func deleteAccount() async -> String? {
+        guard !isWorking else { return nil }
         isWorking = true
-        errorMessage = nil
         defer { isWorking = false }
 
         do {
-            try await Supabase.shared.deleteAccount(siteURL: AppLinks.website)
-            await clearLocalData()
-            phase = .signedOut
-            Haptics.success()
-            return true
-        } catch {
-            errorMessage = Self.friendlyMessage(for: error)
-            Haptics.error()
-            return false
-        }
-    }
+            let token = try await Supabase.shared.validAccessToken()
+            var request = URLRequest(url: Self.webBaseURL.appendingPathComponent("api/user/delete-account"))
+            request.httpMethod = "POST"
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            request.setValue("application/json", forHTTPHeaderField: "Accept")
+            request.timeoutInterval = 30
 
-    /// Nothing from one account may be left for the next person to sign in
-    /// on this device — least of all queued writes, which would replay under
-    /// their session.
-    private func clearLocalData() async {
-        await LocalCache.shared.clearAll()
-        await SyncQueue.shared.clear()
-        SlateStore.removeAll()
-        profile = nil
-        AppSettings.shared.lastProjectID = ""
+            let (_, response) = try await URLSession.shared.data(for: request)
+            let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+            guard (200..<300).contains(status) else {
+                Haptics.error()
+                return status == 401
+                    ? "Your session has expired. Sign in again, then delete your account."
+                    : "The account couldn’t be deleted (error \(status)). Try again, or contact support from the website."
+            }
+
+            await SyncQueue.shared.clear()
+            await signOut()
+            Haptics.success()
+            return nil
+        } catch {
+            Haptics.error()
+            return "Couldn’t reach Screenplay Studio. Check your connection and try again."
+        }
     }
 
     // MARK: - Profile

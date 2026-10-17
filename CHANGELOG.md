@@ -1,6 +1,49 @@
 # Changelog
 
-## [Unreleased]
+## [3.1.0] - 2026-10-16
+### Desktop app (Mac, Windows, Linux)
+- Your local projects now survive restarting the app. The bundled server used a new random port on every launch, and browser storage is per-port, so characters, ideas, shots and everything else saved in local mode started empty each time. It now keeps one port
+- Choosing "Use without an account" on first launch no longer bounces you to the sign-in page
+- Starts reliably on slower machines: the app waits up to a minute for its local server (it gave up after 5 seconds), shows a proper launch screen, and if something does go wrong offers Try Again, the log, and a way to report it. A crashed or frozen window can be reloaded in place, and the server restarts itself if it stops
+- A native window on macOS: the traffic lights sit in the sidebar like Mail or Notes, and the top of every page drags the window
+- A right-click menu everywhere: spelling suggestions and Learn Word, cut / copy / paste, links and images, Look Up on Mac
+- A full menu bar: New Window (⌘⇧N), Open… for Screenplay Studio, Fountain and Final Draft files, Open Recent, Back / Forward (⌘[ ⌘]), a Go menu for the open project's tools, Toggle Sidebar (⌘\), persistent zoom, spell-check toggle, Check for Updates, and Help › Troubleshooting
+- Double-click a .screenplay, .fountain or .fdx file to open it as a project; recent files appear in the Dock / Jump List
+- Multiple windows, and in-app "open in new window" links open real windows
+- Swipe or mouse back/forward buttons to go back and forward
+- Updates download quietly and a small banner offers to restart — no more interrupting dialog
+- New Settings › Desktop App: where projects live, window appearance, text size, what opens at launch, spelling, updates, the projects folder, and a shortcut reference
+- The sidebar shows only what you work with; the website's pages live in the Help menu. In local mode, account-only items are hidden
+- Reopens where you left off (or at your projects — your choice)
+- A redesigned first-run screen and a macOS icon that sits properly in the Dock
+- The file system bridge is only available to the app's own pages
+
+### iPhone & iPad app
+- Now a universal app with a real iPad layout: a sidebar with Projects, Today, pinned and recent projects, and the project beside it. Works in every orientation, Split View and Slide Over
+- On iPad the script is set on a sheet of paper at real screenplay margins
+- Hardware keyboard support: Tab / ⇧Tab to change element type, ⌥⌘1–8 for a specific type, ⌘N, ⌘S, ⌘J, ⌘1 / ⌘2 / ⌘, and more
+- Light mode, Dark mode or follow the system, and ten accent colours
+- Writing options: line spacing, focus mode, typewriter scrolling, scene numbers, paper page, keep screen awake
+- Rearrange or hide the tools on a project's home screen; pin projects to the top
+- Choose what the app opens to — including straight back into your last project
+- Home-screen quick actions: continue your last project, Today, New Project
+- Share a script as a Fountain file from the editor
+- Delete your account from Settings
+- The status bar is back, and deleting a project now asks first
+
+### Slate (iPhone & iPad)
+- A timecode slate built for sound sync: on the clap the screen flashes for exactly one frame and the sync beep plays on that same frame, with the timecode frozen on the board. A test clap and a per-device offset let you check and fine-tune it
+- Timecode at every common rate (23.976 to 60, drop-frame and non-drop), kept accurate through sleep. Jam it to time of day, type it in, or plug in the sound recorder's timecode and it jams to the frame; it can also send timecode out to a camera
+- Mark → Cut → Circle / Good / NG, with take length, tail slates, MOS, wild and pickup takes, and undo
+- Connected to the shot list and scenes: "Slate this shot" and "Slate this scene", the board fills itself in from the breakdown, takes carry on from where they left off, and "Shot done" moves to the next shot (and marks the scene shot when it's finished)
+- Every take goes into the project's Camera & Sound Reports with its timecode, including when you're offline — they catch up when you reconnect
+- Turn the phone sideways for a full-brightness, full-screen board; tap it to mark
+- A take log by day with search, editing, swipe to circle or NG, and CSV export
+- A shoot-day card on Today opens the slate in one tap
+
+### Web
+- Camera & Sound Reports show each take's timecode, and which takes came from the slate
+
 ### Printed drafts
 - Every print and export gets a 5-character draft code, printed small at the foot of each page, plus a snapshot of the script at that moment
 - New Printed Drafts page per project: pick a script, issue codes by hand, record who a copy went to, and see exactly what changed since it was printed

@@ -8,16 +8,10 @@ struct ScenesView: View {
     @EnvironmentObject private var router: Router
     @StateObject private var model: ScenesViewModel
     @State private var isPresentingNewScene = false
-    @State private var listWidth: CGFloat = 0
 
     init(projectID: String) {
         self.projectID = projectID
         _model = StateObject(wrappedValue: ScenesViewModel(projectID: projectID))
-    }
-
-    private var rowInsets: EdgeInsets {
-        let side = Theme.listSideInset(for: listWidth)
-        return EdgeInsets(top: 4, leading: side, bottom: 4, trailing: side)
     }
 
     var body: some View {
@@ -29,7 +23,7 @@ struct ScenesView: View {
                 }
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
-                .listRowInsets(rowInsets)
+                .listRowInsets(EdgeInsets(top: 4, leading: Theme.screenPadding, bottom: 4, trailing: Theme.screenPadding))
             }
 
             Section {
@@ -37,13 +31,13 @@ struct ScenesView: View {
             }
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
-            .listRowInsets(rowInsets)
+            .listRowInsets(EdgeInsets(top: 4, leading: Theme.screenPadding, bottom: 4, trailing: Theme.screenPadding))
         }
         // `.plain` keeps the rows edge-to-edge so the cards define the shape,
         // rather than sitting inside a second inset container.
         .listStyle(.plain)
-        .measuringWidth($listWidth)
         .scrollContentBackground(.hidden)
+        .readableListWidth()
         .background(Theme.background)
         .scrollDismissesKeyboard(.immediately)
         .refreshable { await model.refresh() }

@@ -103,7 +103,7 @@ struct DocumentEditorView: View {
                 content = document.content ?? ""
                 title = document.title
             }
-            .onChange(of: content) { newValue in
+            .onChange(of: content) { _, newValue in
                 scheduleSave(newValue)
             }
             .onDisappear {

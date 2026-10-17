@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Privacy manifest, required for App Store submission.
+  The app does no tracking and collects only what an account needs: the
+  email and name you sign up with, and the projects you create.
+-->
 <plist version="1.0">
 <dict>
-	<!--
-	  Required by App Store Connect for every app since May 2024. Keep it in
-	  step with the code: a new "required reason" API (see Apple's list) or a
-	  new kind of data sent to Supabase needs an entry here before it ships.
-	-->
 	<key>NSPrivacyTracking</key>
 	<false/>
 	<key>NSPrivacyTrackingDomains</key>
@@ -39,18 +39,6 @@
 		</dict>
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
-			<string>NSPrivacyCollectedDataTypeUserID</string>
-			<key>NSPrivacyCollectedDataTypeLinked</key>
-			<true/>
-			<key>NSPrivacyCollectedDataTypeTracking</key>
-			<false/>
-			<key>NSPrivacyCollectedDataTypePurposes</key>
-			<array>
-				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
-			</array>
-		</dict>
-		<dict>
-			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypeOtherUserContent</string>
 			<key>NSPrivacyCollectedDataTypeLinked</key>
 			<true/>
@@ -65,7 +53,7 @@
 	<key>NSPrivacyAccessedAPITypes</key>
 	<array>
 		<dict>
-			<!-- AppSettings, the slate board, connection settings. -->
+			<!-- Settings and the Supabase connection are stored in UserDefaults. -->
 			<key>NSPrivacyAccessedAPIType</key>
 			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
 			<key>NSPrivacyAccessedAPITypeReasons</key>
@@ -74,21 +62,12 @@
 			</array>
 		</dict>
 		<dict>
-			<!-- LocalCache reads the modification date of its own cache files. -->
+			<!-- The offline cache reads its own files' modification dates to know how fresh they are. -->
 			<key>NSPrivacyAccessedAPIType</key>
 			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
 				<string>C617.1</string>
-			</array>
-		</dict>
-		<dict>
-			<!-- The slate's timecode runs on mach_absolute_time / mach_continuous_time. -->
-			<key>NSPrivacyAccessedAPIType</key>
-			<string>NSPrivacyAccessedAPICategorySystemBootTime</string>
-			<key>NSPrivacyAccessedAPITypeReasons</key>
-			<array>
-				<string>35F9.1</string>
 			</array>
 		</dict>
 	</array>

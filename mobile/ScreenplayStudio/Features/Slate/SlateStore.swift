@@ -1,94 +1,83 @@
 import Foundation
 
-/// Where a project's slate keeps its board and take log between launches.
+/// Where the slate keeps its board and take log on the device.
 ///
-/// The board is small and lives in `UserDefaults`. The take log can run to
-/// hundreds of takes on a long day, so it goes to a file in Application
-/// Support, written off the main thread so marking a take never waits on disk.
-struct SlateStore {
+/// Application Support, not the cache directory the rest of the app uses: iOS
+/// clears caches when space runs low, and a day's take log is a production
+/// record, not something to re-download.
+final class SlateStore {
 
-    /// Everything about the take log that has to survive a relaunch.
-    struct Log: Codable {
-        var takes: [SlateTake] = []
-        /// Takes deleted on the slate that the camera report still has.
-        var removed: [SlateTake] = []
-        /// Reports (day · roll · camera) with changes not yet written.
-        var dirtyReports: Set<CameraReportKey> = []
+    static let shared = SlateStore()
+
+    struct Snapshot: Codable {
+        var state: SlateState
+        var takes: [SlateTake]
+        /// Takes deleted here that may still be in a report, so the next sync
+        /// removes them there too.
+        var deletedTakeIDs: [UUID] = []
+        /// Reports with changes not yet sent.
+        var dirtyReports: [SlateReportKey] = []
     }
 
-    /// The most takes kept on the device. A feature shoots a few hundred a day.
-    static let takeLimit = 3_000
+    private let directory: URL
+    private let encoder: JSONEncoder = {
+        let e = JSONEncoder()
+        e.dateEncodingStrategy = .iso8601
+        return e
+    }()
+    private let decoder: JSONDecoder = {
+        let d = JSONDecoder()
+        d.dateDecodingStrategy = .iso8601
+        return d
+    }()
 
-    private let projectID: String
-    private let stateKey: String
-    private let legacyTakesKey: String
-    private let fileURL: URL
-    private static let writer = DispatchQueue(label: "no.northem.screenplaystudio.slate-store", qos: .utility)
-
-    init(projectID: String) {
-        self.projectID = projectID
-        stateKey = "ss.slate.\(projectID)"
-        legacyTakesKey = "ss.slate.\(projectID).takes"
+    private init() {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        let directory = base.appendingPathComponent("ScreenplayStudio/Slate", isDirectory: true)
+        directory = base.appendingPathComponent("Slate", isDirectory: true)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        fileURL = directory.appendingPathComponent("\(projectID).json")
+        // Kept out of iCloud device backups only if the user wants it; by
+        // default a take log is worth backing up.
     }
 
-    // MARK: - Board
-
-    func loadState(projectTitle: String) -> SlateState {
-        if let data = UserDefaults.standard.data(forKey: stateKey),
-           let restored = try? JSONDecoder().decode(SlateState.self, from: data) {
-            return restored
-        }
-        var fresh = SlateState()
-        fresh.production = projectTitle
-        return fresh
+    private func url(for projectID: String) -> URL {
+        let safe = projectID.replacingOccurrences(of: "/", with: "_")
+        return directory.appendingPathComponent("\(safe).json")
     }
 
-    func save(_ state: SlateState) {
-        guard let data = try? JSONEncoder().encode(state) else { return }
-        UserDefaults.standard.set(data, forKey: stateKey)
+    func load(projectID: String) -> Snapshot? {
+        if let data = try? Data(contentsOf: url(for: projectID)),
+           let snapshot = try? decoder.decode(Snapshot.self, from: data) {
+            return snapshot
+        }
+        return migrateFromDefaults(projectID: projectID)
     }
 
-    // MARK: - Take log
-
-    func loadLog() -> Log {
-        if let data = try? Data(contentsOf: fileURL),
-           let log = try? JSONDecoder().decode(Log.self, from: data) {
-            return log
-        }
-        // Builds before 1.1 kept up to 200 takes in UserDefaults.
-        var log = Log()
-        if let data = UserDefaults.standard.data(forKey: legacyTakesKey),
-           let takes = try? JSONDecoder().decode([SlateTake].self, from: data) {
-            log.takes = takes
-            save(log)
-            UserDefaults.standard.removeObject(forKey: legacyTakesKey)
-        }
-        return log
+    func save(_ snapshot: Snapshot, projectID: String) {
+        guard let data = try? encoder.encode(snapshot) else { return }
+        try? data.write(to: url(for: projectID), options: .atomic)
     }
 
-    func save(_ log: Log) {
-        var trimmed = log
-        if trimmed.takes.count > Self.takeLimit {
-            trimmed.takes.removeLast(trimmed.takes.count - Self.takeLimit)
-        }
-        let url = fileURL
-        Self.writer.async {
-            guard let data = try? JSONEncoder().encode(trimmed) else { return }
-            try? data.write(to: url, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
-        }
+    func remove(projectID: String) {
+        try? FileManager.default.removeItem(at: url(for: projectID))
     }
 
-    /// Clears every project's slate from the device — on sign-out.
-    static func removeAll() {
-        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        try? FileManager.default.removeItem(at: base.appendingPathComponent("ScreenplayStudio/Slate", isDirectory: true))
+    func removeAll() {
+        try? FileManager.default.removeItem(at: directory)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    }
+
+    /// The first version kept the board and takes in `UserDefaults`.
+    private func migrateFromDefaults(projectID: String) -> Snapshot? {
+        let key = "ss.slate.\(projectID)"
         let defaults = UserDefaults.standard
-        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix("ss.slate.") {
-            defaults.removeObject(forKey: key)
-        }
+        guard let stateData = defaults.data(forKey: key),
+              let state = try? JSONDecoder().decode(SlateState.self, from: stateData) else { return nil }
+        let takes = defaults.data(forKey: key + ".takes")
+            .flatMap { try? JSONDecoder().decode([SlateTake].self, from: $0) } ?? []
+        let snapshot = Snapshot(state: state, takes: takes)
+        save(snapshot, projectID: projectID)
+        defaults.removeObject(forKey: key)
+        defaults.removeObject(forKey: key + ".takes")
+        return snapshot
     }
 }

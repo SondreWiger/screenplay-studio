@@ -7,11 +7,13 @@ struct ProjectHubView: View {
 
     @EnvironmentObject private var auth: AuthStore
     @EnvironmentObject private var router: Router
+    @EnvironmentObject private var settings: AppSettings
     @Environment(\.horizontalSizeClass) private var sizeClass
     @StateObject private var model: ProjectHubViewModel
 
     @State private var isOpeningEditor = false
     @State private var isShowingDrafts = false
+    @State private var isEditingTools = false
 
     init(project: Project) {
         self.project = project
@@ -20,24 +22,22 @@ struct ProjectHubView: View {
 
     var body: some View {
         ScrollView {
-            Group {
-                if sizeClass == .regular {
-                    // iPad: the project at a glance on the left, its tools
-                    // in a grid on the right.
-                    HStack(alignment: .top, spacing: 20) {
-                        overview
-                            .frame(width: 380)
-                        toolsSection
-                            .frame(maxWidth: .infinity)
-                    }
-                } else {
-                    VStack(spacing: 16) {
-                        overview
-                        toolsSection
-                    }
+            VStack(spacing: 16) {
+                summaryCard
+
+                if model.isShootDay {
+                    onSetCard
                 }
+
+                if let next = model.nextEvent {
+                    NextUpCard(event: next)
+                }
+
+                progressCard
+
+                toolsSection
             }
-            .screenPadding(maxWidth: Theme.wideContentWidth)
+            .screenPadding()
             .padding(.top, 4)
             .padding(.bottom, 40)
         }
@@ -50,8 +50,21 @@ struct ProjectHubView: View {
             AppSettings.shared.lastProjectID = project.id
             await model.loadIfNeeded()
         }
+        // Coming back from the slate, show what it logged.
+        .onAppear { model.refreshSlateSummary() }
         .navigationDestination(for: ProjectRoute.self) { route in
             destination(for: route)
+        }
+        .sheet(isPresented: $isEditingTools) {
+            NavigationStack {
+                HubToolsEditor()
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Done") { isEditingTools = false }
+                        }
+                    }
+            }
+            .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $isShowingDrafts) {
             DraftsSheet(
@@ -63,18 +76,6 @@ struct ProjectHubView: View {
                 },
                 onCreate: { createDraft() }
             )
-        }
-    }
-
-    private var overview: some View {
-        VStack(spacing: 16) {
-            summaryCard
-
-            if let next = model.nextEvent {
-                NextUpCard(event: next)
-            }
-
-            progressCard
         }
     }
 
@@ -123,6 +124,62 @@ struct ProjectHubView: View {
         }
     }
 
+    // MARK: - On set
+
+    /// On a shoot day the slate leads, with what's on its board.
+    private var onSetCard: some View {
+        Button {
+            Haptics.tap()
+            router.push(.slate)
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "camera.aperture")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .background(Theme.Brand.b500, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Shoot day")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Theme.Brand.b500)
+                        .textCase(.uppercase)
+                        .tracking(0.4)
+                    Text(model.slate.map { "Slate · \($0.board)" } ?? "Open the slate")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                        .lineLimit(1)
+                    Text(slateDetail)
+                        .font(.caption)
+                        .foregroundStyle(Theme.textTertiary)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Theme.textTertiary)
+                    .accessibilityHidden(true)
+            }
+            .padding(14)
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                    .strokeBorder(Theme.Brand.b500.opacity(0.45), lineWidth: 1.5)
+            )
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .hoverEffect(.lift)
+    }
+
+    private var slateDetail: String {
+        guard let slate = model.slate, slate.takesToday > 0 else {
+            return "Every take logs to the shot list and the reports"
+        }
+        let takes = "\(slate.takesToday) take\(slate.takesToday == 1 ? "" : "s") today"
+        return slate.circledToday > 0 ? "\(takes) · \(slate.circledToday) circled" : takes
+    }
+
     // MARK: - Progress
 
     @ViewBuilder
@@ -158,14 +215,21 @@ struct ProjectHubView: View {
 
     // MARK: - Tools
 
+    private var toolColumns: [GridItem] {
+        sizeClass == .regular
+            ? [GridItem(.flexible(), spacing: Theme.rowSpacing), GridItem(.flexible(), spacing: Theme.rowSpacing)]
+            : [GridItem(.flexible())]
+    }
+
     private var toolsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionHeader(title: "Tools")
+            SectionHeader(title: "Tools", actionTitle: "Edit") {
+                isEditingTools = true
+            }
 
-            LazyVGrid(columns: toolColumns, spacing: Theme.rowSpacing) {
-                // Script gets the first slot: it's the thing people open
+            VStack(spacing: Theme.rowSpacing) {
+                // Script gets its own full-width row: it's the thing people open
                 // most, and it needs room for the draft name.
-                VStack(spacing: Theme.rowSpacing) {
                 Button {
                     Haptics.tap()
                     openEditor()
@@ -179,6 +243,8 @@ struct ProjectHubView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .hoverEffect(.lift)
+                .keyboardShortcut("e", modifiers: .command)
                 .contextMenu {
                     Button {
                         isShowingDrafts = true
@@ -215,93 +281,68 @@ struct ProjectHubView: View {
                     }
                     .buttonStyle(.plain)
                 }
+
+                LazyVGrid(columns: toolColumns, spacing: Theme.rowSpacing) {
+                    ForEach(settings.visibleHubTools) { tool in
+                        NavigationLink(value: tool.route) {
+                            ToolRow(
+                                symbol: tool.symbol,
+                                tint: tool.tint,
+                                title: tool.title,
+                                subtitle: subtitle(for: tool)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .hoverEffect(.lift)
+                    }
                 }
 
-                NavigationLink(value: ProjectRoute.documents) {
-                    ToolRow(
-                        symbol: "doc.richtext",
-                        tint: Color(hex: 0x14B8A6),
-                        title: "Documents",
-                        subtitle: "Notes, treatments, outlines & more"
-                    )
+                if settings.visibleHubTools.count < HubTool.allCases.count {
+                    Button {
+                        isEditingTools = true
+                    } label: {
+                        Label(
+                            "\(HubTool.allCases.count - settings.visibleHubTools.count) hidden — show or reorder tools",
+                            systemImage: "slider.horizontal.3"
+                        )
+                        .font(.footnote)
+                        .foregroundStyle(Theme.textTertiary)
+                        .frame(maxWidth: .infinity, minHeight: Theme.minTouchTarget)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
-
-                NavigationLink(value: ProjectRoute.scenes) {
-                    ToolRow(
-                        symbol: "list.bullet.rectangle",
-                        tint: Color(hex: 0x8B5CF6),
-                        title: "Scenes & breakdown",
-                        subtitle: model.sceneCount == 0
-                            ? "Break the script into scenes"
-                            : "\(model.sceneCount) scene\(model.sceneCount == 1 ? "" : "s") · \(model.completedScenes) shot"
-                    )
-                }
-                .buttonStyle(.plain)
-
-                NavigationLink(value: ProjectRoute.shots) {
-                    ToolRow(
-                        symbol: "camera",
-                        tint: Color(hex: 0x06B6D4),
-                        title: "Shot list",
-                        subtitle: model.shotCount == 0
-                            ? "Plan your coverage"
-                            : "\(model.shotCount) shot\(model.shotCount == 1 ? "" : "s") · \(model.completedShots) done"
-                    )
-                }
-                .buttonStyle(.plain)
-
-                NavigationLink(value: ProjectRoute.schedule) {
-                    ToolRow(
-                        symbol: "calendar",
-                        tint: Color(hex: 0x22C55E),
-                        title: "Schedule",
-                        subtitle: model.events.isEmpty
-                            ? "No days scheduled yet"
-                            : "\(model.events.count) event\(model.events.count == 1 ? "" : "s")"
-                    )
-                }
-                .buttonStyle(.plain)
-
-                NavigationLink(value: ProjectRoute.gear) {
-                    ToolRow(
-                        symbol: "shippingbox",
-                        tint: Color(hex: 0xF97316),
-                        title: "Gear",
-                        subtitle: "Equipment tracking & checkout"
-                    )
-                }
-                .buttonStyle(.plain)
-
-                NavigationLink(value: ProjectRoute.characters) {
-                    ToolRow(
-                        symbol: "person.2",
-                        tint: Color(hex: 0xEC4899),
-                        title: "Characters",
-                        subtitle: model.characterCount == 0
-                            ? "Add your cast of characters"
-                            : "\(model.characterCount) character\(model.characterCount == 1 ? "" : "s")"
-                    )
-                }
-                .buttonStyle(.plain)
-
-                NavigationLink(value: ProjectRoute.slate) {
-                    ToolRow(
-                        symbol: "camera.aperture",
-                        tint: Color(hex: 0xF59E0B),
-                        title: "Slate",
-                        subtitle: "Clapperboard — marks takes onto the shot list"
-                    )
-                }
-                .buttonStyle(.plain)
             }
         }
     }
 
-    private var toolColumns: [GridItem] {
-        sizeClass == .regular
-            ? [GridItem(.adaptive(minimum: 260), spacing: Theme.rowSpacing, alignment: .top)]
-            : [GridItem(.flexible(), alignment: .top)]
+    private func subtitle(for tool: HubTool) -> String {
+        switch tool {
+        case .documents:
+            return "Notes, treatments, outlines & more"
+        case .scenes:
+            return model.sceneCount == 0
+                ? "Break the script into scenes"
+                : "\(model.sceneCount) scene\(model.sceneCount == 1 ? "" : "s") · \(model.completedScenes) shot"
+        case .shots:
+            return model.shotCount == 0
+                ? "Plan your coverage"
+                : "\(model.shotCount) shot\(model.shotCount == 1 ? "" : "s") · \(model.completedShots) done"
+        case .schedule:
+            return model.events.isEmpty
+                ? "No days scheduled yet"
+                : "\(model.events.count) event\(model.events.count == 1 ? "" : "s")"
+        case .characters:
+            return model.characterCount == 0
+                ? "Add your cast of characters"
+                : "\(model.characterCount) character\(model.characterCount == 1 ? "" : "s")"
+        case .gear:
+            return "Equipment tracking & checkout"
+        case .slate:
+            if let slate = model.slate, slate.takesToday > 0 {
+                return "\(slate.board) · \(slate.takesToday) take\(slate.takesToday == 1 ? "" : "s") today"
+            }
+            return "Timecode slate — logs takes to the shot list and reports"
+        }
     }
 
     private var scriptSubtitle: String {
@@ -330,6 +371,10 @@ struct ProjectHubView: View {
             CharactersView(projectID: project.id)
         case .slate:
             SlateView(projectID: project.id, projectTitle: project.title)
+        case .slateShot(let id):
+            SlateView(projectID: project.id, projectTitle: project.title, initialShotID: id)
+        case .slateScene(let id):
+            SlateView(projectID: project.id, projectTitle: project.title, initialSceneID: id)
         case .documents:
             DocumentsView(projectID: project.id)
         case .gear:

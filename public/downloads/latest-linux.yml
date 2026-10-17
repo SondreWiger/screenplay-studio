@@ -1,9 +1,9 @@
-version: 2.7.7
+version: 3.1.0
 files:
   - url: ScreenplayStudio-linux-x86_64.AppImage
-    sha512: rhGyaBOlCDMHWH3xftN8QlVxiRlhTed8qbImzbXzZk5IaEbIRDAS2XHW00Ihk3GZJsbsbSDzYVb0/5bxI7s2Gg==
-    size: 232552180
-    blockMapSize: 243464
+    sha512: AMxd7C7i1krz5Wlq0xit13siNdeOLVVt0SZCum5L0sd1/jfiSBSxYBZxniO9YoonQBSjNStmaKORYQtdttXSZw==
+    size: 237686402
+    blockMapSize: 249494
 path: ScreenplayStudio-linux-x86_64.AppImage
-sha512: rhGyaBOlCDMHWH3xftN8QlVxiRlhTed8qbImzbXzZk5IaEbIRDAS2XHW00Ihk3GZJsbsbSDzYVb0/5bxI7s2Gg==
-releaseDate: '2026-06-27T19:47:40.110Z'
+sha512: AMxd7C7i1krz5Wlq0xit13siNdeOLVVt0SZCum5L0sd1/jfiSBSxYBZxniO9YoonQBSjNStmaKORYQtdttXSZw==
+releaseDate: '2026-10-17T10:01:38.473Z'

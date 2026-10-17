@@ -1,11 +1,11 @@
-version: 2.7.7
+version: 3.1.0
 files:
-  - url: ScreenplayStudio-mac-x64.dmg
-    sha512: bobP9oYNFcOefdKtGu7oIG+dud/jAFCBT60Ipa9fWkv8Y8MqFKGTBYAX2X56cCm3PftIERwyTOHZtFJpgJ54xw==
-    size: 226521670
   - url: ScreenplayStudio-mac-arm64.dmg
-    sha512: 4FBM9Be63ACvB1sK2pBGA5H22VrYbQ3cjNx4xuvRi+GD558fYaLaEzrmHfwxYYBAIWXBgLB1JuAaXXIsoTcOlw==
-    size: 219377643
-path: ScreenplayStudio-mac-x64.dmg
-sha512: bobP9oYNFcOefdKtGu7oIG+dud/jAFCBT60Ipa9fWkv8Y8MqFKGTBYAX2X56cCm3PftIERwyTOHZtFJpgJ54xw==
-releaseDate: '2026-06-27T19:47:40.110Z'
+    sha512: wgda8P89e54jiJ4Ru7LZphVrikb5ecDQhvccugdlyVo9e2/eJi/HwVSOSJRIH6j16awRKLEFvZ8WxzOJ3GjqtA==
+    size: 224902259
+  - url: ScreenplayStudio-mac-x64.dmg
+    sha512: DiFSFYRDzxJXR6YnKEMtHvgVbQ/LLQoBGS1oTjqAytVrUyiLJ8hOD/HXN+Po++x2tvjcBPN7oYL+u1+y+SvSXQ==
+    size: 231773850
+path: ScreenplayStudio-mac-arm64.dmg
+sha512: wgda8P89e54jiJ4Ru7LZphVrikb5ecDQhvccugdlyVo9e2/eJi/HwVSOSJRIH6j16awRKLEFvZ8WxzOJ3GjqtA==
+releaseDate: '2026-10-17T09:59:13.870Z'

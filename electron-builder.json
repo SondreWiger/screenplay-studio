@@ -2,11 +2,12 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "fun.screenplaystudio.app",
   "productName": "Screenplay Studio",
-  "copyright": "Copyright \u00a9 2024 Nordhem Development",
+  "copyright": "Copyright © 2024–2026 Northem Development",
   "directories": {
     "output": "public/downloads",
     "buildResources": "build"
   },
+  "afterPack": "scripts/after-pack.cjs",
   "files": [
     "electron/dist/**/*",
     "build/icon.png",
@@ -28,7 +29,7 @@
   ],
   "mac": {
     "category": "public.app-category.entertainment",
-    "icon": "build/icon.png",
+    "icon": "build/icon-mac.png",
     "target": [
       {
         "target": "dmg",

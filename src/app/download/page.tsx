@@ -6,6 +6,8 @@ import { SiteVersion } from '@/components/SiteVersion';
 import {
   Monitor,
   Laptop,
+  Smartphone,
+  Tablet,
   LayoutGrid,
   Download as DownloadIcon,
   Check,
@@ -18,10 +20,48 @@ import {
 } from 'lucide-react';
 
 const GITHUB_REPO = 'SondreWiger/screenplay-studio';
-const RELEASE_TAG = 'v2.7.7';
+const RELEASES_URL = `https://github.com/${GITHUB_REPO}/releases`;
+/** The App Store listing for the iPhone and iPad app. Set once it's live. */
+const IOS_APP_STORE_URL: string | null = null;
+/** Unsigned build attached to every release, for sideloading (AltStore, Sideloadly). */
+const IOS_IPA_FILENAME = 'ScreenplayStudio-iOS.ipa';
 
+/**
+ * Installer file names are the same in every release, so GitHub's
+ * `latest/download` redirect always serves the newest build — publishing a
+ * release is enough to update this page.
+ */
 function getDownloadUrl(filename: string): string {
-  return `https://github.com/${GITHUB_REPO}/releases/download/${RELEASE_TAG}/${filename}`;
+  return `${RELEASES_URL}/latest/download/${filename}`;
+}
+
+type LatestRelease = { version: string; date: string; url: string };
+
+function useLatestRelease(): LatestRelease | null {
+  const [release, setRelease] = useState<LatestRelease | null>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`, {
+      signal: controller.signal,
+      headers: { Accept: 'application/vnd.github+json' },
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data?.tag_name) return;
+        setRelease({
+          version: String(data.tag_name).replace(/^v/, ''),
+          date: new Date(data.published_at).toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          }),
+          url: data.html_url,
+        });
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
+  return release;
 }
 
 type Platform = 'macos' | 'windows' | 'linux';
@@ -100,6 +140,7 @@ export default function DownloadPage() {
   const [detected, setDetected] = useState<{ os: Platform; macArch: MacArch }>({ os: 'macos', macArch: 'arm64' });
   const [selected, setSelected] = useState<Platform>('macos');
   const [macArch, setMacArch] = useState<MacArch>('arm64');
+  const latest = useLatestRelease();
 
   useEffect(() => {
     const d = detectOSAndArch();
@@ -195,6 +236,15 @@ export default function DownloadPage() {
             <div>
               <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 mb-2">
                 {dl.label} — {getPlatformHint(selected, selected === 'macos' ? macArch : undefined)}
+                {latest && (
+                  <>
+                    {' · '}
+                    <a href={latest.url} className="text-brand-500 hover:underline">
+                      v{latest.version}
+                    </a>
+                    {` · ${latest.date}`}
+                  </>
+                )}
               </div>
               <h2 className="text-2xl font-bold text-white mb-3" style={{ letterSpacing: '-0.02em' }}>
                 Screenplay Studio for {dl.label}
@@ -236,6 +286,7 @@ export default function DownloadPage() {
                 <span className="flex items-center gap-1"><Check size={12} className="text-brand-500" /> Works offline</span>
               </div>
             </div>
+            <div className="flex flex-col">
             <a
               href={getDownloadUrl(filename)}
               download
@@ -244,6 +295,62 @@ export default function DownloadPage() {
               <DownloadIcon size={16} />
               Download for {dl.label}{selected === 'macos' ? ` (${MAC_ARCHS.find(a => a.key === macArch)?.label})` : ''}
             </a>
+            <a
+              href={RELEASES_URL}
+              className="mt-3 text-center text-[11px] text-white/45 hover:text-white/70 transition-colors"
+            >
+              Release notes &amp; older versions
+            </a>
+            </div>
+          </div>
+        </div>
+
+        {/* iPhone and iPad */}
+        <div className="mb-20 grid gap-8 border border-white/[0.07] bg-white/[0.02] p-8 md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <Eyebrow>iPhone &amp; iPad</Eyebrow>
+            <h2 className="mb-3 text-2xl font-bold text-white" style={{ letterSpacing: '-0.02em' }}>
+              Take the script with you
+            </h2>
+            <p className="max-w-xl text-sm leading-relaxed text-white/50">
+              A native app for iPhone and iPad with the same account. Write on a full paper page on iPad with a
+              keyboard, check today&apos;s schedule on set, tick off shots and slate takes — it all syncs back here,
+              and keeps working with no signal.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3 text-[11px] text-white/45">
+              <span className="flex items-center gap-1"><Check size={12} className="text-brand-500" /> iPhone &amp; iPad</span>
+              <span className="flex items-center gap-1"><Check size={12} className="text-brand-500" /> Works offline</span>
+              <span className="flex items-center gap-1"><Check size={12} className="text-brand-500" /> Light &amp; dark</span>
+              <span className="flex items-center gap-1"><Check size={12} className="text-brand-500" /> iOS 17 or later</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="hidden items-end gap-2 text-white/30 sm:flex" aria-hidden="true">
+              <Smartphone size={36} />
+              <Tablet size={52} />
+            </div>
+            {IOS_APP_STORE_URL ? (
+              <a
+                href={IOS_APP_STORE_URL}
+                className="inline-flex h-12 items-center justify-center gap-2 bg-white px-6 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+              >
+                Download on the App Store
+              </a>
+            ) : (
+              <div className="flex max-w-[16rem] flex-col gap-2">
+                <a
+                  href={getDownloadUrl(IOS_IPA_FILENAME)}
+                  download
+                  className="inline-flex h-12 items-center justify-center gap-2 bg-white px-6 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+                >
+                  <DownloadIcon size={16} />
+                  Download .ipa
+                </a>
+                <p className="text-[11px] leading-relaxed text-white/45">
+                  App Store release coming soon. Until then, install the .ipa with AltStore or Sideloadly.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

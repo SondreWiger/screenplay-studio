@@ -186,7 +186,6 @@ struct CharactersView: View {
 
     @EnvironmentObject private var auth: AuthStore
     @StateObject private var model: CharactersViewModel
-    @State private var listWidth: CGFloat = 0
 
     @State private var isPresentingNew = false
     @State private var castingTarget: ProjectCharacter?
@@ -215,7 +214,7 @@ struct CharactersView: View {
                     }
                     .tint(Theme.accent)
                     .frame(minHeight: Theme.minTouchTarget)
-                    .onChange(of: model.leadsOnly) { _ in Haptics.selectionChanged() }
+                    .onChange(of: model.leadsOnly) { _, _ in Haptics.selectionChanged() }
                 }
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
@@ -230,8 +229,8 @@ struct CharactersView: View {
             .listRowInsets(rowInsets)
         }
         .listStyle(.plain)
-        .measuringWidth($listWidth)
         .scrollContentBackground(.hidden)
+        .readableListWidth()
         .background(Theme.background)
         .scrollDismissesKeyboard(.immediately)
         .refreshable { await model.refresh() }
@@ -270,8 +269,7 @@ struct CharactersView: View {
     }
 
     private var rowInsets: EdgeInsets {
-        let side = Theme.listSideInset(for: listWidth)
-        return EdgeInsets(top: 4, leading: side, bottom: 4, trailing: side)
+        EdgeInsets(top: 4, leading: Theme.screenPadding, bottom: 4, trailing: Theme.screenPadding)
     }
 
     @ViewBuilder

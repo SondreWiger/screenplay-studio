@@ -2,8 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { ELECTRON_MENU_EVENT } from '@/components/ElectronShell';
-
-type MenuAction = 'menu:new-project' | 'menu:open-file' | 'menu:save' | 'menu:save-as';
+import type { DesktopMenuAction as MenuAction } from '@/types/electron';
 
 export function useElectronMenu(handlers: Partial<Record<MenuAction, () => void>>) {
   const handlersRef = useRef(handlers);

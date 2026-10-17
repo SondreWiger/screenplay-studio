@@ -267,26 +267,27 @@ enum ScriptElementType: Hashable, Codable {
 
     // MARK: - Editor colouring (mirrors .sp-dark in globals.css)
 
-    /// Per-element text colour for the dark-mode editor, matching the web app's
-    /// `.sp-dark` CSS selectors in `src/app/globals.css`.
+    /// Per-element text colour, matching the web app's `.sp-dark` CSS
+    /// selectors in `src/app/globals.css` in dark mode, with ink-on-paper
+    /// equivalents in light mode.
     var textColor: Color {
         switch self {
-        case .sceneHeading:   return Theme.textPrimary           // bold white stands out
-        case .action:         return Theme.textSecondary          // slightly dimmer than headings
-        case .character:      return Color(hex: 0xFCBA64)        // warm amber — brand 300
-        case .dialogue:       return Color(hex: 0xE0E0E0)        // soft white
-        case .parenthetical:  return Color(hex: 0xB0B0CC)        // companion to dialogue
-        case .transition:     return Theme.textTertiary           // right-aligned, muted
-        case .shot:           return Color(hex: 0x06B6D4)        // cyan-500
-        case .note:           return Color(hex: 0x8888AA)        // muted, styled with left border
-        case .act, .actBreak: return Color(hex: 0xFBBF24)        // amber-400
-        case .sfxCue:         return Color(hex: 0x38BDF8)        // sky-400
-        case .musicCue:       return Color(hex: 0xA78BFA)        // violet-400
-        case .ambienceCue:    return Color(hex: 0x34D399)        // emerald-400
-        case .soundCue:       return Color(hex: 0x38BDF8)        // sky-400
-        case .announcer:      return Color(hex: 0xE0E0E0)
-        case .lyrics, .lyric: return Color(hex: 0xA78BFA)        // violet-400
-        case .songTitle:      return Color(hex: 0xFBBF24)        // amber-400
+        case .sceneHeading:   return Theme.textPrimary                          // bold, stands out
+        case .action:         return Theme.textSecondary                        // slightly dimmer than headings
+        case .character:      return Color.dynamic(light: 0xB45309, dark: 0xFCBA64) // warm amber
+        case .dialogue:       return Color.dynamic(light: 0x1C1C2E, dark: 0xE0E0E0)
+        case .parenthetical:  return Color.dynamic(light: 0x55556E, dark: 0xB0B0CC)
+        case .transition:     return Theme.textTertiary                         // right-aligned, muted
+        case .shot:           return Color.dynamic(light: 0x0E7490, dark: 0x06B6D4) // cyan
+        case .note:           return Color.dynamic(light: 0x6B6B85, dark: 0x8888AA) // muted, with a left border
+        case .act, .actBreak: return Color.dynamic(light: 0xB45309, dark: 0xFBBF24) // amber
+        case .sfxCue:         return Color.dynamic(light: 0x0369A1, dark: 0x38BDF8) // sky
+        case .musicCue:       return Color.dynamic(light: 0x6D28D9, dark: 0xA78BFA) // violet
+        case .ambienceCue:    return Color.dynamic(light: 0x047857, dark: 0x34D399) // emerald
+        case .soundCue:       return Color.dynamic(light: 0x0369A1, dark: 0x38BDF8)
+        case .announcer:      return Color.dynamic(light: 0x1C1C2E, dark: 0xE0E0E0)
+        case .lyrics, .lyric: return Color.dynamic(light: 0x6D28D9, dark: 0xA78BFA)
+        case .songTitle:      return Color.dynamic(light: 0xB45309, dark: 0xFBBF24)
         case .section:        return Theme.textPrimary
         case .synopsis:       return Theme.textTertiary
         default:              return Theme.textPrimary
@@ -297,7 +298,7 @@ enum ScriptElementType: Hashable, Codable {
     /// matching the web's `border-left` styling for notes and similar types.
     var leftAccentColor: Color? {
         switch self {
-        case .note:     return Color(hex: 0x555555)
+        case .note:     return Color.dynamic(light: 0xB0B0CC, dark: 0x555555)
         case .synopsis: return Color(hex: 0x3B82F6).opacity(0.5)
         default:        return nil
         }
@@ -374,14 +375,15 @@ enum ScriptElementType: Hashable, Codable {
         .parenthetical, .transition, .shot, .note,
     ]
 
-    /// Next type when cycling with the toolbar's cycle button or Tab.
+    /// Next type when cycling with the toolbar's cycle button, or Tab on a
+    /// hardware keyboard.
     var nextInCycle: ScriptElementType {
         let cycle = Self.standardCycle
         guard let index = cycle.firstIndex(of: self) else { return .action }
         return cycle[(index + 1) % cycle.count]
     }
 
-    /// The type before this one — Shift-Tab.
+    /// Previous type, for ⇧Tab.
     var previousInCycle: ScriptElementType {
         let cycle = Self.standardCycle
         guard let index = cycle.firstIndex(of: self) else { return .action }

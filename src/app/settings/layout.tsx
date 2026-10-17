@@ -9,6 +9,7 @@ import { SubNav } from '@/components/shell/SubNav';
 import { Pill, TabSkeleton } from '@/components/kit';
 import { Avatar } from '@/components/ui';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { useDesktop } from '@/hooks/useDesktop';
 
 const NAV_ITEMS = [
   { href: '/settings?tab=profile', label: 'Profile', param: 'profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
@@ -23,6 +24,11 @@ const NAV_ITEMS = [
   { href: '/settings?tab=translations', label: 'Translations', param: 'translations', icon: 'M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129' },
   { href: '/settings?tab=accountability', label: 'Accountability', param: 'accountability', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
 ];
+
+const DESKTOP_ITEM = { href: '/settings?tab=desktop', label: 'Desktop App', param: 'desktop', icon: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' };
+
+/** Settings tabs that work in the desktop app's local (no account) mode. */
+const LOCAL_TABS = new Set(['preferences', 'appearance']);
 
 const PRO_ITEMS = [
   { href: '/settings/billing', label: 'Billing', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' },
@@ -50,7 +56,13 @@ function SettingsFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { canUse: canUseFeature } = useFeatureAccess();
-  const activeTab = searchParams.get('tab') || 'profile';
+  const { isDesktop, isLocal } = useDesktop();
+  // Without an account only the settings that work offline apply.
+  const localOnly = isDesktop && isLocal;
+  const activeTab = searchParams.get('tab') || (localOnly ? 'desktop' : 'profile');
+  const navItems = localOnly
+    ? [DESKTOP_ITEM, ...NAV_ITEMS.filter((item) => LOCAL_TABS.has(item.param ?? ''))]
+    : isDesktop ? [NAV_ITEMS[0], DESKTOP_ITEM, ...NAV_ITEMS.slice(1)] : NAV_ITEMS;
 
   if (authLoading) return <div className="p-6 md:p-8"><TabSkeleton /></div>;
 
@@ -69,7 +81,7 @@ function SettingsFrame({ children }: { children: React.ReactNode }) {
     return pathname.startsWith(item.href.split('?')[0]);
   };
 
-  const all = [...NAV_ITEMS, ...PRO_ITEMS, ...BOTTOM_ITEMS];
+  const all = [...navItems, ...PRO_ITEMS, ...BOTTOM_ITEMS];
   const section = all.find((item) => ('param' in item && item.param ? onSettingsRoot && activeTab === item.param : pathname.startsWith(item.href.split('?')[0])));
 
   return (
@@ -100,9 +112,9 @@ function SettingsFrame({ children }: { children: React.ReactNode }) {
           id="settings"
           title="Settings"
           groups={[
-            { items: NAV_ITEMS.map((item) => ({ label: item.label, href: item.href, icon: icon(item.icon), active: isActive(item) })) },
-            ...(canUseFeature('pro_subscription') ? [{ label: 'Pro', items: PRO_ITEMS.map((item) => ({ label: item.label, href: item.href, icon: icon(item.icon), active: pathname.startsWith(item.href) })) }] : []),
-            { label: 'More', items: BOTTOM_ITEMS.map((item) => ({ label: item.label, href: item.href, icon: icon(item.icon), active: pathname.startsWith(item.href) })) },
+            { items: navItems.map((item) => ({ label: item.label, href: item.href, icon: icon(item.icon), active: isActive(item) })) },
+            ...(canUseFeature('pro_subscription') && !localOnly ? [{ label: 'Pro', items: PRO_ITEMS.map((item) => ({ label: item.label, href: item.href, icon: icon(item.icon), active: pathname.startsWith(item.href) })) }] : []),
+            ...(localOnly ? [] : [{ label: 'More', items: BOTTOM_ITEMS.map((item) => ({ label: item.label, href: item.href, icon: icon(item.icon), active: pathname.startsWith(item.href) })) }]),
           ]}
         />
         <div className="min-w-0 flex-1 pb-16">

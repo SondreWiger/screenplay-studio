@@ -1,8 +1,9 @@
-# Screenplay Studio for iPhone
+# Screenplay Studio for iPhone and iPad
 
 A native SwiftUI app for the writing and production tools people actually need
 away from a desk: the script, the scene breakdown, the shot list, the schedule
-and the cast.
+and the cast. One universal app — a tab bar on iPhone, a sidebar and a full
+paper page on iPad.
 
 Same Supabase backend as the web app — one account, one set of data, no export
 or import step.
@@ -31,7 +32,7 @@ mobile/
 open mobile/ScreenplayStudio.xcodeproj
 ```
 
-Pick an iPhone simulator and press ⌘R. The Supabase connection is already
+Pick an iPhone or iPad simulator and press ⌘R. The Supabase connection is already
 bundled, so it goes straight to the sign-in screen — use the same account as the
 website.
 
@@ -42,7 +43,8 @@ xcodebuild -project mobile/ScreenplayStudio.xcodeproj -scheme ScreenplayStudio -
 ```
 
 Requires Xcode 16 or newer (the project uses synchronized folder groups) and
-targets iOS 17.0 and up. iPhone only.
+targets iOS / iPadOS 17.0 and up. Universal: iPhone and iPad, with every iPad
+orientation so it works in Split View and Slide Over.
 
 ## What's in it
 
@@ -56,12 +58,116 @@ targets iOS 17.0 and up. iPhone only.
 | **Shot list** | Grouped by scene, with a one-tap take counter for use while rolling. |
 | **Schedule** | An agenda of shoot days, call times and locations. |
 | **Characters** | Cast list with leads and casting. |
-| **Slate** | A working clapperboard. Point it at a shot and every clap logs a take onto the shot list. |
+| **Slate** | A timecode clapperboard for sound sync. Each clap logs a take against the shot and fills in the camera and sound reports. |
 | **Today** | What's on today across every active project. |
+| **Settings** | Appearance (light / dark / system, ten accent colours), writing options, project-tool layout, sync, account. |
 
 Tools that stayed on the web — budget, call sheets, storyboards, rundowns,
 prompter, the broadcast and audio-drama suites — are the ones that genuinely
 need a large screen. Settings links out to them.
+
+## iPad
+
+At regular width the shell switches from tabs to a `NavigationSplitView`
+(`App/MainTabView.swift`): Projects and Today, your pinned projects, recent
+projects and Settings in the sidebar, the selected one beside it. Resize the
+window into a narrow Split View and it becomes the iPhone tab layout without
+losing your place — `Router.adoptLayout` carries the open project across.
+
+* **The script on paper.** The editor sets about 60 Courier characters per
+  line at real screenplay margins on a sheet of paper, the way the page will
+  print, instead of the compressed phone margins (Settings → Writing → Paper
+  page turns it off).
+* **Readable columns.** Card lists cap at 820pt and centre, so nothing stretches
+  across a 13-inch screen. Projects and the project hub's tools lay out as grids.
+* **Pointer.** Cards lift under the trackpad pointer.
+* **Hardware keyboard.** Hold ⌘ for the full list:
+
+  | Keys | Does |
+  | --- | --- |
+  | ⌘N | New project |
+  | ⌘1 / ⌘2 / ⌘, | Projects / Today / Settings |
+  | ⌘E | Open the project's script (from the project hub) |
+  | Tab / ⇧Tab | Next / previous element type, like Final Draft |
+  | ⌥⌘1 … ⌥⌘8 | Scene heading, action, character, dialogue, parenthetical, transition, shot, note |
+  | ⌘S | Save now |
+  | ⌘J | Jump to scene |
+  | Esc | Put the keyboard away |
+  | Space | Slate: mark, then cut |
+  | ⌘B | Slate: show the full-screen board |
+
+## Make it yours
+
+Everything here is in Settings and stored per device (`Core/AppSettings.swift`):
+
+* **Appearance** — Light, Dark or System, and one of ten accent colours. Every
+  colour in `Design/Theme.swift` is dynamic, with a light-mode shade dark
+  enough for 4.5:1 text contrast. Changing the accent rebuilds the view tree
+  (`.id(settings.accent)` in `ScreenplayStudioApp`); navigation lives in the
+  app-owned `Router`, so you stay where you were.
+* **Writing** — text size, line spacing, paper page, focus mode (dims every
+  line but the current one), typewriter scrolling, scene numbers, the element
+  bar, and keep-screen-awake.
+* **Project tools** — reorder or hide the tools on a project's home screen
+  (also from Edit on the hub).
+* **Open to** — Projects, Today, or straight back into the last project.
+* **Pinned projects** — long-press a project to pin it to the top of the list
+  and the iPad sidebar.
+
+## Slate
+
+`Features/Slate/` is a timecode slate a camera assistant can actually use on set.
+
+* **What's being slated.** Point the board at a shot or a scene from the shot
+  list (or "Slate this shot" / "Slate this scene" from those screens, or the
+  shoot-day card on Today), or type a scene and setup in. Scene number,
+  INT/EXT, DAY/NIGHT, lens and the next take number are filled in from the
+  breakdown, and the take count carries on where the log left off.
+* **Mark → Cut → rate.** Mark claps the sticks; Cut ends the take with its
+  length; Circle / Good / NG rates it and moves to the next take. "Shot done"
+  ticks the shot off and moves to the next one, and marks the scene shot when
+  its last shot is done. Tail slates (the board goes upside down) and MOS,
+  wild and pickup takes are supported. Space marks and cuts from a keyboard.
+* **Sync.** On the clap the screen flashes white for one displayed frame and a
+  1 kHz beep plays on that same frame. The flash is committed from a
+  `CADisplayLink` callback; the beep is scheduled with `AVAudioPlayerNode` at
+  that frame's presentation time less the output latency. A per-device offset
+  (Board & sync › Beep offset, with a test clap) absorbs the rest. The board's
+  timecode freezes on the sync frame for a moment so the camera records it.
+* **Timecode.** The clock is a frame count anchored to `mach_continuous_time`,
+  which keeps running through sleep. 23.976, 24, 25, 29.97 DF/ND, 30, 48, 50,
+  59.94 DF/ND and 60 fps. Jam it to time of day, by hand (with ±1 frame
+  nudges), or from a recorder's **LTC** on the audio input — the decoder reads
+  four consecutive frames, checks the rate matches, and jams to the frame.
+  **Timecode out** sends LTC from the headphone output, phase-locked to the
+  board's clock, for a camera's audio input.
+* **Full-screen board.** Turn an iPhone sideways (or Show board, ⌘B) for a
+  black board at full brightness with LED digits; tap anywhere on it to mark.
+* **The log.** Takes are kept in Application Support (not the cache), by day,
+  with search, swipe to circle / NG / delete, editing and CSV export.
+* **Reports.** Each take is written into the project's `camera_reports` rows —
+  one per roll per day, camera and sound — with its timecode, so the web
+  app's Camera & Sound Reports fill themselves in. Entries carry a `slate_id`;
+  a sync rewrites only those, leaving rows typed on the web alone. Offline,
+  reports queue and send when the connection is back.
+
+`LTC.swift` and `Timecode.swift` are ports of `mobile/reference/*.ts`, which
+`tests/slate-timecode.test.ts` checks: drop-frame labels for every frame of an
+hour at every rate, LTC parity and sync word, and encode → decode at 44.1 and
+48 kHz with timing to within two samples, through inverted polarity, low
+level, noise and dropouts.
+
+## Also
+
+* **Home-screen quick actions** — press and hold the icon for *Continue
+  "<last project>"*, *Today* and *New Project* (`App/QuickActions.swift`).
+* **Share as Fountain** — the editor's ⋯ menu exports the script as a
+  `.fountain` file for AirDrop, Files, Mail or Final Draft.
+* **Account deletion** — Settings → Delete Account calls
+  `POST /api/user/delete-account` with the session's bearer token, as App Store
+  Review requires.
+* **Privacy manifest** — `Resources/PrivacyInfo.xcprivacy` declares no tracking,
+  the account data collected, and the UserDefaults / file-timestamp API reasons.
 
 ## Live updates
 
@@ -129,6 +235,8 @@ SwiftUI won't give you: Return creating the next element, backspace-at-zero
 merging upward, and self-sizing inside a scroll view.
 
 ## Phone-specific decisions
+
+(On iPad the editor uses real margins on a paper page instead — see above.)
 
 - **Margins are compressed to 55%.** Full screenplay margins put a character cue
   two-thirds across a 390pt screen and squeeze dialogue into a column three

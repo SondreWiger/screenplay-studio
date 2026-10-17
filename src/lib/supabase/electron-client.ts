@@ -1,12 +1,14 @@
 /**
- * Electron / local-mode Supabase stub.
+ * Electron / local-mode Supabase client.
  *
  * When running in Electron (or browser local mode), returns a Supabase-compatible
- * client backed by localStorage. All database operations are stubbed — data lives
- * in the Zustand stores and IndexedDB (via the offline layer).
+ * client whose table queries read and write IndexedDB on this device (see
+ * local-query.ts), so project pages work the same as in cloud mode.
  */
 
 import type { Profile } from '@/lib/types';
+import { getLocalTableRows, putLocalTableRows, deleteLocalTableRows } from '@/lib/offline/db';
+import { LocalQueryBuilder, type LocalRowStore } from './local-query';
 
 // ── Mode detection ─────────────────────────────────────────────
 
@@ -139,80 +141,17 @@ export function clearLocalUser() {
   document.cookie = `${LOCAL_MODE_KEY}=; path=/; max-age=0`;
 }
 
-// ── Stub Supabase client ──────────────────────────────────────
+// ── Local Supabase client ─────────────────────────────────────
+
+const idbRowStore: LocalRowStore = {
+  getAll: (table) => getLocalTableRows(table),
+  put: (table, rows) => putLocalTableRows(table, rows),
+  remove: (table, ids) => deleteLocalTableRows(table, ids),
+};
 
 /**
- * Chainable query builder that always resolves to { data: [], error: null }.
- * Supports arbitrary method chaining (eq, limit, order, not, gte, in, etc.)
- * by returning `this` from every method call.
- */
-class StubQueryBuilder {
-  private _data: unknown;
-  private _single: boolean;
-
-  constructor(data: unknown = [], single = false) {
-    this._data = data;
-    this._single = single;
-  }
-
-  single() { return new StubQueryBuilder(this._data, true); }
-  maybeSingle() { return new StubQueryBuilder(this._data, true); }
-  csv() { return new StubQueryBuilder(this._data, true); }
-  head() { return this; }
-
-  // Filter / query methods
-  order() { return this; }
-  limit() { return this; }
-  range() { return this; }
-  eq() { return this; }
-  neq() { return this; }
-  gt() { return this; }
-  gte() { return this; }
-  lt() { return this; }
-  lte() { return this; }
-  like() { return this; }
-  ilike() { return this; }
-  is() { return this; }
-  in() { return this; }
-  contains() { return this; }
-  containedBy() { return this; }
-  overlaps() { return this; }
-  textSearch() { return this; }
-  match() { return this; }
-  not() { return this; }
-  filter() { return this; }
-  or() { return this; }
-  and() { return this; }
-
-  // CRUD methods
-  select() { return this; }
-  insert() { return this; }
-  update() { return this; }
-  delete() { return this; }
-  upsert() { return this; }
-
-  // Resolve
-  returns() { return this; }
-  then(resolve: (v: { data: unknown; error: null }) => void) {
-    resolve({ data: this._single ? null : this._data, error: null });
-  }
-
-  // Catch-all for any future methods we haven't listed
-  static create(data: unknown = [], single = false): StubQueryBuilder & Record<string, (...args: unknown[]) => StubQueryBuilder> {
-    const qb = new StubQueryBuilder(data, single);
-    return new Proxy(qb, {
-      get(target, prop, receiver) {
-        if (prop in target) return Reflect.get(target, prop, receiver);
-        // Unknown method — return a function that returns the target for chaining
-        return () => receiver;
-      },
-    }) as StubQueryBuilder & Record<string, (...args: unknown[]) => StubQueryBuilder>;
-  }
-}
-
-/**
- * Creates a Supabase-compatible client backed by localStorage
- * for use in Electron standalone or browser local mode.
+ * Creates a Supabase-compatible client for Electron standalone or browser
+ * local mode. Table reads and writes go to IndexedDB on this device.
  *
  * Returns `any` because the real SupabaseClient type is complex and
  * this is only used when the real client isn't needed.
@@ -252,19 +191,7 @@ export function createLocalSupabaseClient(): any {
         data: { subscription: { unsubscribe: () => {} } },
       }),
     },
-    from: (_table: string) => ({
-      select: (_cols?: string) => StubQueryBuilder.create(),
-      insert: (row: unknown) => ({
-        select: () => ({
-          single: async () => ({ data: row, error: null }),
-        }),
-        then: (resolve: (v: { data: unknown; error: null }) => void) =>
-          resolve({ data: row, error: null }),
-      }),
-      update: (_data: unknown) => StubQueryBuilder.create(),
-      upsert: async () => ({ data: null, error: null }),
-      delete: () => StubQueryBuilder.create(),
-    }),
+    from: (table: string) => new LocalQueryBuilder(idbRowStore, table),
     rpc: async () => ({ data: null, error: null }),
     // No realtime offline. The stub must chain like the real one:
     // channel().on().on().subscribe(), plus the presence helpers.

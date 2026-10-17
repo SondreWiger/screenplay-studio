@@ -1,6 +1,13 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
 
-export type MenuAction = 'menu:new-project' | 'menu:open-file' | 'menu:save' | 'menu:save-as' | 'menu:open-recent';
+export type MenuAction =
+  | 'menu:new-project'
+  | 'menu:open-file'
+  | 'menu:save'
+  | 'menu:save-as'
+  | 'menu:open-recent'
+  | 'menu:toggle-sidebar'
+  | 'menu:shortcuts';
 
 export interface RecentProject {
   id: string;
@@ -9,103 +16,124 @@ export interface RecentProject {
   lastOpened: string;
 }
 
-export interface ElectronAPI {
-  saveFile: (options?: { defaultPath?: string; filters?: { name: string; extensions: string[] }[] }) => Promise<{
-    canceled: boolean;
-    filePath?: string;
-  }>;
-  openFile: (options?: { filters?: { name: string; extensions: string[] }[] }) => Promise<{
-    canceled: boolean;
-    filePaths: string[];
-  }>;
-  readFile: (filePath: string) => Promise<string>;
-  writeFile: (filePath: string, content: string) => Promise<void>;
-  getHomeDir: () => Promise<string>;
-  getDocumentsDir: () => Promise<string>;
-  listDir: (dirPath: string) => Promise<string[]>;
-  getPlatform: () => Promise<string>;
-  getVersions: () => Promise<{
-    node: string;
-    chrome: string;
-    electron: string;
-    app: string;
-  }>;
-  setTheme: (theme: 'light' | 'dark' | 'system') => Promise<void>;
-  isPackaged: () => Promise<boolean>;
-  openExternal: (url: string) => Promise<void>;
-  getUserDataPath: () => Promise<string>;
-  getRecentProjects: () => Promise<RecentProject[]>;
-  addRecentProject: (project: { id: string; title: string; path?: string }) => Promise<void>;
-  clearRecentProjects: () => Promise<void>;
-  onMenuAction: (callback: (action: MenuAction, ...args: unknown[]) => void) => () => void;
-  onAutoSaveTick: (callback: () => void) => () => void;
-  getPreferenceSync: (key: string) => any;
-  setPreference: (key: string, value: any) => Promise<void>;
-  onExternalFileOpen: (callback: (filePath: string) => void) => () => void;
+export interface DesktopSettings {
+  theme: 'system' | 'light' | 'dark';
+  zoomLevel: number;
+  spellcheck: boolean;
+  launchBehaviour: 'restore' | 'dashboard';
+  autoUpdate: boolean;
+  lastPath: string;
 }
 
-contextBridge.exposeInMainWorld('electron', {
-  saveFile: (options?: { defaultPath?: string; filters?: { name: string; extensions: string[] }[] }) =>
+export type UpdateStatus =
+  | { state: 'idle' }
+  | { state: 'checking' }
+  | { state: 'downloading'; version: string; percent: number }
+  | { state: 'ready'; version: string }
+  | { state: 'up-to-date' }
+  | { state: 'error'; message: string };
+
+export interface DesktopInfo {
+  version: string;
+  platform: string;
+  arch: string;
+  electron: string;
+  chrome: string;
+  projectsFolder: string;
+  logPath: string;
+  isPackaged: boolean;
+}
+
+type FileFilter = { name: string; extensions: string[] };
+
+const MENU_CHANNELS: MenuAction[] = [
+  'menu:new-project', 'menu:open-file', 'menu:save', 'menu:save-as', 'menu:toggle-sidebar', 'menu:shortcuts',
+];
+
+/** Subscribe to a main-process channel; returns the unsubscribe function. */
+function subscribe<T extends unknown[]>(channel: string, callback: (...args: T) => void): () => void {
+  const fn = (_event: IpcRendererEvent, ...args: unknown[]) => callback(...(args as T));
+  ipcRenderer.on(channel, fn);
+  return () => { ipcRenderer.removeListener(channel, fn); };
+}
+
+// ── Window chrome classes ───────────────────────────────────────
+// Set before the page's own scripts run so the layout reserves room for the
+// macOS traffic lights from the first paint, with no React involvement.
+
+function setRootClass(name: string, on: boolean) {
+  const root = document.documentElement;
+  if (root) root.classList.toggle(name, on);
+}
+
+function applyBaseClasses() {
+  setRootClass('desktop', true);
+  setRootClass(`desktop-${process.platform}`, true);
+}
+
+if (document.documentElement) applyBaseClasses();
+document.addEventListener('DOMContentLoaded', applyBaseClasses);
+ipcRenderer.on('desktop:window-state', (_event, state: { fullscreen: boolean; focused: boolean }) => {
+  setRootClass('desktop-fullscreen', !!state?.fullscreen);
+  setRootClass('desktop-inactive', !state?.focused);
+});
+
+const api = {
+  /** Synchronous so layout code can branch before first render. */
+  platform: process.platform,
+
+  saveFile: (options?: { defaultPath?: string; filters?: FileFilter[] }): Promise<{ canceled: boolean; filePath?: string }> =>
     ipcRenderer.invoke('electron:save-file', options),
-  openFile: (options?: { filters?: { name: string; extensions: string[] }[] }) =>
+  openFile: (options?: { filters?: FileFilter[] }): Promise<{ canceled: boolean; filePaths: string[] }> =>
     ipcRenderer.invoke('electron:open-file', options),
-  readFile: (filePath: string) =>
-    ipcRenderer.invoke('electron:read-file', filePath),
-  writeFile: (filePath: string, content: string) =>
-    ipcRenderer.invoke('electron:write-file', filePath, content),
-  getHomeDir: () =>
-    ipcRenderer.invoke('electron:get-home-dir'),
-  getDocumentsDir: () =>
-    ipcRenderer.invoke('electron:get-documents-dir'),
-  listDir: (dirPath: string) =>
-    ipcRenderer.invoke('electron:list-dir', dirPath),
-  getPlatform: () =>
-    ipcRenderer.invoke('electron:get-platform'),
-  getVersions: () =>
+  readFile: (filePath: string): Promise<string> => ipcRenderer.invoke('electron:read-file', filePath),
+  writeFile: (filePath: string, content: string): Promise<void> => ipcRenderer.invoke('electron:write-file', filePath, content),
+  getHomeDir: (): Promise<string> => ipcRenderer.invoke('electron:get-home-dir'),
+  getDocumentsDir: (): Promise<string> => ipcRenderer.invoke('electron:get-documents-dir'),
+  listDir: (dirPath: string): Promise<string[]> => ipcRenderer.invoke('electron:list-dir', dirPath),
+  getPlatform: (): Promise<string> => ipcRenderer.invoke('electron:get-platform'),
+  getVersions: (): Promise<{ node: string; chrome: string; electron: string; app: string }> =>
     ipcRenderer.invoke('electron:get-versions'),
-  setTheme: (theme: 'light' | 'dark' | 'system') =>
-    ipcRenderer.invoke('electron:set-theme', theme),
-  isPackaged: () =>
-    ipcRenderer.invoke('electron:is-packaged'),
-  openExternal: (url: string) =>
-    ipcRenderer.invoke('electron:open-external', url),
-  getUserDataPath: () =>
-    ipcRenderer.invoke('electron:get-user-data-path'),
-  getRecentProjects: () =>
-    ipcRenderer.invoke('electron:get-recent-projects'),
-  addRecentProject: (project: { id: string; title: string; path?: string }) =>
+  setTheme: (theme: 'light' | 'dark' | 'system'): Promise<void> => ipcRenderer.invoke('electron:set-theme', theme),
+  isPackaged: (): Promise<boolean> => ipcRenderer.invoke('electron:is-packaged'),
+  openExternal: (url: string): Promise<void> => ipcRenderer.invoke('electron:open-external', url),
+  getUserDataPath: (): Promise<string> => ipcRenderer.invoke('electron:get-user-data-path'),
+
+  getRecentProjects: (): Promise<RecentProject[]> => ipcRenderer.invoke('electron:get-recent-projects'),
+  addRecentProject: (project: { id: string; title: string; path?: string }): Promise<void> =>
     ipcRenderer.invoke('electron:add-recent-project', project),
-  clearRecentProjects: () =>
-    ipcRenderer.invoke('electron:clear-recent-projects'),
-  onMenuAction: (callback: (action: MenuAction, ...args: unknown[]) => void) => {
-    const channels: MenuAction[] = ['menu:new-project', 'menu:open-file', 'menu:save', 'menu:save-as'];
-    const handlers = channels.map((channel) => {
-      const fn = () => callback(channel);
-      ipcRenderer.on(channel, fn);
-      return { channel, fn };
-    });
-    // Also handle open-recent with project id argument
-    const recentFn = (_event: Electron.IpcRendererEvent, projectId: string) => callback('menu:open-recent', projectId);
-    ipcRenderer.on('menu:open-recent', recentFn);
-    return () => {
-      handlers.forEach(({ channel, fn }) => ipcRenderer.removeListener(channel, fn));
-      ipcRenderer.removeListener('menu:open-recent', recentFn);
-    };
+  clearRecentProjects: (): Promise<void> => ipcRenderer.invoke('electron:clear-recent-projects'),
+
+  onMenuAction: (callback: (action: MenuAction, ...args: unknown[]) => void): (() => void) => {
+    const offs = MENU_CHANNELS.map((channel) => subscribe(channel, (...args: unknown[]) => callback(channel, ...args)));
+    offs.push(subscribe('menu:open-recent', (projectId: unknown) => callback('menu:open-recent', projectId)));
+    return () => offs.forEach((off) => off());
   },
-  onAutoSaveTick: (callback: () => void) => {
-    const fn = () => callback();
-    ipcRenderer.on('auto-save-tick', fn);
-    return () => {
-      ipcRenderer.removeListener('auto-save-tick', fn);
-    };
-  },
-  getPreferenceSync: (key: string) => ipcRenderer.sendSync('electron:get-preference-sync', key),
-  setPreference: (key: string, value: any) => ipcRenderer.invoke('electron:set-preference', key, value),
-  onExternalFileOpen: (callback: (filePath: string) => void) => {
-    const fn = (_event: unknown, filePath: string) => callback(filePath);
-    ipcRenderer.on('open-external-file', fn);
-    return () => {
-      ipcRenderer.removeListener('open-external-file', fn);
-    };
-  },
-} satisfies ElectronAPI);
+  onAutoSaveTick: (callback: () => void): (() => void) => subscribe('auto-save-tick', callback),
+  onExternalFileOpen: (callback: (filePath: string) => void): (() => void) => subscribe('open-external-file', callback),
+  /** Files opened from Finder/Explorer before this page was ready. */
+  takePendingFiles: (): Promise<string[]> => ipcRenderer.invoke('desktop:take-pending-files'),
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getPreferenceSync: (key: string): any => ipcRenderer.sendSync('electron:get-preference-sync', key),
+  setPreference: (key: string, value: unknown): Promise<void> => ipcRenderer.invoke('electron:set-preference', key, value),
+
+  // ── Desktop shell ─────────────────────────────────────────────
+  getSettings: (): Promise<DesktopSettings> => ipcRenderer.invoke('desktop:get-settings'),
+  updateSettings: (patch: Partial<DesktopSettings>): Promise<DesktopSettings> => ipcRenderer.invoke('desktop:update-settings', patch),
+  onSettingsChanged: (callback: (settings: DesktopSettings) => void): (() => void) => subscribe('desktop:settings-changed', callback),
+  getInfo: (): Promise<DesktopInfo> => ipcRenderer.invoke('desktop:get-info'),
+  openLocation: (which: 'projects' | 'logs'): Promise<void> => ipcRenderer.invoke('desktop:open-location', which),
+  newWindow: (path?: string): Promise<void> => ipcRenderer.invoke('desktop:new-window', path),
+  onNavigate: (callback: (path: string) => void): (() => void) => subscribe('desktop:navigate', callback),
+  setDocumentEdited: (edited: boolean): Promise<void> => ipcRenderer.invoke('desktop:set-document-edited', edited),
+
+  getUpdateStatus: (): Promise<UpdateStatus> => ipcRenderer.invoke('desktop:get-update-status'),
+  checkForUpdates: (): Promise<void> => ipcRenderer.invoke('desktop:check-for-updates'),
+  installUpdate: (): Promise<void> => ipcRenderer.invoke('desktop:install-update'),
+  onUpdateStatus: (callback: (status: UpdateStatus) => void): (() => void) => subscribe('desktop:update-status', callback),
+};
+
+export type ElectronAPI = typeof api;
+
+contextBridge.exposeInMainWorld('electron', api);

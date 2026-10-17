@@ -5,8 +5,8 @@ struct ShotsView: View {
     let projectID: String
 
     @EnvironmentObject private var auth: AuthStore
+    @EnvironmentObject private var router: Router
     @StateObject private var model: ShotsViewModel
-    @State private var listWidth: CGFloat = 0
     @State private var isPresentingNewShot = false
 
     init(projectID: String) {
@@ -60,6 +60,31 @@ struct ShotsView: View {
                                           systemImage: shot.done ? "arrow.uturn.backward" : "checkmark")
                                 }
                                 .tint(shot.done ? Theme.textTertiary : Theme.success)
+                                Button {
+                                    slate(shot)
+                                } label: {
+                                    Label("Slate", systemImage: "camera.aperture")
+                                }
+                                .tint(Theme.warning)
+                            }
+                            .contextMenu {
+                                Button {
+                                    slate(shot)
+                                } label: {
+                                    Label("Slate this shot", systemImage: "camera.aperture")
+                                }
+                                Button {
+                                    Task { await model.toggleCompleted(shot) }
+                                } label: {
+                                    Label(shot.done ? "Mark not covered" : "Mark covered",
+                                          systemImage: shot.done ? "arrow.uturn.backward" : "checkmark.circle")
+                                }
+                                Divider()
+                                Button(role: .destructive) {
+                                    Task { await model.delete(shot) }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
                             }
                         }
                     } header: {
@@ -73,8 +98,8 @@ struct ShotsView: View {
             }
         }
         .listStyle(.plain)
-        .measuringWidth($listWidth)
         .scrollContentBackground(.hidden)
+        .readableListWidth()
         .background(Theme.background)
         .scrollDismissesKeyboard(.immediately)
         .refreshable { await model.refresh() }
@@ -83,6 +108,15 @@ struct ShotsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(Theme.background, for: .navigationBar)
         .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    Haptics.tap()
+                    router.push(.slate)
+                } label: {
+                    Image(systemName: "camera.aperture").tappableArea()
+                }
+                .accessibilityLabel("Open the slate")
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     Haptics.tap()
@@ -116,9 +150,14 @@ struct ShotsView: View {
         .onDisappear { model.stopLiveUpdates() }
     }
 
+    /// Puts the shot on the slate's board, carrying on its take count.
+    private func slate(_ shot: Shot) {
+        Haptics.tap()
+        router.push(.slateShot(id: shot.id))
+    }
+
     private var rowInsets: EdgeInsets {
-        let side = Theme.listSideInset(for: listWidth)
-        return EdgeInsets(top: 4, leading: side, bottom: 4, trailing: side)
+        EdgeInsets(top: 4, leading: Theme.screenPadding, bottom: 4, trailing: Theme.screenPadding)
     }
 
     // MARK: - Header pieces
@@ -143,7 +182,7 @@ struct ShotsView: View {
                 }
             }
             .pickerStyle(.segmented)
-            .onChange(of: model.grouping) { _ in Haptics.selectionChanged() }
+            .onChange(of: model.grouping) { _, _ in Haptics.selectionChanged() }
 
             Button {
                 Haptics.selectionChanged()
@@ -171,7 +210,7 @@ struct ShotsView: View {
                 .foregroundStyle(Theme.textTertiary)
                 .monospacedDigit()
         }
-        .padding(.horizontal, Theme.listSideInset(for: listWidth))
+        .padding(.horizontal, Theme.screenPadding)
         .padding(.vertical, 6)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Theme.background)

@@ -5,6 +5,10 @@ import SwiftUI
 /// Laid out as a vertical stack of typed elements rather than one big text
 /// field, which is what makes correct screenplay formatting possible: each
 /// element knows its own margins, casing and what Return should create next.
+///
+/// On a phone the margins are compressed to fit; on iPad (or any wide window)
+/// the script sits on a sheet of paper at real screenplay margins, the way it
+/// will print.
 struct ScriptEditorView: View {
 
     let projectID: String
@@ -13,12 +17,15 @@ struct ScriptEditorView: View {
 
     @EnvironmentObject private var auth: AuthStore
     @EnvironmentObject private var settings: AppSettings
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @StateObject private var model: EditorViewModel
 
+    @State private var elementHeights: [String: CGFloat] = [:]
     @State private var isShowingSceneList = false
     @State private var isShowingStats = false
-    /// Width of the scroll view, measured; everything about the page's
-    /// geometry follows from it.
+    @State private var sharedFile: SharedFile?
+    @State private var exportError: String?
+    /// Width of the scroll view, measured, used to lay out the page.
     @State private var containerWidth: CGFloat = 0
 
     init(projectID: String, scriptID: String, scriptTitle: String) {
@@ -28,115 +35,98 @@ struct ScriptEditorView: View {
         _model = StateObject(wrappedValue: EditorViewModel(projectID: projectID, scriptID: scriptID))
     }
 
+    // MARK: - Layout
+
+    private var isWide: Bool { sizeClass == .regular }
+
     private var fontSize: CGFloat {
         // 12pt is the screenplay standard; on a 390pt-wide phone that leaves
         // roughly 50 characters per line, so the default nudges up slightly and
-        // the reader can trim it in Settings.
-        13 * settings.clampedEditorScale
+        // the reader can trim it in Settings. iPad has room for a little more.
+        (isWide ? 15 : 13) * settings.clampedEditorScale
     }
 
-    /// 6.5 inches of Courier at the editor's size: the live area of a real
-    /// screenplay page.
-    private var fullPageWidth: CGFloat { fontSize * 39 }
+    /// Paper on wide screens when the setting is on.
+    private var showsPaper: Bool { isWide && settings.editorPaper }
 
-    /// Room for a whole page with margins round it — an iPad, or a large
-    /// phone in landscape. Then the script is laid out as a page, with the
-    /// real margins; narrower than that it fills the screen with compressed
-    /// ones.
-    private var showsPage: Bool {
-        containerWidth >= fullPageWidth + fontSize * 9 + 48
+    /// Inside margin of the paper sheet.
+    private var paperInset: CGFloat { showsPaper ? 48 : 0 }
+
+    /// The live text column: about 60 Courier characters, like a printed page,
+    /// on wide screens; the full width less gutters on a phone.
+    private var columnWidth: CGFloat {
+        guard containerWidth > 0 else { return 0 }
+        if isWide {
+            let ideal = fontSize * 36.5
+            return max(280, min(ideal, containerWidth - 2 * (paperInset + 28)))
+        }
+        return containerWidth - 36
     }
 
-    private var pageWidth: CGFloat {
-        showsPage ? fullPageWidth : max(0, containerWidth - 36)
+    /// Phones compress the screenplay margins so dialogue isn't squeezed into a
+    /// column three words wide; a full-size page uses them as written.
+    private var marginCompression: CGFloat { isWide ? 1.0 : 0.55 }
+
+    private var dimsOtherLines: Bool {
+        settings.focusMode && model.focusedElementID != nil
     }
+
+    // MARK: - Body
 
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: 0) {
-                    ForEach(model.elements) { element in
-                        ElementRow(
-                            element: element,
-                            pageWidth: pageWidth,
-                            marginScale: showsPage ? 1 : 0.55,
-                            fontSize: fontSize,
-                            isFocused: model.focusedElementID == element.id,
-                            onTextChange: { model.updateContent($0, for: element.id) },
-                            onReturn: { model.insertElement(after: element.id) },
-                            onBackspaceAtStart: { model.mergeBackwards(from: element.id) },
-                            onFocus: { model.focusedElementID = element.id },
-                            onBlur: {
-                                if model.focusedElementID == element.id {
-                                    model.focusedElementID = nil
-                                }
-                            },
-                            onChangeType: { model.changeType($0, for: element.id) },
-                            onDelete: { model.delete(id: element.id) }
-                        )
-                        .equatable()
-                        .id(element.id)
-                    }
-
-                    // Tapping the space under the last line adds a new one, the
-                    // way tapping below the text does in a notes app. Hidden
-                    // until the script has loaded, so a failed load can't be
-                    // "fixed" by typing into what looks like an empty script.
-                    if !model.elements.isEmpty {
-                        Button {
-                            if let last = model.elements.last, last.isEmpty {
-                                model.focusedElementID = last.id
-                            } else {
-                                model.appendElement(type: .action)
-                            }
-                        } label: {
-                            Color.clear
-                                .frame(height: 140)
-                                .contentShape(Rectangle())
+                page
+                    .frame(width: columnWidth > 0 ? columnWidth : nil)
+                    .padding(.horizontal, isWide ? paperInset : 18)
+                    .padding(.top, showsPaper ? 44 : 12)
+                    .padding(.bottom, showsPaper ? 28 : 0)
+                    .background {
+                        if showsPaper {
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(Theme.card)
+                                .shadow(color: .black.opacity(0.12), radius: 18, y: 6)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                        .strokeBorder(Theme.border, lineWidth: 1)
+                                )
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Add a line at the end")
                     }
-                }
-                .frame(width: showsPage ? pageWidth : nil)
-                .padding(.horizontal, showsPage ? fontSize * 4.5 : 18)
-                .padding(.top, showsPage ? fontSize * 3 : 12)
-                .background {
-                    if showsPage {
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .fill(Theme.Surface.s900)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                    .strokeBorder(Theme.border, lineWidth: 1)
-                            )
-                    }
-                }
-                .padding(.vertical, showsPage ? 24 : 0)
-                .frame(maxWidth: .infinity)
+                    .padding(.vertical, showsPaper ? 28 : 0)
+                    .frame(maxWidth: .infinity)
             }
+            .scrollDismissesKeyboard(.interactively)
+            .background(Theme.background)
             .background(
                 GeometryReader { geometry in
                     Color.clear
                         .onAppear { containerWidth = geometry.size.width }
-                        .onChange(of: geometry.size.width) { width in
-                            containerWidth = width
-                        }
+                        .onChange(of: geometry.size.width) { _, width in containerWidth = width }
                 }
             )
-            .scrollDismissesKeyboard(.interactively)
-            .background(Theme.background)
-            .onChange(of: model.focusedElementID) { id in
+            .onChange(of: model.focusedElementID) { _, id in
                 guard let id else { return }
                 withAnimation(.easeOut(duration: 0.2)) {
-                    proxy.scrollTo(id, anchor: .center)
+                    // Typewriter scrolling keeps the current line mid-screen;
+                    // otherwise scroll only as far as needed to show it.
+                    proxy.scrollTo(id, anchor: settings.typewriterScrolling ? .center : nil)
                 }
             }
             .overlay {
                 if model.isLoading && model.elements.isEmpty {
                     ProgressView().tint(Theme.textTertiary)
-                } else if let error = model.errorMessage, model.elements.isEmpty {
-                    ErrorStateView(message: error) { Task { await model.retry() } }
                 }
+            }
+            .background {
+                // Hardware-keyboard shortcuts for the screen as a whole.
+                Group {
+                    Button("Save Now") { Task { await model.flushImmediately() } }
+                        .keyboardShortcut("s", modifiers: .command)
+                    Button("Jump to Scene") { isShowingSceneList = true }
+                        .keyboardShortcut("j", modifiers: .command)
+                }
+                .opacity(0)
+                .accessibilityHidden(true)
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -178,47 +168,7 @@ struct ScriptEditorView: View {
             }
 
             ToolbarItem(placement: .topBarTrailing) {
-                Menu {
-                    Button {
-                        isShowingSceneList = true
-                    } label: {
-                        Label("Jump to scene", systemImage: "list.bullet.indent")
-                    }
-                    .disabled(model.sceneIndex.isEmpty)
-
-                    Button {
-                        isShowingStats = true
-                    } label: {
-                        Label("Script statistics", systemImage: "chart.bar")
-                    }
-
-                    Divider()
-
-                    Menu {
-                        ForEach([1.6, 1.3, 1.15, 1.0, 0.9, 0.8], id: \.self) { scale in
-                            Button {
-                                settings.editorScale = scale
-                                Haptics.selectionChanged()
-                            } label: {
-                                Label(
-                                    "\(Int(scale * 100))%",
-                                    systemImage: abs(settings.clampedEditorScale - scale) < 0.01
-                                        ? "checkmark" : ""
-                                )
-                            }
-                        }
-                    } label: {
-                        Label("Text size", systemImage: "textformat.size")
-                    }
-
-                    Toggle(isOn: $settings.showElementBar) {
-                        Label("Element bar", systemImage: "keyboard")
-                    }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .tappableArea()
-                }
-                .accessibilityLabel("Editor options")
+                optionsMenu
             }
         }
         .sheet(isPresented: $isShowingSceneList) {
@@ -235,6 +185,17 @@ struct ScriptEditorView: View {
                 characters: model.knownCharacterNames
             )
         }
+        .sheet(item: $sharedFile) { file in
+            ActivityView(items: [file.url])
+                .presentationDetents([.medium, .large])
+                .ignoresSafeArea()
+        }
+        .alert(
+            "Couldn’t export",
+            isPresented: Binding(get: { exportError != nil }, set: { if !$0 { exportError = nil } }),
+            actions: { Button("OK", role: .cancel) { exportError = nil } },
+            message: { Text(exportError ?? "") }
+        )
         .task {
             await model.load(ownerID: auth.userID)
             model.startLiveUpdates()
@@ -247,7 +208,10 @@ struct ScriptEditorView: View {
             }
             #endif
         }
+        .onAppear { applyKeepAwake(settings.keepAwakeWhileWriting) }
+        .onChange(of: settings.keepAwakeWhileWriting) { _, keepAwake in applyKeepAwake(keepAwake) }
         .onDisappear {
+            applyKeepAwake(false)
             model.stopLiveUpdates()
             Task { await model.flushImmediately() }
         }
@@ -267,6 +231,156 @@ struct ScriptEditorView: View {
         )
     }
 
+    // MARK: - Page
+
+    private var page: some View {
+        LazyVStack(alignment: .leading, spacing: 0) {
+            ForEach(model.elements) { element in
+                let isFocused = model.focusedElementID == element.id
+                ElementRow(
+                    element: element,
+                    pageWidth: columnWidth,
+                    marginCompression: marginCompression,
+                    fontSize: fontSize,
+                    lineSpacingFactor: settings.editorLineSpacing.leadingFactor,
+                    showsSceneNumber: settings.showSceneNumbers,
+                    isFocused: isFocused,
+                    height: elementHeights[element.id] ?? fontSize * 1.6,
+                    onHeightChange: { elementHeights[element.id] = $0 },
+                    onTextChange: { model.updateContent($0, for: element.id) },
+                    onReturn: { model.insertElement(after: element.id) },
+                    onBackspaceAtStart: { model.mergeBackwards(from: element.id) },
+                    onFocus: { model.focusedElementID = element.id },
+                    onBlur: {
+                        if model.focusedElementID == element.id {
+                            model.focusedElementID = nil
+                        }
+                    },
+                    onChangeType: { model.changeType($0, for: element.id) },
+                    onCycleType: { forward in
+                        Haptics.selectionChanged()
+                        let current = model.elements.first { $0.id == element.id }?.elementType ?? element.elementType
+                        model.changeType(forward ? current.nextInCycle : current.previousInCycle, for: element.id)
+                    },
+                    onEscape: {
+                        model.focusedElementID = nil
+                    },
+                    onDelete: { model.delete(id: element.id) }
+                )
+                .opacity(dimsOtherLines && !isFocused ? 0.32 : 1)
+                .animation(.easeOut(duration: 0.2), value: dimsOtherLines && !isFocused)
+                .id(element.id)
+            }
+
+            // Tapping the space under the last line adds a new one, the way
+            // tapping below the text does in a notes app.
+            Button {
+                if let last = model.elements.last, last.isEmpty {
+                    model.focusedElementID = last.id
+                } else {
+                    model.appendElement(type: .action)
+                }
+            } label: {
+                Color.clear
+                    .frame(height: showsPaper ? 100 : 140)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Add a line at the end")
+        }
+    }
+
+    // MARK: - Options
+
+    private var optionsMenu: some View {
+        Menu {
+            Button {
+                isShowingSceneList = true
+            } label: {
+                Label("Jump to Scene", systemImage: "list.bullet.indent")
+            }
+            .disabled(model.sceneIndex.isEmpty)
+
+            Button {
+                isShowingStats = true
+            } label: {
+                Label("Script Statistics", systemImage: "chart.bar")
+            }
+
+            Button {
+                shareFountain()
+            } label: {
+                Label("Share as Fountain…", systemImage: "square.and.arrow.up")
+            }
+            .disabled(model.elements.isEmpty)
+
+            Divider()
+
+            Menu {
+                ForEach([1.6, 1.3, 1.15, 1.0, 0.9, 0.8], id: \.self) { scale in
+                    Button {
+                        settings.editorScale = scale
+                        Haptics.selectionChanged()
+                    } label: {
+                        if abs(settings.clampedEditorScale - scale) < 0.01 {
+                            Label("\(Int(scale * 100))%", systemImage: "checkmark")
+                        } else {
+                            Text("\(Int(scale * 100))%")
+                        }
+                    }
+                }
+            } label: {
+                Label("Text Size", systemImage: "textformat.size")
+            }
+
+            Picker(selection: $settings.editorLineSpacing) {
+                ForEach(EditorLineSpacing.allCases) { spacing in
+                    Text(spacing.label).tag(spacing)
+                }
+            } label: {
+                Label("Line Spacing", systemImage: "text.line.spacing")
+            }
+            .pickerStyle(.menu)
+
+            Toggle(isOn: $settings.focusMode) {
+                Label("Focus Mode", systemImage: "scope")
+            }
+            Toggle(isOn: $settings.typewriterScrolling) {
+                Label("Typewriter Scrolling", systemImage: "text.aligncenter")
+            }
+            if isWide {
+                Toggle(isOn: $settings.editorPaper) {
+                    Label("Paper Page", systemImage: "doc")
+                }
+            }
+            Toggle(isOn: $settings.showElementBar) {
+                Label("Element Bar", systemImage: "keyboard")
+            }
+        } label: {
+            Image(systemName: "ellipsis.circle")
+                .tappableArea()
+        }
+        .accessibilityLabel("Editor options")
+    }
+
+    private func shareFountain() {
+        do {
+            let url = try FountainExporter.temporaryFile(
+                title: scriptTitle,
+                author: auth.profile?.bestName,
+                elements: model.elements
+            )
+            sharedFile = SharedFile(url: url)
+            Haptics.tap()
+        } catch {
+            exportError = error.localizedDescription
+        }
+    }
+
+    private func applyKeepAwake(_ keepAwake: Bool) {
+        UIApplication.shared.isIdleTimerDisabled = keepAwake
+    }
+
     private var focusedElement: ScriptElement? {
         guard let id = model.focusedElementID else { return nil }
         return model.elements.first { $0.id == id }
@@ -284,76 +398,35 @@ struct ScriptEditorView: View {
 
 // MARK: - Element row
 
-private struct ElementRow: View, Equatable {
+private struct ElementRow: View {
     let element: ScriptElement
     let pageWidth: CGFloat
-    /// 1 on a full page; less where the screen is too narrow for real margins.
-    let marginScale: CGFloat
+    /// 1.0 for real screenplay margins; less on a phone.
+    let marginCompression: CGFloat
     let fontSize: CGFloat
+    let lineSpacingFactor: CGFloat
+    let showsSceneNumber: Bool
     let isFocused: Bool
+    let height: CGFloat
+    let onHeightChange: (CGFloat) -> Void
     let onTextChange: (String) -> Void
     let onReturn: () -> Void
     let onBackspaceAtStart: () -> Void
     let onFocus: () -> Void
     let onBlur: () -> Void
     let onChangeType: (ScriptElementType) -> Void
+    let onCycleType: (Bool) -> Void
+    let onEscape: () -> Void
     let onDelete: () -> Void
 
-    @State private var text: String
+    @State private var text: String = ""
 
-    init(
-        element: ScriptElement,
-        pageWidth: CGFloat,
-        marginScale: CGFloat,
-        fontSize: CGFloat,
-        isFocused: Bool,
-        onTextChange: @escaping (String) -> Void,
-        onReturn: @escaping () -> Void,
-        onBackspaceAtStart: @escaping () -> Void,
-        onFocus: @escaping () -> Void,
-        onBlur: @escaping () -> Void,
-        onChangeType: @escaping (ScriptElementType) -> Void,
-        onDelete: @escaping () -> Void
-    ) {
-        self.element = element
-        self.pageWidth = pageWidth
-        self.marginScale = marginScale
-        self.fontSize = fontSize
-        self.isFocused = isFocused
-        self.onTextChange = onTextChange
-        self.onReturn = onReturn
-        self.onBackspaceAtStart = onBackspaceAtStart
-        self.onFocus = onFocus
-        self.onBlur = onBlur
-        self.onChangeType = onChangeType
-        self.onDelete = onDelete
-        // Seeded here rather than in `onAppear`, so a row is laid out once with
-        // its text instead of empty and then again.
-        _text = State(initialValue: element.content)
-    }
-
-    /// Rows compare on what they draw. The closures are rebuilt on every
-    /// editor redraw but only ever act on this row's id, so leaving them out
-    /// lets SwiftUI skip every line a keystroke didn't touch.
-    static func == (lhs: ElementRow, rhs: ElementRow) -> Bool {
-        lhs.element == rhs.element
-            && lhs.pageWidth == rhs.pageWidth
-            && lhs.marginScale == rhs.marginScale
-            && lhs.fontSize == rhs.fontSize
-            && lhs.isFocused == rhs.isFocused
-    }
-
-    /// Full screenplay margins are unreadable on a 390pt screen — a character
-    /// cue would start two-thirds of the way across. On a phone they're
-    /// compressed (`marginScale` 0.55) so the shape of the page survives
-    /// without squeezing dialogue into a column three words wide, matching
-    /// the web app's mobile breakpoint. With room for a page they're real.
     private var leadingInset: CGFloat {
-        pageWidth * element.elementType.leadingFraction * marginScale
+        pageWidth * element.elementType.leadingFraction * marginCompression
     }
 
     private var trailingInset: CGFloat {
-        pageWidth * element.elementType.trailingFraction * marginScale
+        pageWidth * element.elementType.trailingFraction * marginCompression
     }
 
     var body: some View {
@@ -362,7 +435,8 @@ private struct ElementRow: View, Equatable {
 
             HStack(alignment: .top, spacing: 0) {
                 // Scene-number badge for scene headings.
-                if element.elementType == .sceneHeading,
+                if showsSceneNumber,
+                   element.elementType == .sceneHeading,
                    let num = element.sceneNumber?.nonEmpty {
                     Text(num)
                         .font(.system(size: max(9, fontSize * 0.7), weight: .bold, design: .monospaced))
@@ -388,12 +462,17 @@ private struct ElementRow: View, Equatable {
                         text: $text,
                         elementType: element.elementType,
                         fontSize: fontSize,
+                        lineSpacingFactor: lineSpacingFactor,
                         isFocused: isFocused,
+                        onHeightChange: onHeightChange,
                         onReturn: onReturn,
                         onBackspaceAtStart: onBackspaceAtStart,
                         onFocusChange: { $0 ? onFocus() : onBlur() },
-                        onSetType: onChangeType
+                        onCycleType: onCycleType,
+                        onSetType: onChangeType,
+                        onEscape: onEscape
                     )
+                    .frame(height: height)
                 }
             }
             .padding(.leading, leadingInset)
@@ -436,10 +515,11 @@ private struct ElementRow: View, Equatable {
                 Label("Delete line", systemImage: "trash")
             }
         }
-        .onChange(of: element.content) { newValue in
+        .onAppear { text = element.content }
+        .onChange(of: element.content) { _, newValue in
             if newValue != text { text = newValue }
         }
-        .onChange(of: text) { newValue in
+        .onChange(of: text) { _, newValue in
             onTextChange(newValue)
         }
         .accessibilityElement(children: .contain)

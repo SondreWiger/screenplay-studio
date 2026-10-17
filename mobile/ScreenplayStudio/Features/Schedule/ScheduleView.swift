@@ -12,7 +12,6 @@ struct ScheduleView: View {
 
     @EnvironmentObject private var auth: AuthStore
     @StateObject private var model: ScheduleViewModel
-    @State private var listWidth: CGFloat = 0
     @State private var isPresentingNewEvent = false
 
     init(projectID: String, projectTitle: String) {
@@ -72,14 +71,14 @@ struct ScheduleView: View {
                             }
                         }
                     } header: {
-                        DayHeader(date: day.date, eventCount: day.events.count, sideInset: Theme.listSideInset(for: listWidth))
+                        DayHeader(date: day.date, eventCount: day.events.count)
                     }
                 }
             }
         }
         .listStyle(.plain)
-        .measuringWidth($listWidth)
         .scrollContentBackground(.hidden)
+        .readableListWidth()
         .background(Theme.background)
         .refreshable { await model.refresh() }
         .navigationTitle("Schedule")
@@ -117,8 +116,7 @@ struct ScheduleView: View {
     }
 
     private var rowInsets: EdgeInsets {
-        let side = Theme.listSideInset(for: listWidth)
-        return EdgeInsets(top: 4, leading: side, bottom: 4, trailing: side)
+        EdgeInsets(top: 4, leading: Theme.screenPadding, bottom: 4, trailing: Theme.screenPadding)
     }
 
     private var summaryStrip: some View {
@@ -183,7 +181,6 @@ struct ScheduleView: View {
 struct DayHeader: View {
     let date: Date
     let eventCount: Int
-    var sideInset: CGFloat = Theme.screenPadding
 
     private var isToday: Bool { Calendar.current.isDateInToday(date) }
 
@@ -206,7 +203,7 @@ struct DayHeader: View {
                 .foregroundStyle(Theme.textTertiary)
                 .monospacedDigit()
         }
-        .padding(.horizontal, sideInset)
+        .padding(.horizontal, Theme.screenPadding)
         .padding(.vertical, 7)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Theme.background)

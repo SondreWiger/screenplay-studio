@@ -7,7 +7,7 @@
 ## Current Priorities
 - [ ] Fix "title page not working correctly on desktop version"
 - [ ] Fix loading proper file on opening project
-- [ ] Fix icon on desktop version
+- [x] Fix icon on desktop version (macOS icon on Apple's grid, `build/icon-mac.png`)
 - [ ] Improve layout and aesthetics (design tokens, light theme)
 - [ ] Studio: company-wide plan and checkout
 - [ ] Add integrations for all sorts of external apps, like Todoist, Slack, Cinderra, Dropbox, and Drive, etc.
