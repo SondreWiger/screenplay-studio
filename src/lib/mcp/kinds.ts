@@ -157,16 +157,22 @@ export const KINDS: Record<string, RecordKind> = {
       label: 'text!', node_type: 'text', character_id: 'uuid', x: 'number', y: 'number', width: 'number', height: 'number',
       color: 'text', shape: 'text', font_size: 'int', image_url: 'text', notes: 'text', group_id: 'uuid', is_locked: 'bool', z_index: 'int',
     },
-    hints: { node_type: 'character, group or note', shape: 'rounded, circle, diamond or rectangle', x: 'Canvas position; space nodes ~220px apart' },
-    defaults: () => ({ x: 0, y: 0 }),
+    hints: {
+      node_type: 'character, group or note; default character', shape: 'rounded, circle, diamond or rectangle; default rounded',
+      x: 'Canvas position; space nodes ~220px apart', color: 'Hex colour; default #dd574e', font_size: 'Default 14',
+      width: 'Default 120', height: 'Default 60',
+    },
+    defaults: () => ({ node_type: 'character', x: 0, y: 0, width: 120, height: 60, color: '#dd574e', shape: 'rounded', font_size: 14 }),
   },
   mindmap_edges: {
     table: 'mindmap_edges', group: 'planning', scope: 'project', title: 'label', stamp: 'created_by',
     about: 'Connections between mind map nodes.',
     fields: {
       source_node_id: 'uuid!', target_node_id: 'uuid!', label: 'text', color: 'text', line_style: 'solid|dashed|dotted',
-      thickness: 'int', arrow_type: 'text', animated: 'bool', notes: 'text',
+      thickness: 'int', arrow_type: 'none|forward|backward|both', animated: 'bool', notes: 'text',
     },
+    hints: { color: 'Hex colour; default #888888', line_style: 'Default solid', thickness: 'Default 2', arrow_type: 'Default none' },
+    defaults: () => ({ color: '#888888', line_style: 'solid', thickness: 2, arrow_type: 'none', animated: false }),
   },
   moodboard_items: {
     table: 'mood_board_items', group: 'planning', scope: 'project', title: 'title', stamp: 'created_by',
@@ -229,9 +235,11 @@ export const KINDS: Record<string, RecordKind> = {
     table: 'script_submissions', group: 'documents', scope: 'project', title: 'recipient_name', order: '-date_sent', stamp: 'created_by',
     about: 'Submission tracker: agents, managers, festivals, production companies; publishers, magazines and contests for novels.',
     fields: {
-      recipient_name: 'text!', recipient_type: 'text', script_id: 'uuid', date_sent: 'date', status: 'text', notes: 'text',
+      recipient_name: 'text!', recipient_type: 'agent|manager|producer|festival|network|studio|other', script_id: 'uuid',
+      date_sent: 'date', status: 'pending|passed|request|offer|accepted|withdrawn', notes: 'text',
       response_date: 'date', next_follow_up: 'date',
     },
+    hints: { recipient_type: 'Publishers, magazines and contests go under other' },
   },
   documents: {
     table: 'project_documents', group: 'documents', scope: 'project', title: 'title', order: '-updated_at', stamp: 'created_by',
@@ -340,7 +348,7 @@ export const KINDS: Record<string, RecordKind> = {
     table: 'shoot_gear', group: 'production', scope: 'project', title: 'name', order: 'category', stamp: 'created_by',
     about: 'Equipment list: cameras, lenses, grip, lighting, rentals.',
     fields: {
-      name: 'text!', category: 'text', quantity: 'int', unit: 'text', ownership: 'owned|rented|provided|tbc', vendor: 'text',
+      name: 'text!', category: 'Camera|Lenses|Lighting|Grip|Sound|Art Dept|Costume|Hair & Makeup|Locations|Transport|Post / DIT|Other', quantity: 'int', unit: 'text', ownership: 'owned|rented|provided|tbc', vendor: 'text',
       daily_rate: 'number', total_cost: 'number', shoot_day_id: 'uuid', notes: 'text', status: 'confirmed|pending|cancelled',
     },
   },
