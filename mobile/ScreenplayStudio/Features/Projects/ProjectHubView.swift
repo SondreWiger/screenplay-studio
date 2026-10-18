@@ -80,13 +80,27 @@ struct ProjectHubView: View {
 
     // MARK: - Summary
 
+    private var projectAccent: Color {
+        Color(hex: Project.accentPalette[project.accentSeed])
+    }
+
     private var summaryCard: some View {
-        Card {
+        Card(glow: projectAccent) {
             VStack(alignment: .leading, spacing: 12) {
+                // The project's own colour as a slim bar, so each hub is
+                // recognisable at a glance and matches its row in the list.
+                Capsule()
+                    .fill(LinearGradient(
+                        colors: [projectAccent, projectAccent.opacity(0.25)],
+                        startPoint: .leading, endPoint: .trailing
+                    ))
+                    .frame(width: 44, height: 4)
+                    .accessibilityHidden(true)
+
                 HStack(alignment: .top, spacing: 10) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(project.title)
-                            .font(.title3.weight(.bold))
+                            .font(.title2.weight(.bold))
                             .foregroundStyle(Theme.textPrimary)
                             .fixedSize(horizontal: false, vertical: true)
 

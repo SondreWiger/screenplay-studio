@@ -39,7 +39,14 @@ struct Project: Codable, Identifiable, Hashable {
     /// Deterministic accent so a project keeps the same colour everywhere it
     /// appears without needing a stored value.
     var accentSeed: Int {
-        abs(id.hashValue) % Project.accentPalette.count
+        // Swift's `hashValue` is reseeded every launch, so it would give a
+        // project a different colour each time. FNV-1a over the UUID is stable
+        // and matches the Android app, so a project looks the same everywhere.
+        var hash: UInt32 = 2_166_136_261
+        for byte in id.utf8 {
+            hash = (hash ^ UInt32(byte)) &* 16_777_619
+        }
+        return Int(hash % UInt32(Project.accentPalette.count))
     }
 
     static let accentPalette: [UInt32] = [

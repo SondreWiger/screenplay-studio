@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The auth session is encrypted with a device-bound Keystore key, so a
+     restored copy could never be decrypted. Leave it out of backups. -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="ss_session.xml" />
+</full-backup-content>

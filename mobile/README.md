@@ -1,4 +1,4 @@
-# Screenplay Studio for iPhone
+# Screenplay Studio for iPhone, iPad and Mac
 
 A native SwiftUI app for the writing and production tools people actually need
 away from a desk: the script, the scene breakdown, the shot list, the schedule
@@ -42,7 +42,10 @@ xcodebuild -project mobile/ScreenplayStudio.xcodeproj -scheme ScreenplayStudio -
 ```
 
 Requires Xcode 16 or newer (the project uses synchronized folder groups) and
-targets iOS 17.0 and up. iPhone only.
+targets iOS 16.0 and up. One target ships to iPhone, iPad and — through Mac
+Catalyst — the Mac, under the same bundle id (one App Store record, universal
+purchase). For the Mac, pick the **My Mac (Mac Catalyst)** destination. Release steps
+are in `store/README.md`; the Android app lives in `android/`.
 
 ## What's in it
 
@@ -127,6 +130,18 @@ casing, and what Return should create next — mirroring `getNextElementType` in
 platforms. `ScreenplayTextView` wraps `UITextView` for the three behaviours
 SwiftUI won't give you: Return creating the next element, backspace-at-zero
 merging upward, and self-sizing inside a scroll view.
+
+## iPad and Mac
+
+- **Sidebar instead of a tab bar** (`MainTabView`, iOS 18+): on a regular-width window the
+  three tabs become a collapsible sidebar; a phone keeps the tab bar.
+- **Mac window**: 900 × 640 minimum, unified title bar, File > New and Format menus
+  removed, Help links to the website and support (`MacWindow` in `DeviceControls.swift`,
+  `.commands` in `ScreenplayStudioApp`).
+- **Sandbox**: `ScreenplayStudio.Mac.entitlements` — App Sandbox, outbound network, audio
+  input (the slate's LTC reader). Used only for the Catalyst SDK.
+- **Icons**: the Mac sizes in `AppIcon.appiconset` use the macOS rounded-square shape and
+  are generated from `AppIcon.png` by `store/tools/make-store-art.swift`.
 
 ## Phone-specific decisions
 

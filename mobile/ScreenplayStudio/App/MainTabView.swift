@@ -11,6 +11,18 @@ struct MainTabView: View {
     @StateObject private var router = Router()
 
     var body: some View {
+        tabs
+            .modifier(SidebarAdaptableTabs())
+            .tint(Theme.accent)
+            .environmentObject(router)
+            .task {
+                #if DEBUG
+                DemoData.applyInitialRoute(to: router)
+                #endif
+            }
+    }
+
+    private var tabs: some View {
         TabView(selection: tabSelection) {
             NavigationStack(path: $router.projectsPath) {
                 ProjectsView()
@@ -36,13 +48,6 @@ struct MainTabView: View {
             }
             .tag(Router.Tab.settings)
         }
-        .tint(Theme.accent)
-        .environmentObject(router)
-        .task {
-            #if DEBUG
-            DemoData.applyInitialRoute(to: router)
-            #endif
-        }
     }
 
     /// Intercepts selection so tapping the current tab again pops to root.
@@ -58,5 +63,19 @@ struct MainTabView: View {
                 }
             }
         )
+    }
+}
+
+/// On an iPad or a Mac the three tabs become a sidebar (which the user can
+/// still collapse back into a tab bar); on a phone nothing changes. A bar of
+/// three tabs floating over 1,300pt of empty canvas reads as a phone app
+/// stretched, and the sidebar is what both platforms' own apps use.
+private struct SidebarAdaptableTabs: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 18.0, macCatalyst 18.0, *) {
+            content.tabViewStyle(.sidebarAdaptable)
+        } else {
+            content
+        }
     }
 }
