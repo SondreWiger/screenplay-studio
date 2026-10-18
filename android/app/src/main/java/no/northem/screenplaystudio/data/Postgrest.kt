@@ -1,9 +1,13 @@
 package no.northem.screenplaystudio.data
 
+import kotlinx.serialization.Serializable
+
 /**
  * A small, immutable PostgREST request builder — the Kotlin twin of
- * PostgrestQuery.swift. Only the operators the app uses.
+ * PostgrestQuery.swift. Only the operators the app uses. Serializable so an
+ * offline write can be parked in the SyncQueue exactly as it would have gone out.
  */
+@Serializable
 data class Query(
     val table: String,
     val method: String = "GET",
@@ -16,6 +20,7 @@ data class Query(
     fun eq(column: String, value: Any) = filter(column, "eq.$value")
     fun gte(column: String, value: String) = filter(column, "gte.$value")
     fun lte(column: String, value: String) = filter(column, "lte.$value")
+    fun isNull(column: String) = filter(column, "is.null")
     fun inList(column: String, values: List<String>) =
         filter(column, "in.(" + values.joinToString(",") { "\"" + it.replace("\"", "\\\"") + "\"" } + ")")
     fun or(expression: String) = copy(params = params + ("or" to "($expression)"))

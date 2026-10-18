@@ -8,7 +8,11 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import no.northem.screenplaystudio.ui.characters.CharactersScreen
+import no.northem.screenplaystudio.ui.documents.DocumentsScreen
+import no.northem.screenplaystudio.ui.gear.GearScreen
 import no.northem.screenplaystudio.ui.editor.ScriptEditorScreen
 import no.northem.screenplaystudio.ui.hub.ProjectHubScreen
 import no.northem.screenplaystudio.ui.projects.ProjectsScreen
@@ -23,6 +27,7 @@ object Routes {
     fun project(id: String) = "project/$id"
     fun editor(projectId: String, scriptId: String) = "project/$projectId/editor/$scriptId"
     fun tool(projectId: String, tool: String) = "project/$projectId/$tool"
+    fun document(projectId: String, documentId: String) = "project/$projectId/documents?doc=$documentId"
 }
 
 @Composable
@@ -64,6 +69,13 @@ fun AppNavHost(nav: NavHostController) {
         composable("project/{id}/schedule") { e -> ScheduleScreen(e.arguments?.getString("id").orEmpty(), back) }
         composable("project/{id}/characters") { e -> CharactersScreen(e.arguments?.getString("id").orEmpty(), back) }
         composable("project/{id}/slate") { e -> SlateScreen(e.arguments?.getString("id").orEmpty(), back) }
+        composable(
+            "project/{id}/documents?doc={doc}",
+            arguments = listOf(navArgument("doc") { type = NavType.StringType; nullable = true; defaultValue = null }),
+        ) { e ->
+            DocumentsScreen(e.arguments?.getString("id").orEmpty(), back, initialDocumentId = e.arguments?.getString("doc"))
+        }
+        composable("project/{id}/gear") { e -> GearScreen(e.arguments?.getString("id").orEmpty(), back) }
     }
 }
 
@@ -71,6 +83,7 @@ fun AppNavHost(nav: NavHostController) {
 object DebugRoutes {
     private const val DEMO_PROJECT = "22222222-2222-4222-8222-222222222222"
     private const val DEMO_SCRIPT = "44444444-4444-4444-8444-444444444444"
+    private const val DEMO_DOCUMENT = "dd000000-0000-4000-8000-000000000001"
 
     fun open(nav: NavHostController, route: String) {
         when (route) {
@@ -78,7 +91,8 @@ object DebugRoutes {
             "settings" -> nav.navigate(TopLevel.SETTINGS.route)
             "hub" -> nav.navigate(Routes.project(DEMO_PROJECT))
             "editor" -> { nav.navigate(Routes.project(DEMO_PROJECT)); nav.navigate(Routes.editor(DEMO_PROJECT, DEMO_SCRIPT)) }
-            "scenes", "shots", "schedule", "characters", "slate" -> {
+            "document" -> { nav.navigate(Routes.project(DEMO_PROJECT)); nav.navigate(Routes.document(DEMO_PROJECT, DEMO_DOCUMENT)) }
+            "scenes", "shots", "schedule", "characters", "slate", "documents", "gear" -> {
                 nav.navigate(Routes.project(DEMO_PROJECT)); nav.navigate(Routes.tool(DEMO_PROJECT, route))
             }
         }

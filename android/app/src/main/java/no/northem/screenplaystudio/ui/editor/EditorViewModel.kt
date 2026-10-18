@@ -9,9 +9,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.northem.screenplaystudio.data.ElementType
 import no.northem.screenplaystudio.data.Query
+import no.northem.screenplaystudio.data.Realtime
+import no.northem.screenplaystudio.data.RealtimeChange
 import no.northem.screenplaystudio.data.Repository
 import no.northem.screenplaystudio.data.ScriptElement
 import no.northem.screenplaystudio.data.Supabase
+import no.northem.screenplaystudio.data.SupabaseException
+import no.northem.screenplaystudio.data.SyncQueue
 import no.northem.screenplaystudio.ui.friendly
 
 enum class SaveState { SAVED, SAVING, OFFLINE, ERROR }
@@ -23,7 +27,8 @@ enum class SaveState { SAVED, SAVING, OFFLINE, ERROR }
  * web editor, so a script flows the same way on every platform.
  *
  * Nothing in the typing path waits on the network: edits land in memory at
- * once and are written behind a short debounce.
+ * once and are written behind a short debounce. Offline, writes park in the
+ * SyncQueue and replay in order; other people's edits stream in live.
  */
 class EditorViewModel(private val scriptId: String) : ViewModel() {
 
@@ -43,6 +48,47 @@ class EditorViewModel(private val scriptId: String) : ViewModel() {
             elements.addAll(it); loading.value = false
         }
         load()
+        viewModelScope.launch {
+            Realtime.changes("script_elements", "script_id=eq.$scriptId").collect(::applyLive)
+        }
+        // Queued offline edits that have since replayed count as saved.
+        viewModelScope.launch {
+            SyncQueue.pending.collect { if (it.isEmpty() && saveState.value == SaveState.OFFLINE) saveState.value = SaveState.SAVED }
+        }
+    }
+
+    /**
+     * Applies someone else's change. The rule is narrow and strict, as on iOS:
+     * never touch the line the caret is in or one with a save of our own still
+     * pending — the only two cases where the local copy is newer than the
+     * server's. Our own saves echo back too; an echo that matches what's on
+     * screen stops at the equality check.
+     */
+    private fun applyLive(change: RealtimeChange) {
+        val busy = { id: String -> id == focusId.value || id in pending }
+        when (change.kind) {
+            RealtimeChange.Kind.INSERT, RealtimeChange.Kind.UPDATE -> {
+                val row = change.decoded(ScriptElement.serializer()) ?: return
+                if (row.scriptId != scriptId || busy(row.id)) return
+                val i = indexOf(row.id)
+                when {
+                    i < 0 -> insertSorted(row)
+                    elements[i] == row -> return
+                    elements[i].sortOrder == row.sortOrder -> elements[i] = row
+                    else -> { elements.removeAt(i); insertSorted(row) }
+                }
+            }
+            RealtimeChange.Kind.DELETE -> {
+                val id = change.recordId ?: return
+                if (busy(id)) return
+                indexOf(id).takeIf { it >= 0 }?.let { elements.removeAt(it) }
+            }
+        }
+    }
+
+    private fun insertSorted(row: ScriptElement) {
+        val at = elements.indexOfFirst { it.sortOrder > row.sortOrder }.takeIf { it >= 0 } ?: elements.size
+        elements.add(at, row)
     }
 
     fun load() = viewModelScope.launch {
@@ -142,12 +188,11 @@ class EditorViewModel(private val scriptId: String) : ViewModel() {
             if (!immediate) delay(800)
             val element = elements.firstOrNull { it.id == id } ?: return@launch
             try {
-                // Upsert rather than patch: covers a line created offline whose
-                // insert never reached the server.
-                Repository.upsertElement(element)
-                markSaved()
+                // Upsert rather than patch: covers a line whose insert hasn't
+                // reached the server yet.
+                if (Repository.upsertElement(element)) markSaved() else saveState.value = SaveState.OFFLINE
             } catch (e: Exception) {
-                saveState.value = if (e is no.northem.screenplaystudio.data.SupabaseException && e.offline) SaveState.OFFLINE else SaveState.ERROR
+                saveState.value = SaveState.ERROR
                 error.value = friendly(e)
             } finally {
                 pending.remove(id)
@@ -155,15 +200,17 @@ class EditorViewModel(private val scriptId: String) : ViewModel() {
         }
     }
 
-    private fun write(block: suspend () -> Unit) = viewModelScope.launch {
+    /** [block] returns true when the write reached the server, false when it was queued offline. */
+    private fun write(block: suspend () -> Boolean) = viewModelScope.launch {
         saveState.value = SaveState.SAVING
-        try { block(); markSaved() } catch (e: Exception) {
-            saveState.value = if (e is no.northem.screenplaystudio.data.SupabaseException && e.offline) SaveState.OFFLINE else SaveState.ERROR
+        try { if (block()) markSaved() else saveState.value = SaveState.OFFLINE } catch (e: Exception) {
+            saveState.value = if (e is SupabaseException && e.offline) SaveState.OFFLINE else SaveState.ERROR
             error.value = friendly(e)
         }
     }
 
     private fun markSaved() {
+        if (saveState.value == SaveState.OFFLINE && SyncQueue.hasPending) return
         if (pending.isEmpty() || pending.values.all { it.isCompleted }) saveState.value = SaveState.SAVED
     }
 

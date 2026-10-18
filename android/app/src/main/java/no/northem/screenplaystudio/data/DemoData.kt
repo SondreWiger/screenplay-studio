@@ -25,6 +25,7 @@ object DemoData {
     private const val PA = "22222222-2222-4222-8222-222222222222"
     private const val PB = "33333333-3333-4333-8333-333333333333"
     private const val SA = "44444444-4444-4444-8444-444444444444"
+    private const val FOLDER = "ff000000-0000-4000-8000-000000000001"
 
     val session = AuthSession(
         accessToken = "demo",
@@ -269,6 +270,82 @@ object DemoData {
            "description":null,"event_type":"rehearsal","start_time":"${day(4, 11)}","end_time":"${day(4, 14)}",
            "all_day":false,"scene_ids":[],"location_id":null,"assigned_to":[],"call_time":null,"wrap_time":null,
            "notes":"Full cast.","color":null,"is_confirmed":true}
+        ]
+        """
+        "shoot_gear" -> """
+        [
+          {"id":"gg000000-0000-4000-8000-000000000001","project_id":"$PA",
+           "name":"ARRI ALEXA Mini LF","category":"Camera","quantity":1,"unit":"body",
+           "ownership":"rented","vendor":"Storyline Studios","daily_rate":1200,"total_cost":18000,
+           "shoot_day_id":null,"notes":"LPL mount. Sensor mode: Open Gate.","status":"confirmed",
+           "created_by":"$USER","created_at":"$NOW","updated_at":"$NOW"},
+          {"id":"gg000000-0000-4000-8000-000000000002","project_id":"$PA",
+           "name":"Signature Prime 40mm T1.8","category":"Lenses","quantity":1,"unit":"lens",
+           "ownership":"rented","vendor":"Storyline Studios","daily_rate":350,"total_cost":5250,
+           "shoot_day_id":null,"notes":null,"status":"confirmed",
+           "created_by":"$USER","created_at":"$NOW","updated_at":"$NOW"},
+          {"id":"gg000000-0000-4000-8000-000000000003","project_id":"$PA",
+           "name":"Signature Prime 75mm T1.8","category":"Lenses","quantity":1,"unit":"lens",
+           "ownership":"rented","vendor":"Storyline Studios","daily_rate":350,"total_cost":5250,
+           "shoot_day_id":null,"notes":null,"status":"confirmed",
+           "created_by":"$USER","created_at":"$NOW","updated_at":"$NOW"},
+          {"id":"gg000000-0000-4000-8000-000000000004","project_id":"$PA",
+           "name":"ARRI SkyPanel S60-C","category":"Lighting","quantity":3,"unit":"fixture",
+           "ownership":"rented","vendor":"Grip & Light AS","daily_rate":120,"total_cost":5400,
+           "shoot_day_id":null,"notes":"Bring diffusion frames.","status":"pending",
+           "created_by":"$USER","created_at":"$NOW","updated_at":"$NOW"},
+          {"id":"gg000000-0000-4000-8000-000000000005","project_id":"$PA",
+           "name":"Sennheiser MKH 416","category":"Sound","quantity":2,"unit":"mic",
+           "ownership":"owned","vendor":null,"daily_rate":null,"total_cost":null,
+           "shoot_day_id":null,"notes":"Wind gags packed.","status":"confirmed",
+           "created_by":"$USER","created_at":"$NOW","updated_at":"$NOW"},
+          {"id":"gg000000-0000-4000-8000-000000000006","project_id":"$PA",
+           "name":"OConnor 2575 Fluid Head","category":"Grip","quantity":1,"unit":"head",
+           "ownership":"provided","vendor":null,"daily_rate":null,"total_cost":null,
+           "shoot_day_id":null,"notes":null,"status":"confirmed",
+           "created_by":"$USER","created_at":"$NOW","updated_at":"$NOW"},
+          {"id":"gg000000-0000-4000-8000-000000000007","project_id":"$PA",
+           "name":"DIT Station — MacBook Pro + Hedge Canister","category":"Post / DIT","quantity":1,"unit":"kit",
+           "ownership":"owned","vendor":null,"daily_rate":null,"total_cost":null,
+           "shoot_day_id":null,"notes":"Run dual-card offload after each setup.","status":"confirmed",
+           "created_by":"$USER","created_at":"$NOW","updated_at":"$NOW"}
+        ]
+        """
+        "gear_checkouts" -> """
+        [
+          {"id":"gc000000-0000-4000-8000-000000000001","gear_id":"gg000000-0000-4000-8000-000000000001",
+           "project_id":"$PA","checked_out_by":"$USER",
+           "checked_out_by_name":"Erik (1st AC)","checked_out_at":"${day(0, 7)}",
+           "returned_at":null,"notes":"Prepping for quay shoot."},
+          {"id":"gc000000-0000-4000-8000-000000000002","gear_id":"gg000000-0000-4000-8000-000000000005",
+           "project_id":"$PA","checked_out_by":"$USER",
+           "checked_out_by_name":"Kari (Boom Op)","checked_out_at":"${day(0, 7)}",
+           "returned_at":null,"notes":null}
+        ]
+        """
+        "project_folders" -> """
+        [
+          {"id":"$FOLDER","project_id":"$PA","name":"Research",
+           "parent_id":null,"sort_order":0,"created_by":"$USER","created_at":"$NOW"}
+        ]
+        """
+        "project_documents" -> """
+        [
+          {"id":"dd000000-0000-4000-8000-000000000001","project_id":"$PA",
+           "folder_id":null,"title":"Treatment — v2","document_type":"treatment",
+           "content":"A lighthouse keeper's daughter walks a frozen shore and finds a body in the ice.\n\nThe only witness is a man she left behind twenty years ago.\n\nThe Long Winter is a slow-burn thriller set against the absolute isolation of a Norwegian lighthouse station. Shot on 35mm-flavoured digital, it lives in the space between duty and guilt.",
+           "is_pinned":true,"last_edited_by":"$USER","created_by":"$USER",
+           "created_at":"$NOW","updated_at":"$NOW"},
+          {"id":"dd000000-0000-4000-8000-000000000002","project_id":"$PA",
+           "folder_id":null,"title":"Director's Notes — Day 4","document_type":"script_notes",
+           "content":"The quay scene is the hinge. Everything before this is Maren alone; everything after is Maren and Johan. The transition has to land.\n\nKeep the police launch small in frame until the last moment. Let the audience feel the distance before we close it.\n\nRack focus on 3B — commit to it. If it doesn't work we'll cut around it.",
+           "is_pinned":false,"last_edited_by":"$USER","created_by":"$USER",
+           "created_at":"$NOW","updated_at":"$NOW"},
+          {"id":"dd000000-0000-4000-8000-000000000003","project_id":"$PA",
+           "folder_id":"$FOLDER","title":"Lighthouse reference — Slettnes","document_type":"research",
+           "content":"Slettnes fyr (71°05'N) — the northernmost mainland lighthouse in the world. Built 1905.\n\nKeeper's quarters are modest. Stone and timber. The lamp room is copper-clad inside.\n\nUseful for set design reference. The proportions of the kitchen and the stairwell are close to what we need.",
+           "is_pinned":false,"last_edited_by":"$USER","created_by":"$USER",
+           "created_at":"$NOW","updated_at":"$NOW"}
         ]
         """
         else -> "[]"

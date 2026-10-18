@@ -253,6 +253,75 @@ data class ProjectCharacter(
         }
 }
 
+@Serializable
+data class ProjectDocument(
+    val id: String,
+    @SerialName("project_id") val projectId: String,
+    @SerialName("folder_id") val folderId: String? = null,
+    val title: String = "",
+    val content: String? = null,
+    @SerialName("document_type") val documentType: String? = null,
+    @SerialName("is_pinned") val isPinned: Boolean? = null,
+    @SerialName("last_edited_by") val lastEditedBy: String? = null,
+    @SerialName("created_by") val createdBy: String? = null,
+    @SerialName("created_at") val createdAt: String? = null,
+    @SerialName("updated_at") val updatedAt: String? = null,
+) {
+    val type get() = DocumentType.from(documentType)
+    val pinned get() = isPinned == true
+    val resolvedTitle get() = title.nonEmpty() ?: "Untitled"
+    val wordCount get() = content?.split(Regex("\\s+"))?.count { it.isNotBlank() } ?: 0
+    val updated: Instant? get() = updatedAt?.let(PostgresDate::parse)
+}
+
+@Serializable
+data class ProjectFolder(
+    val id: String,
+    @SerialName("project_id") val projectId: String,
+    val name: String = "",
+    @SerialName("parent_id") val parentId: String? = null,
+    @SerialName("sort_order") val sortOrder: Int? = null,
+)
+
+/** A row of `shoot_gear`: one piece of production equipment. */
+@Serializable
+data class GearItem(
+    val id: String,
+    @SerialName("project_id") val projectId: String,
+    val name: String = "",
+    val category: String? = null,
+    val quantity: Int? = null,
+    val unit: String? = null,
+    val ownership: String? = null,
+    val vendor: String? = null,
+    @SerialName("daily_rate") val dailyRate: Double? = null,
+    @SerialName("total_cost") val totalCost: Double? = null,
+    val notes: String? = null,
+    val status: String? = null,
+) {
+    val resolvedCategory get() = GearCategory.from(category)
+    val resolvedOwnership get() = GearOwnership.from(ownership)
+    val resolvedStatus get() = GearStatus.from(status)
+    val count get() = quantity ?: 1
+}
+
+/** Who took a piece of gear from video village. `returnedAt == null` means it's still out. */
+@Serializable
+data class GearCheckout(
+    val id: String,
+    @SerialName("gear_id") val gearId: String,
+    @SerialName("project_id") val projectId: String,
+    @SerialName("checked_out_by") val checkedOutBy: String? = null,
+    @SerialName("checked_out_by_name") val checkedOutByName: String = "",
+    @SerialName("checked_out_at") val checkedOutAt: String? = null,
+    @SerialName("returned_at") val returnedAt: String? = null,
+    val notes: String? = null,
+) {
+    val active get() = returnedAt == null
+    val outAt: Instant? get() = checkedOutAt?.let(PostgresDate::parse)
+    val inAt: Instant? get() = returnedAt?.let(PostgresDate::parse)
+}
+
 fun String.nonEmpty(): String? = trim().takeIf { it.isNotEmpty() }
 
 fun initialsOf(name: String): String =

@@ -74,6 +74,21 @@ fun SSLargeTopBar(title: String, scroll: TopAppBarScrollBehavior, actions: @Comp
     )
 }
 
+/** "just now", "12 min ago", "3 h ago", "yesterday", then a date — for "edited" and "out since" lines. */
+fun relativeTime(instant: java.time.Instant?, now: java.time.Instant = java.time.Instant.now()): String {
+    if (instant == null) return ""
+    val minutes = java.time.Duration.between(instant, now).toMinutes()
+    return when {
+        minutes < 1 -> "just now"
+        minutes < 60 -> "$minutes min ago"
+        minutes < 24 * 60 -> "${minutes / 60} h ago"
+        minutes < 48 * 60 -> "yesterday"
+        minutes < 7 * 24 * 60 -> "${minutes / (24 * 60)} days ago"
+        else -> java.time.format.DateTimeFormatter.ofPattern("d MMM yyyy")
+            .format(instant.atZone(java.time.ZoneId.systemDefault()))
+    }
+}
+
 fun View.tick() = performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
 fun View.confirm() = performHapticFeedback(HapticFeedbackConstants.CONFIRM)
 

@@ -79,6 +79,10 @@ object Supabase {
         cacheDir = File(context.cacheDir, "supabase").apply { mkdirs() }
         demo = demoMode && BuildConfig.DEBUG
         _session.value = if (demo) DemoData.session else store.load()
+        SyncQueue.init(context)
+        Connectivity.init(context)
+        // Writes parked on a previous run go out as soon as the app is back.
+        if (!demo && _session.value != null && SyncQueue.hasPending) SyncQueue.drainSoon()
     }
 
     // region Auth
@@ -124,6 +128,7 @@ object Supabase {
         }
         setSession(null)
         clearCache()
+        SyncQueue.clear()
     }
 
     /** Permanently deletes the account through the website's API route. */
@@ -138,6 +143,7 @@ object Supabase {
         }
         setSession(null)
         clearCache()
+        SyncQueue.clear()
     }
 
     suspend fun validAccessToken(): String {

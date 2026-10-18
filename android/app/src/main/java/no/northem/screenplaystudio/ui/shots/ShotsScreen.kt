@@ -52,7 +52,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.northem.screenplaystudio.data.ProductionScene
+import no.northem.screenplaystudio.data.Realtime
 import no.northem.screenplaystudio.data.Repository
+import no.northem.screenplaystudio.data.merged
 import no.northem.screenplaystudio.data.Shot
 import no.northem.screenplaystudio.data.ShotMovement
 import no.northem.screenplaystudio.data.ShotType
@@ -78,7 +80,14 @@ class ShotsViewModel(private val projectId: String) : ViewModel() {
     val scenes = MutableStateFlow(Supabase.cached(Repository.scenesQuery(projectId), ProductionScene.serializer()).orEmpty())
     val error = MutableStateFlow<String?>(null)
 
-    init { refresh() }
+    init {
+        refresh()
+        viewModelScope.launch {
+            Realtime.changes("shots", "project_id=eq.$projectId").collect { change ->
+                shots.value?.merged(change, Shot.serializer(), { it.id }, sort = compareBy { it.sortOrder ?: 0 })?.let { shots.value = it }
+            }
+        }
+    }
 
     fun refresh() = viewModelScope.launch {
         runCatching {

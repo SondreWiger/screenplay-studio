@@ -7,12 +7,14 @@ same screens, same design tokens.
 ```
 android/app/src/main/java/no/northem/screenplaystudio/
 ├── data/        Models, enums, Supabase (auth + PostgREST over OkHttp), repository,
+│                Realtime (Phoenix websocket), SyncQueue (offline writes), Connectivity,
 │                Keystore-encrypted session, debug demo data
 └── ui/
     ├── theme/       Design tokens mirrored from globals.css and Theme.swift
     ├── components/  Cards, chips, empty/error/skeleton states
     ├── AppRoot.kt   Auth gate + adaptive shell (bottom bar on phones, rail on tablets)
-    └── auth, projects, hub, editor, scenes, shots, schedule, characters, slate, settings
+    └── auth, projects, hub, editor, scenes, shots, schedule, characters, slate,
+        documents, gear, settings
 ```
 
 ## Running it
@@ -41,7 +43,7 @@ adb shell am start -n no.northem.screenplaystudio.debug/no.northem.screenplaystu
 ```
 
 Routes: `hub`, `editor`, `scenes`, `shots`, `schedule`, `characters`, `slate`, `today`,
-`settings`. The screenshot tests use the same mode.
+`settings`, `documents`, `document` (the treatment, open in the editor), `gear`. The screenshot tests use the same mode.
 
 ## Design decisions
 
@@ -52,6 +54,16 @@ Routes: `hub`, `editor`, `scenes`, `shots`, `schedule`, `characters`, `slate`, `
 - **Cache first.** Lists paint from the last good response on disk, then refresh.
 - **Optimistic writes with rollback.** Ticking a shot or confirming a day updates at once
   and reverts if the server says no.
+- **Offline writes queue durably.** Every write goes through `Repository.send`: with no
+  network it is parked in `SyncQueue` (`files/pending-mutations.json`) exactly as it would
+  have gone out, and replayed oldest-first when connectivity returns, at launch, or from
+  Settings → Data. While anything is queued, new writes queue behind it so a patch never
+  lands before the insert it edits. Consecutive edits to one row collapse into one entry.
+  New rows get a client-made id, so a shot or document created offline shows at once.
+- **Live updates** over Supabase Realtime (`data/Realtime.kt`, OkHttp WebSocket speaking
+  the Phoenix protocol, heartbeats and backoff as on iOS) for script elements, scenes,
+  shots and the schedule. The editor never applies a remote change to the line being
+  typed in or one with a save still pending.
 - **The editor is a list of typed elements**, with Return creating the next type
   (`getNextElementType` on the web) and Backspace at the start of a line merging upward.
   Soft keyboards don't report Backspace on an empty field, so each line carries an
@@ -62,6 +74,7 @@ Routes: `hub`, `editor`, `scenes`, `shots`, `schedule`, `characters`, `slate`, `
 
 ## Not on Android yet (compared with iOS)
 
-Documents, gear checkout, live realtime updates (Android refreshes on open and on pull),
-the offline write queue, and LTC timecode input on the slate. These are the next things
-to port.
+LTC timecode input on the slate, live updates for the project list and characters (they
+refresh on open and on pull), and the iOS diagnostics screen. Documents are plain text
+with folders one level deep, as on iOS. Realtime and the offline queue are verified by
+the JVM build and demo screenshots only — not yet against the live backend on a device.

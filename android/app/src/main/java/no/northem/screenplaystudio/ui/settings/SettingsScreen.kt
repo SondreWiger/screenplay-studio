@@ -18,6 +18,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.CleaningServices
+import androidx.compose.material.icons.outlined.CloudDone
+import androidx.compose.material.icons.outlined.CloudUpload
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Language
@@ -51,6 +53,7 @@ import no.northem.screenplaystudio.BuildConfig
 import no.northem.screenplaystudio.data.Profile
 import no.northem.screenplaystudio.data.Repository
 import no.northem.screenplaystudio.data.Supabase
+import no.northem.screenplaystudio.data.SyncQueue
 import no.northem.screenplaystudio.ui.SSLargeTopBar
 import no.northem.screenplaystudio.ui.components.AppMark
 import no.northem.screenplaystudio.ui.components.Avatar
@@ -69,6 +72,8 @@ fun SettingsScreen() {
     var cacheCleared by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val scroll = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val pending by SyncQueue.pending.collectAsStateWithLifecycle()
+    val syncScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) { profile = runCatching { Repository.fetchProfile() }.getOrNull() }
 
@@ -99,6 +104,17 @@ fun SettingsScreen() {
                 }
 
                 Group("Data") {
+                    // Writes made offline wait here until the device is back online.
+                    LinkRow(
+                        when (pending.size) {
+                            0 -> "All changes synced"
+                            1 -> "1 change waiting to sync — sync now"
+                            else -> "${pending.size} changes waiting to sync — sync now"
+                        },
+                        if (pending.isEmpty()) Icons.Outlined.CloudDone else Icons.Outlined.CloudUpload,
+                        tint = if (pending.isEmpty()) SS.textPrimary else SS.warning,
+                        external = false,
+                    ) { syncScope.launch { SyncQueue.drain() } }
                     LinkRow(if (cacheCleared) "Cache cleared" else "Clear cached data", Icons.Outlined.CleaningServices, external = false) {
                         Supabase.clearCache(); cacheCleared = true
                     }

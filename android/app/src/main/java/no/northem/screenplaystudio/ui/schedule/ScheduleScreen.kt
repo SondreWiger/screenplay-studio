@@ -51,7 +51,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import no.northem.screenplaystudio.data.Realtime
 import no.northem.screenplaystudio.data.Repository
+import no.northem.screenplaystudio.data.merged
 import no.northem.screenplaystudio.data.ScheduleEvent
 import no.northem.screenplaystudio.data.ScheduleEventType
 import no.northem.screenplaystudio.data.Supabase
@@ -98,7 +100,14 @@ class ScheduleViewModel(private val projectId: String) : ViewModel() {
     val events = MutableStateFlow(Supabase.cached(Repository.scheduleQuery(projectId), ScheduleEvent.serializer()))
     val error = MutableStateFlow<String?>(null)
 
-    init { refresh() }
+    init {
+        refresh()
+        viewModelScope.launch {
+            Realtime.changes("production_schedule", "project_id=eq.$projectId").collect { change ->
+                events.value?.merged(change, ScheduleEvent.serializer(), { it.id }, sort = compareBy { it.start })?.let { events.value = it }
+            }
+        }
+    }
 
     fun refresh() = viewModelScope.launch {
         runCatching { Repository.fetchSchedule(projectId) }

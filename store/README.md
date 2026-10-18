@@ -8,6 +8,9 @@
 Both talk to the same Supabase project as the website, with the public anon key only.
 Listing copy, privacy answers and review notes are in [`listing.md`](listing.md).
 
+Step-by-step guides: **[Publishing on the App Store](PUBLISH-APP-STORE.md)** ·
+**[Publishing on Google Play](PUBLISH-GOOGLE-PLAY.md)**. This page is the short version.
+
 ## 0. Once: the reviewer account
 
 Both stores sign in to review the app. Create the account and its demo project:

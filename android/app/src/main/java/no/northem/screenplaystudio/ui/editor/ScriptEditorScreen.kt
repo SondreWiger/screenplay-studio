@@ -324,7 +324,7 @@ private fun SaveIndicator(state: SaveState) {
     val (icon, tint, label) = when (state) {
         SaveState.SAVED -> Triple(Icons.Outlined.CloudDone, SS.textTertiary, "Saved")
         SaveState.SAVING -> Triple(Icons.Outlined.CloudSync, SS.Brand300, "Saving")
-        SaveState.OFFLINE -> Triple(Icons.Outlined.CloudOff, SS.warning, "Offline — will retry")
+        SaveState.OFFLINE -> Triple(Icons.Outlined.CloudOff, SS.warning, "Saved on this device — syncs when online")
         SaveState.ERROR -> Triple(Icons.Outlined.ErrorOutline, SS.danger, "Not saved")
     }
     Icon(icon, label, Modifier.padding(horizontal = 8.dp).size(20.dp), tint = tint)

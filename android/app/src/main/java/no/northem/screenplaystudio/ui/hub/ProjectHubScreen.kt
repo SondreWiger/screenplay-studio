@@ -20,7 +20,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.ViewList
+import androidx.compose.material.icons.outlined.Article
 import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Language
@@ -57,7 +59,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.northem.screenplaystudio.BuildConfig
+import no.northem.screenplaystudio.data.GearCheckout
+import no.northem.screenplaystudio.data.GearItem
 import no.northem.screenplaystudio.data.ProductionScene
+import no.northem.screenplaystudio.data.ProjectDocument
 import no.northem.screenplaystudio.data.Project
 import no.northem.screenplaystudio.data.ProjectCharacter
 import no.northem.screenplaystudio.data.Repository
@@ -87,6 +92,9 @@ data class HubState(
     val shots: List<Shot> = emptyList(),
     val characters: List<ProjectCharacter> = emptyList(),
     val events: List<ScheduleEvent> = emptyList(),
+    val documents: List<ProjectDocument> = emptyList(),
+    val gear: List<GearItem> = emptyList(),
+    val checkouts: List<GearCheckout> = emptyList(),
     val error: String? = null,
 ) {
     val activeScript get() = Repository.preferredScript(scripts)
@@ -105,6 +113,9 @@ class HubViewModel(private val projectId: String) : ViewModel() {
                 shots = Supabase.cached(Repository.shotsQuery(projectId), Shot.serializer()).orEmpty(),
                 characters = Supabase.cached(Repository.charactersQuery(projectId), ProjectCharacter.serializer()).orEmpty(),
                 events = Supabase.cached(Repository.scheduleQuery(projectId), ScheduleEvent.serializer()).orEmpty(),
+                documents = Supabase.cached(Repository.documentsQuery(projectId), ProjectDocument.serializer()).orEmpty(),
+                gear = Supabase.cached(Repository.gearQuery(projectId), GearItem.serializer()).orEmpty(),
+                checkouts = Supabase.cached(Repository.activeCheckoutsQuery(projectId), GearCheckout.serializer()).orEmpty(),
             )
         }
         refresh()
@@ -118,12 +129,18 @@ class HubViewModel(private val projectId: String) : ViewModel() {
             val shots = async { Repository.fetchShots(projectId) }
             val characters = async { Repository.fetchCharacters(projectId) }
             val events = async { Repository.fetchSchedule(projectId) }
+            // Secondary tools: a failure here must not blank the hub.
+            val documents = async { runCatching { Repository.fetchDocuments(projectId) }.getOrNull() }
+            val gear = async { runCatching { Repository.fetchGear(projectId) }.getOrNull() }
+            val checkouts = async { runCatching { Repository.fetchActiveCheckouts(projectId) }.getOrNull() }
             val p = project.await()
             p?.let { ProjectMemory.byId[it.id] = it }
             state.update {
                 it.copy(
                     project = p ?: it.project, scripts = scripts.await(), scenes = scenes.await(),
-                    shots = shots.await(), characters = characters.await(), events = events.await(), error = null,
+                    shots = shots.await(), characters = characters.await(), events = events.await(),
+                    documents = documents.await() ?: it.documents, gear = gear.await() ?: it.gear,
+                    checkouts = checkouts.await() ?: it.checkouts, error = null,
                 )
             }
         } catch (e: Exception) {
@@ -164,6 +181,8 @@ fun ProjectHubScreen(
         Tool("schedule", "Schedule", "${state.events.size} events", Icons.Outlined.CalendarMonth, Color(0xFF22C55E)),
         Tool("characters", "Characters", "${state.characters.size} characters", Icons.Outlined.Groups, Color(0xFFEC4899)),
         Tool("slate", "Slate", "Clapperboard — marks takes onto the shot list", Icons.Outlined.Movie, Color(0xFFF59E0B)),
+        Tool("documents", "Documents", "${state.documents.size} documents · treatments, notes, research", Icons.Outlined.Article, Color(0xFF3B82F6)),
+        Tool("gear", "Gear", "${state.gear.size} items · ${state.checkouts.size} checked out", Icons.Outlined.Inventory2, Color(0xFF14B8A6)),
     )
 
     fun open(tool: Tool) {

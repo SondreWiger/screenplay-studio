@@ -69,7 +69,9 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import no.northem.screenplaystudio.data.ProductionScene
 import no.northem.screenplaystudio.data.ProjectCharacter
+import no.northem.screenplaystudio.data.Realtime
 import no.northem.screenplaystudio.data.Repository
+import no.northem.screenplaystudio.data.merged
 import no.northem.screenplaystudio.data.SceneLocationType
 import no.northem.screenplaystudio.data.SceneTime
 import no.northem.screenplaystudio.data.Supabase
@@ -94,7 +96,14 @@ class ScenesViewModel(private val projectId: String) : ViewModel() {
     val cast = MutableStateFlow(Supabase.cached(Repository.charactersQuery(projectId), ProjectCharacter.serializer()).orEmpty())
     val error = MutableStateFlow<String?>(null)
 
-    init { refresh() }
+    init {
+        refresh()
+        viewModelScope.launch {
+            Realtime.changes("scenes", "project_id=eq.$projectId").collect { change ->
+                scenes.value?.merged(change, ProductionScene.serializer(), { it.id }, sort = compareBy { it.sortOrder ?: 0 })?.let { scenes.value = it }
+            }
+        }
+    }
 
     fun refresh() = viewModelScope.launch {
         runCatching {

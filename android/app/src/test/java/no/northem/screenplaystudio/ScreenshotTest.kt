@@ -52,7 +52,7 @@ class ScreenshotTest(private val route: String) {
     companion object {
         @JvmStatic
         @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
-        fun routes() = listOf("projects", "hub", "editor", "scenes", "shots", "schedule", "characters", "today", "slate", "settings")
+        fun routes() = listOf("projects", "hub", "editor", "scenes", "shots", "schedule", "characters", "today", "slate", "settings", "documents", "document", "gear")
             .map { arrayOf<Any>(it) }
     }
 }

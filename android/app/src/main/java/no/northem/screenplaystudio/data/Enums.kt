@@ -187,3 +187,71 @@ enum class ElementType(
         fun from(raw: String?) = entries.firstOrNull { it.raw == raw } ?: OTHER
     }
 }
+
+enum class DocumentType(val raw: String, val label: String) {
+    DOCUMENT("document", "Document"),
+    SCRIPT_NOTES("script_notes", "Script notes"),
+    TREATMENT("treatment", "Treatment"),
+    OUTLINE("outline", "Outline"),
+    RESEARCH("research", "Research"),
+    MEETING_NOTES("meeting_notes", "Meeting notes"),
+    CALL_SHEET("call_sheet", "Call sheet"),
+    SHOT_LIST("shot_list", "Shot list"),
+    SCHEDULE("schedule", "Schedule");
+
+    companion object {
+        fun from(raw: String?) = entries.firstOrNull { it.raw == raw } ?: DOCUMENT
+    }
+}
+
+private val Danger = Color(0xFFEF4444)
+
+enum class GearCategory(val raw: String, val tint: Color) {
+    CAMERA("Camera", Brand500),
+    LENSES("Lenses", Color(0xFF8B5CF6)),
+    LIGHTING("Lighting", Color(0xFFFBBF24)),
+    GRIP("Grip", Color(0xFF78716C)),
+    SOUND("Sound", Color(0xFF06B6D4)),
+    ART_DEPT("Art Dept", Color(0xFFEC4899)),
+    COSTUME("Costume", Color(0xFFA78BFA)),
+    HAIR_MAKEUP("Hair & Makeup", Color(0xFFF472B6)),
+    LOCATIONS("Locations", Color(0xFF22C55E)),
+    TRANSPORT("Transport", Color(0xFF3B82F6)),
+    POST_DIT("Post / DIT", Color(0xFF14B8A6)),
+    OTHER("Other", Tertiary);
+
+    val label get() = raw
+
+    companion object {
+        fun from(raw: String?) = entries.firstOrNull { it.raw == raw } ?: OTHER
+    }
+}
+
+enum class GearOwnership(val raw: String, val label: String, val tint: Color) {
+    OWNED("owned", "Owned", Success),
+    RENTED("rented", "Rented", Color(0xFF3B82F6)),
+    PROVIDED("provided", "Provided", Color(0xFF8B5CF6)),
+    TBC("tbc", "TBC", Tertiary);
+
+    companion object {
+        fun from(raw: String?) = entries.firstOrNull { it.raw == raw } ?: TBC
+    }
+}
+
+enum class GearStatus(val raw: String, val label: String, val tint: Color) {
+    CONFIRMED("confirmed", "Confirmed", Success),
+    PENDING("pending", "Pending", Warning),
+    CANCELLED("cancelled", "Cancelled", Danger);
+
+    /** Tapping the status chip walks pending → confirmed → cancelled → pending, as on iOS. */
+    val next: GearStatus
+        get() = when (this) {
+            PENDING -> CONFIRMED
+            CONFIRMED -> CANCELLED
+            CANCELLED -> PENDING
+        }
+
+    companion object {
+        fun from(raw: String?) = entries.firstOrNull { it.raw == raw } ?: PENDING
+    }
+}

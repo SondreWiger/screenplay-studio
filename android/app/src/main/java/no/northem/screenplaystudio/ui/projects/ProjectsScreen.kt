@@ -255,11 +255,11 @@ fun ProjectsScreen(onOpen: (Project) -> Unit, vm: ProjectsViewModel = viewModel(
 }
 
 @Composable
-private fun SearchField(text: String, onChange: (String) -> Unit) {
+fun SearchField(text: String, onChange: (String) -> Unit, placeholder: String = "Search projects") {
     OutlinedTextField(
         value = text,
         onValueChange = onChange,
-        placeholder = { Text("Search projects") },
+        placeholder = { Text(placeholder) },
         leadingIcon = { Icon(Icons.Outlined.Search, null) },
         singleLine = true,
         shape = RoundedCornerShape(SS.radius),
