@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Button, Input, Modal, toast } from '@/components/ui';
 import type { OrgPipelineStage, Project, Profile } from '@/lib/types';
@@ -39,29 +40,61 @@ export function OrgPipeline({ companyId, canManage }: Props) {
     const { error } = await supabase.from('org_pipeline_stages').insert({
       company_id: companyId, name: newStageName.trim(), color: newStageColor, sort_order: maxOrder + 1,
     });
-    if (error) { toast.error('Failed to add stage'); return; }
+    if (error) { toast.error(`Couldn't add the stage: ${error.message}`); return; }
     setNewStageName(''); setShowAddStage(false);
     load();
   };
 
   const deleteStage = async (id: string) => {
+    if (!confirm('Delete this stage? Its projects move to "Not staged".')) return;
     const { error } = await supabase.from('org_pipeline_stages').delete().eq('id', id);
-    if (error) toast.error('Failed to delete stage');
+    if (error) toast.error(`Couldn't delete the stage: ${error.message}`);
     else load();
   };
 
-  const moveProject = async (projectId: string, stageId: string) => {
+  const moveProject = async (projectId: string, stageId: string | null) => {
+    // Optimistic: the card moves now, and moves back if the write is refused.
+    const before = projects;
+    setProjects((ps) => ps.map((p) => (p.id === projectId ? { ...p, pipeline_stage_id: stageId ?? undefined } : p)));
     const { error } = await supabase.from('projects').update({ pipeline_stage_id: stageId }).eq('id', projectId);
-    if (error) toast.error('Failed to move project');
-    else load();
+    if (error) {
+      setProjects(before);
+      toast.error(`Couldn't move the project: ${error.message}`);
+    }
   };
 
   const setPriority = async (projectId: string, priority: string) => {
-    await supabase.from('projects').update({ pipeline_priority: priority }).eq('id', projectId);
+    const { error } = await supabase.from('projects').update({ pipeline_priority: priority }).eq('id', projectId);
+    if (error) toast.error(`Couldn't set the priority: ${error.message}`);
     load();
   };
 
   if (loading) return <div className="text-center py-12 text-surface-500">Loading pipeline...</div>;
+
+  if (projects.length === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-surface-700 px-6 py-12 text-center">
+        <p className="text-sm font-semibold text-white">No company projects yet</p>
+        <p className="mx-auto mt-1 max-w-md text-sm text-surface-400">
+          A project shows up here once it belongs to the company. Open the project, go to Settings,
+          and choose this company as its owner.
+        </p>
+      </div>
+    );
+  }
+
+  const moveMenu = (projectId: string, currentStage?: string | null) => canManage && (
+    <select
+      aria-label="Move to stage"
+      value={currentStage ?? ''}
+      onChange={(e) => moveProject(projectId, e.target.value || null)}
+      onClick={(e) => e.stopPropagation()}
+      className="mt-2 w-full rounded-md border border-surface-700 bg-surface-900 px-2 py-1 text-[11px] text-surface-300"
+    >
+      <option value="">Not staged</option>
+      {stages.map((st) => <option key={st.id} value={st.id}>{st.name}</option>)}
+    </select>
+  );
 
   const unstagedProjects = projects.filter(p => !p.pipeline_stage_id);
 
@@ -72,14 +105,14 @@ export function OrgPipeline({ companyId, canManage }: Props) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-white">Project Pipeline</h2>
+        <span />
         {canManage && (
           <Button size="sm" onClick={() => setShowAddStage(true)}>+ Add Stage</Button>
         )}
       </div>
 
       {/* Kanban Board */}
-      <div className="flex gap-4 overflow-x-auto pb-4" style={{ minHeight: 400 }}>
+      <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-4 sm:mx-0 sm:px-0" style={{ minHeight: 400 }}>
         {stages.map((stage) => {
           const stageProjects = projects.filter(p => p.pipeline_stage_id === stage.id);
           return (
@@ -111,7 +144,7 @@ export function OrgPipeline({ companyId, canManage }: Props) {
                     onDragStart={() => setDragItem(project.id)}
                     className="bg-surface-800 rounded-lg p-3 cursor-grab active:cursor-grabbing hover:bg-surface-700 transition-colors"
                   >
-                    <p className="text-sm font-medium text-white truncate">{project.title}</p>
+                    <Link href={`/projects/${project.id}`} className="block truncate text-sm font-medium text-white hover:text-brand-300">{project.title}</Link>
                     <div className="flex items-center gap-2 mt-2">
                       <span className={`text-[11px] px-1.5 py-0.5 rounded ${priorityColors[project.pipeline_priority || 'normal']}`}>
                         {(project.pipeline_priority || 'normal').toUpperCase()}
@@ -140,6 +173,7 @@ export function OrgPipeline({ companyId, canManage }: Props) {
                         ))}
                       </div>
                     )}
+                    {moveMenu(project.id, project.pipeline_stage_id)}
                   </div>
                 ))}
               </div>
@@ -157,8 +191,8 @@ export function OrgPipeline({ companyId, canManage }: Props) {
               {unstagedProjects.map((project) => (
                 <div key={project.id} draggable onDragStart={() => setDragItem(project.id)}
                   className="bg-surface-800/50 rounded-lg p-3 cursor-grab active:cursor-grabbing hover:bg-surface-800 transition-colors">
-                  <p className="text-sm font-medium text-surface-300 truncate">{project.title}</p>
-                  <p className="text-[11px] text-surface-500 mt-1">Drag to a stage to assign</p>
+                  <Link href={`/projects/${project.id}`} className="block truncate text-sm font-medium text-surface-300 hover:text-white">{project.title}</Link>
+                  {canManage ? moveMenu(project.id, null) : <p className="text-[11px] text-surface-500 mt-1">Not staged yet</p>}
                 </div>
               ))}
             </div>

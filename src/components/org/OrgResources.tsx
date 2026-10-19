@@ -53,7 +53,7 @@ export function OrgResources({ companyId, userId, canManage }: Props) {
       category: form.category.trim() || null,
       tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
     });
-    if (error) { toast.error('Failed to create resource'); return; }
+    if (error) { toast.error(`Couldn't add the resource: ${error.message}`); return; }
     setShowCreate(false);
     setForm({ title: '', description: '', resource_type: 'document', file_url: '', category: '', tags: '' });
     load();
@@ -61,12 +61,15 @@ export function OrgResources({ companyId, userId, canManage }: Props) {
   };
 
   const togglePin = async (id: string, pinned: boolean) => {
-    await supabase.from('org_resources').update({ is_pinned: !pinned }).eq('id', id);
+    const { error } = await supabase.from('org_resources').update({ is_pinned: !pinned }).eq('id', id);
+    if (error) toast.error(`Couldn't change the pin: ${error.message}`);
     load();
   };
 
   const deleteResource = async (id: string) => {
-    await supabase.from('org_resources').delete().eq('id', id);
+    if (!confirm('Delete this resource?')) return;
+    const { error } = await supabase.from('org_resources').delete().eq('id', id);
+    if (error) toast.error(`Couldn't delete it: ${error.message}`);
     load();
   };
 

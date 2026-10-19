@@ -89,7 +89,8 @@ export function OrgPitches({ companyId, userId, canManage }: Props) {
   };
 
   const updateStatus = async (id: string, status: string) => {
-    await supabase.from('org_pitches').update({ status }).eq('id', id);
+    const { error } = await supabase.from('org_pitches').update({ status }).eq('id', id);
+    if (error) toast.error(`Couldn't update the pitch: ${error.message}`);
     load();
   };
 
@@ -116,9 +117,10 @@ export function OrgPitches({ companyId, userId, canManage }: Props) {
 
   const addComment = async (pitchId: string) => {
     if (!newComment.trim()) return;
-    await supabase.from('org_pitch_comments').insert({
+    const { error } = await supabase.from('org_pitch_comments').insert({
       pitch_id: pitchId, author_id: userId, content: newComment.trim(),
     });
+    if (error) { toast.error(`Couldn't post the comment: ${error.message}`); return; }
     setNewComment('');
     loadComments(pitchId);
   };
@@ -130,7 +132,7 @@ export function OrgPitches({ companyId, userId, canManage }: Props) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-white">Pitch Board</h2>
+        <span />
         <Button size="sm" onClick={() => setShowCreate(true)}>+ Submit Pitch</Button>
       </div>
 

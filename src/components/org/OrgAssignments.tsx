@@ -65,7 +65,7 @@ export function OrgAssignments({ companyId, userId, canManage }: Props) {
       project_id: form.project_id, assigned_to: form.assigned_to, assigned_by: userId,
       assignment_type: form.assignment_type, deadline: form.deadline || null, max_revisions: form.max_revisions,
     });
-    if (error) { toast.error('Failed to create assignment'); return; }
+    if (error) { toast.error(`Couldn't create the assignment: ${error.message}`); return; }
     setShowCreate(false);
     setForm({ title: '', description: '', project_id: '', assigned_to: '', assignment_type: 'write', deadline: '', max_revisions: 3 });
     load();
@@ -77,7 +77,8 @@ export function OrgAssignments({ companyId, userId, canManage }: Props) {
     if (status === 'submitted') updates.submitted_at = new Date().toISOString();
     if (status === 'approved') { updates.approved_at = new Date().toISOString(); updates.approved_by = userId; }
     if (status === 'revision_requested') updates.revision_count = (assignments.find(a => a.id === id)?.revision_count || 0) + 1;
-    await supabase.from('org_script_assignments').update(updates).eq('id', id);
+    const { error } = await supabase.from('org_script_assignments').update(updates).eq('id', id);
+    if (error) toast.error(`Couldn't update the assignment: ${error.message}`);
     load();
   };
 
@@ -93,7 +94,7 @@ export function OrgAssignments({ companyId, userId, canManage }: Props) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-white">Script Assignments</h2>
+        <span />
         {canManage && <Button size="sm" onClick={() => setShowCreate(true)}>+ New Assignment</Button>}
       </div>
 

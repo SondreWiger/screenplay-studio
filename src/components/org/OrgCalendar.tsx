@@ -17,13 +17,24 @@ const EVENT_ICONS: Record<string, string> = {
   shoot_day: '🎬', review: '👀', delivery: '📦', other: '📌',
 };
 
+/** A local calendar date as YYYY-MM-DD. toISOString() is UTC, which put an
+ *  evening event on the next day's cell for anyone east of Greenwich. */
+function dayKey(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export function OrgCalendar({ companyId, userId, canManage }: Props) {
   const [events, setEvents] = useState<OrgCalendarEvent[]>([]);
   const [projects, setProjects] = useState<{ id: string; title: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [viewMonth, setViewMonth] = useState(new Date());
-  const [view, setView] = useState<'calendar' | 'list'>('list');
+  const [view, setView] = useState<'calendar' | 'list'>(() => {
+    try { return localStorage.getItem('sps:company-calendar-view') === 'calendar' ? 'calendar' : 'list'; } catch { return 'list'; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('sps:company-calendar-view', view); } catch { /* private mode */ }
+  }, [view]);
 
   const [form, setForm] = useState({
     title: '', description: '', event_type: 'meeting' as OrgCalendarEvent['event_type'],
@@ -54,7 +65,7 @@ export function OrgCalendar({ companyId, userId, canManage }: Props) {
       all_day: form.all_day, color: form.color,
       project_id: form.project_id || null, location: form.location.trim() || null,
     });
-    if (error) { toast.error('Failed to create event'); return; }
+    if (error) { toast.error(`Couldn't create the event: ${error.message}`); return; }
     setShowCreate(false);
     setForm({ title: '', description: '', event_type: 'meeting', start_at: '', end_at: '', all_day: false, color: '#6366f1', project_id: '', location: '' });
     load();
@@ -62,8 +73,16 @@ export function OrgCalendar({ companyId, userId, canManage }: Props) {
   };
 
   const cancelEvent = async (id: string) => {
-    await supabase.from('org_calendar_events').update({ is_cancelled: true }).eq('id', id);
+    if (!confirm('Cancel this event for everyone?')) return;
+    const { error } = await supabase.from('org_calendar_events').update({ is_cancelled: true }).eq('id', id);
+    if (error) toast.error(`Couldn't cancel it: ${error.message}`);
     load();
+  };
+
+  /** Open the form with a day already filled in, at 10:00. */
+  const newEventOn = (date: Date) => {
+    setForm((f) => ({ ...f, start_at: `${dayKey(date)}T10:00`, end_at: '' }));
+    setShowCreate(true);
   };
 
   if (loading) return <div className="text-center py-12 text-surface-500">Loading calendar...</div>;
@@ -88,7 +107,7 @@ export function OrgCalendar({ companyId, userId, canManage }: Props) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-white">Calendar & Milestones</h2>
+        <span />
         <div className="flex gap-2">
           <div className="flex bg-surface-800 rounded-lg">
             <button onClick={() => setView('list')} className={cn('px-3 py-1.5 text-xs rounded-lg', view === 'list' ? 'bg-brand-500 text-white' : 'text-surface-400')}>List</button>
@@ -136,7 +155,7 @@ export function OrgCalendar({ companyId, userId, canManage }: Props) {
                 {past.map(ev => (
                   <Card key={ev.id} className="p-3 flex items-center gap-3">
                     <span className="text-sm">{EVENT_ICONS[ev.event_type]}</span>
-                    <span className="text-sm text-surface-400 line-through">{ev.title}</span>
+                    <span className="text-sm text-surface-400">{ev.title}</span>
                     <span className="text-[11px] text-surface-500 ml-auto">{new Date(ev.start_at).toLocaleDateString()}</span>
                   </Card>
                 ))}
@@ -163,11 +182,19 @@ export function OrgCalendar({ companyId, userId, canManage }: Props) {
               for (let i = 0; i < first.getDay(); i++) cells.push(<div key={`empty-${i}`} />);
               for (let d = 1; d <= last.getDate(); d++) {
                 const date = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), d);
-                const dayStr = date.toISOString().slice(0, 10);
-                const dayEvents = events.filter(e => e.start_at.slice(0, 10) === dayStr);
-                const isToday = dayStr === now.toISOString().slice(0, 10);
+                const dayStr = dayKey(date);
+                const dayEvents = events.filter(e => dayKey(new Date(e.start_at)) === dayStr);
+                const isToday = dayStr === dayKey(now);
                 cells.push(
-                  <div key={d} className={cn('min-h-[60px] p-1 rounded border border-transparent', isToday && 'border-brand-500/30 bg-brand-500/5')}>
+                  <div
+                    key={d}
+                    role="button"
+                    tabIndex={0}
+                    title="Add an event on this day"
+                    onClick={() => newEventOn(date)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') newEventOn(date); }}
+                    className={cn('min-h-[72px] cursor-pointer rounded-lg border border-transparent p-1 transition-colors hover:border-surface-700 hover:bg-surface-800/40', isToday && 'border-brand-500/30 bg-brand-500/5')}
+                  >
                     <span className={cn('text-[11px] font-medium', isToday ? 'text-brand-500' : 'text-surface-500')}>{d}</span>
                     {dayEvents.slice(0, 3).map(ev => (
                       <div key={ev.id} className="text-[11px] truncate rounded px-1 mt-0.5" style={{ backgroundColor: ev.color + '20', color: ev.color }}>

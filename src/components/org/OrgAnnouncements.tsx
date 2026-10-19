@@ -54,11 +54,11 @@ export function OrgAnnouncements({ companyId, userId, canManage }: Props) {
   const createAnnouncement = async () => {
     if (!form.title.trim() || !form.content.trim()) { toast.error('Title and content required'); return; }
     const { error } = await supabase.from('org_announcements').insert({
-      company_id: companyId, created_by: userId,
+      company_id: companyId, author_id: userId,
       title: form.title.trim(), content: form.content.trim(),
       priority: form.priority, is_pinned: form.is_pinned,
     });
-    if (error) { toast.error('Failed to create announcement'); return; }
+    if (error) { toast.error(`Couldn't post the announcement: ${error.message}`); return; }
     setShowCreate(false);
     setForm({ title: '', content: '', priority: 'normal', is_pinned: false });
     load();
@@ -66,12 +66,14 @@ export function OrgAnnouncements({ companyId, userId, canManage }: Props) {
   };
 
   const deleteAnnouncement = async (id: string) => {
-    await supabase.from('org_announcements').delete().eq('id', id);
+    const { error } = await supabase.from('org_announcements').delete().eq('id', id);
+    if (error) toast.error(`Couldn't delete it: ${error.message}`);
     load();
   };
 
   const togglePin = async (id: string, pinned: boolean) => {
-    await supabase.from('org_announcements').update({ is_pinned: !pinned }).eq('id', id);
+    const { error } = await supabase.from('org_announcements').update({ is_pinned: !pinned }).eq('id', id);
+    if (error) toast.error(`Couldn't change the pin: ${error.message}`);
     load();
   };
 
@@ -83,7 +85,7 @@ export function OrgAnnouncements({ companyId, userId, canManage }: Props) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-bold text-white">Announcements</h2>
+          <span className="sr-only">Announcements</span>
           {unreadCount > 0 && (
             <span className="text-xs bg-brand-500 text-white px-2 py-0.5 rounded-full font-semibold">{unreadCount} new</span>
           )}

@@ -95,29 +95,32 @@ export function OrgEducation({ companyId, userId, canManage }: Props) {
   };
 
   const gradeSubmission = async (id: string, grade: number, feedback: string) => {
-    await supabase.from('org_class_submissions').update({
+    const { error } = await supabase.from('org_class_submissions').update({
       grade, feedback: feedback || null, graded_at: new Date().toISOString(), graded_by: userId,
     }).eq('id', id);
+    if (error) { toast.error(`Couldn't save the grade: ${error.message}`); return; }
     load();
     toast.success('Graded!');
   };
 
   const submitPeerReview = async (submissionId: string) => {
     if (!reviewForm.feedback.trim()) { toast.error('Feedback required'); return; }
-    await supabase.from('org_peer_reviews').insert({
+    const { error } = await supabase.from('org_peer_reviews').insert({
       submission_id: submissionId, reviewer_id: userId,
       overall_comment: reviewForm.feedback.trim(), rating: reviewForm.score ? parseInt(reviewForm.score) : null,
     });
+    if (error) { toast.error(`Couldn't submit the review: ${error.message}`); return; }
     setReviewForm({ feedback: '', score: '' });
     loadPeerReviews(submissionId);
     toast.success('Review submitted!');
   };
 
   const joinClass = async (classId: string) => {
-    const { error } = await supabase.from('org_class_students').insert({ class_id: classId, student_id: userId });
+    const { error } = await supabase.from('org_class_students').insert({ class_id: classId, user_id: userId });
     if (error?.code === '23505') { toast.error('Already enrolled'); return; }
-    if (error) { toast.error('Failed to join'); return; }
+    if (error) { toast.error(`Couldn't enroll: ${error.message}`); return; }
     toast.success('Enrolled!');
+    load();
   };
 
   const toggleArchiveClass = async (id: string, isActive: boolean) => {
@@ -133,7 +136,7 @@ export function OrgEducation({ companyId, userId, canManage }: Props) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-white">Education Mode</h2>
+        <span />
         <div className="flex gap-2">
           {canManage && (
             <>

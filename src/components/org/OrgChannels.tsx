@@ -64,7 +64,7 @@ export function OrgChannels({ companyId, userId, canManage }: Props) {
       channel_id: activeChannel, author_id: userId, content: messageText.trim(),
     });
     setSending(false);
-    if (error) { toast.error('Failed to send'); return; }
+    if (error) { toast.error(`Couldn't send: ${error.message}`); return; }
     setMessageText('');
     loadMessages();
   };
@@ -75,19 +75,21 @@ export function OrgChannels({ companyId, userId, canManage }: Props) {
       company_id: companyId, name: newChannelName.trim().toLowerCase().replace(/\s+/g, '-'),
       channel_type: newChannelType, created_by: userId,
     });
-    if (error) { toast.error('Failed to create channel'); return; }
+    if (error) { toast.error(error.code === '23505' ? 'A channel with that name already exists' : `Couldn't create the channel: ${error.message}`); return; }
     setNewChannelName(''); setShowCreateChannel(false);
     loadChannels();
     toast.success('Channel created!');
   };
 
   const deleteMessage = async (id: string) => {
-    await supabase.from('org_channel_messages').delete().eq('id', id);
+    const { error } = await supabase.from('org_channel_messages').delete().eq('id', id);
+    if (error) toast.error(`Couldn't delete it: ${error.message}`);
     loadMessages();
   };
 
   const pinMessage = async (id: string, pinned: boolean) => {
-    await supabase.from('org_channel_messages').update({ is_pinned: !pinned }).eq('id', id);
+    const { error } = await supabase.from('org_channel_messages').update({ is_pinned: !pinned }).eq('id', id);
+    if (error) toast.error(`Couldn't change the pin: ${error.message}`);
     loadMessages();
   };
 
@@ -99,14 +101,12 @@ export function OrgChannels({ companyId, userId, canManage }: Props) {
   };
 
   return (
-    <div className="flex gap-0 h-[600px] rounded-xl overflow-hidden border border-surface-800">
+    <div className="flex gap-0 h-[calc(100dvh-15rem)] min-h-[420px] rounded-xl overflow-hidden border border-surface-800">
       {/* Sidebar */}
-      <div className="w-60 bg-surface-900 border-r border-surface-800 flex flex-col">
+      <div className="hidden w-60 shrink-0 bg-surface-900 border-r border-surface-800 sm:flex flex-col">
         <div className="p-3 border-b border-surface-800 flex items-center justify-between">
           <span className="text-sm font-semibold text-white">Channels</span>
-          {canManage && (
-            <button onClick={() => setShowCreateChannel(true)} className="text-surface-400 hover:text-white text-lg">+</button>
-          )}
+          <button onClick={() => setShowCreateChannel(true)} aria-label="New channel" className="rounded-md px-1.5 text-surface-400 hover:bg-surface-800 hover:text-white text-lg leading-none">+</button>
         </div>
         <div className="flex-1 overflow-y-auto">
           {channels.map(ch => (
@@ -129,8 +129,18 @@ export function OrgChannels({ companyId, userId, canManage }: Props) {
         {activeChannelData ? (
           <>
             <div className="px-4 py-3 border-b border-surface-800 flex items-center gap-2">
-              <span className="text-surface-500">{channelTypeIcons[activeChannelData.channel_type] || '#'}</span>
-              <span className="font-semibold text-white">{activeChannelData.name}</span>
+              {/* Phones have no room for the channel list: pick from here. */}
+              <select
+                aria-label="Channel"
+                value={activeChannel ?? ''}
+                onChange={(e) => setActiveChannel(e.target.value)}
+                className="min-w-0 flex-1 rounded-lg border border-surface-700 bg-surface-900 px-2 py-1.5 text-sm text-white sm:hidden"
+              >
+                {channels.map((ch) => <option key={ch.id} value={ch.id}>#{ch.name}</option>)}
+              </select>
+              <button onClick={() => setShowCreateChannel(true)} aria-label="New channel" className="rounded-md px-2 py-1 text-surface-400 hover:bg-surface-800 hover:text-white sm:hidden">+</button>
+              <span className="hidden text-surface-500 sm:inline">{channelTypeIcons[activeChannelData.channel_type] || '#'}</span>
+              <span className="hidden font-semibold text-white sm:inline">{activeChannelData.name}</span>
               {activeChannelData.description && (
                 <span className="text-xs text-surface-500 ml-2">{activeChannelData.description}</span>
               )}
@@ -191,8 +201,9 @@ export function OrgChannels({ companyId, userId, canManage }: Props) {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-surface-500 text-sm">
-            Select a channel to start chatting
+          <div className="flex-1 flex flex-col items-center justify-center gap-3 p-6 text-center text-surface-500 text-sm">
+            {channels.length === 0 ? 'No channels yet.' : 'Select a channel to start chatting'}
+            {channels.length === 0 && <Button size="sm" onClick={() => setShowCreateChannel(true)}>Create the first channel</Button>}
           </div>
         )}
       </div>

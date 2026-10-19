@@ -1,12 +1,16 @@
 'use client';
 
-import { Building2, FolderKanban, Plus, ShieldCheck, Users } from 'lucide-react';
+import {
+  Activity, Building2, CalendarDays, ClipboardList, ExternalLink, FolderKanban, GraduationCap, Hash,
+  KanbanSquare, LayoutDashboard, LayoutGrid, Library, Lightbulb, Megaphone, PenSquare, Plus, Settings,
+  ShieldCheck, UserPlus, Users, UsersRound, type LucideIcon,
+} from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Button, Card, Input, Textarea, LoadingPage, toast } from '@/components/ui';
+import { Button, Card, ConfirmDialog, Input, Textarea, LoadingPage, toast } from '@/components/ui';
 import { AppHeader } from '@/components/AppHeader';
 import { useNotifications } from '@/hooks/useNotifications';
 import type {
@@ -22,14 +26,55 @@ import { OrgResources } from '@/components/org/OrgResources';
 import { OrgPitches } from '@/components/org/OrgPitches';
 import { OrgAnnouncements } from '@/components/org/OrgAnnouncements';
 import { OrgEducation } from '@/components/org/OrgEducation';
+import { CompanyOverview, type CompanySection } from '@/components/org/CompanyOverview';
+import { CinderraBoards } from '@/components/cinderra/CinderraBoards';
 
-type CompanyTab = 'overview' | 'members' | 'teams' | 'projects' | 'blog' | 'pipeline' | 'channels' | 'assignments' | 'calendar' | 'resources' | 'pitches' | 'announcements' | 'education' | 'settings' | 'activity';
+type CompanyTab = CompanySection;
+
+interface NavItem { key: CompanyTab; label: string; icon: LucideIcon; count?: number; managersOnly?: boolean }
+
+const SECTION_COPY: Partial<Record<CompanyTab, { title: string; description: string }>> = {
+  boards: { title: 'Boards', description: 'Mind maps, mood boards, slates and planning walls, shared with the whole company.' },
+  pipeline: { title: 'Pipeline', description: 'Every company project and the stage it is at. Drag a card, or use its menu, to move it on.' },
+  calendar: { title: 'Calendar', description: 'Deadlines, table reads, shoot days and meetings across the company.' },
+  channels: { title: 'Channels', description: 'Conversations for the whole company, a team or a project.' },
+  announcements: { title: 'Announcements', description: 'News everyone should see. Unread ones are marked until opened.' },
+  pitches: { title: 'Pitches', description: 'Submit ideas, vote on them, and move the best ones toward a greenlight.' },
+  assignments: { title: 'Assignments', description: 'Writing and review work handed to people, with deadlines and revision rounds.' },
+  resources: { title: 'Resources', description: 'Templates, guides, references and links the company keeps in one place.' },
+  education: { title: 'Classes', description: 'Courses with assignments, submissions, grading and peer review.' },
+  members: { title: 'Members', description: 'Who is in the company, and what they can do.' },
+  teams: { title: 'Teams', description: 'Group people by department and set what each team may change.' },
+  projects: { title: 'Projects', description: 'Productions that belong to the company.' },
+  blog: { title: 'Blog', description: 'Posts for the public company page.' },
+  settings: { title: 'Settings', description: 'Company details and what the public page shows.' },
+  activity: { title: 'Activity', description: 'The latest changes across the company.' },
+};
+
+const ALL_TABS: CompanyTab[] = ['overview', 'boards', 'pipeline', 'calendar', 'channels', 'announcements', 'pitches', 'assignments', 'resources', 'education', 'members', 'teams', 'projects', 'blog', 'settings', 'activity'];
 
 export default function CompanyDashboard() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
-  const [tab, setTab] = useState<CompanyTab>('overview');
+  const [tab, setTabState] = useState<CompanyTab>('overview');
+
+  // The section lives in ?tab= so a reload, a shared link or Back lands where
+  // you were. Read once on mount and written with replaceState, which keeps
+  // this page out of useSearchParams and its Suspense requirement.
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get('tab') as CompanyTab | null;
+    if (fromUrl && ALL_TABS.includes(fromUrl)) setTabState(fromUrl);
+  }, []);
+  const setTab = useCallback((next: CompanyTab) => {
+    setTabState(next);
+    const url = new URL(window.location.href);
+    if (next === 'overview') url.searchParams.delete('tab'); else url.searchParams.set('tab', next);
+    window.history.replaceState(null, '', url.toString());
+    window.scrollTo({ top: 0 });
+  }, []);
+  const [confirmRemove, setConfirmRemove] = useState<{ id: string; name: string } | null>(null);
+  const [confirmDeleteTeam, setConfirmDeleteTeam] = useState<{ id: string; name: string } | null>(null);
   const [company, setCompany] = useState<Company | null>(null);
   const [members, setMembers] = useState<CompanyMember[]>([]);
   const [teams, setTeams] = useState<CompanyTeam[]>([]);
@@ -182,7 +227,7 @@ export default function CompanyDashboard() {
     if (!company || !inviteEmail.trim()) return;
     setSaving(true);
     const token = crypto.randomUUID();
-    await supabase.from('company_invitations').insert({
+    const { error: inviteError } = await supabase.from('company_invitations').insert({
       company_id: company.id,
       email: inviteEmail.trim().toLowerCase(),
       role: inviteRole,
@@ -191,6 +236,11 @@ export default function CompanyDashboard() {
       token,
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     });
+    if (inviteError) {
+      toast.error(`Couldn't create the invite: ${inviteError.message}`);
+      setSaving(false);
+      return;
+    }
     await supabase.from('company_activity_log').insert({
       company_id: company.id, user_id: user!.id, action: 'invited_member',
       entity_type: 'invitation', metadata: { email: inviteEmail.trim(), role: inviteRole },
@@ -206,13 +256,18 @@ export default function CompanyDashboard() {
   const createTeam = async () => {
     if (!company || !teamName.trim()) return;
     setSaving(true);
-    await supabase.from('company_teams').insert({
+    const { error: teamError } = await supabase.from('company_teams').insert({
       company_id: company.id,
       name: teamName.trim(),
       description: teamDescription.trim() || null,
       color: teamColor,
       ...teamPerms,
     });
+    if (teamError) {
+      toast.error(`Couldn't create the team: ${teamError.message}`);
+      setSaving(false);
+      return;
+    }
     await supabase.from('company_activity_log').insert({
       company_id: company.id, user_id: user!.id, action: 'created_team',
       entity_type: 'team', metadata: { name: teamName.trim() },
@@ -249,24 +304,31 @@ export default function CompanyDashboard() {
 
   const removeMember = async (memberId: string) => {
     if (!company) return;
-    await supabase.from('company_members').delete().eq('id', memberId);
+    const { error } = await supabase.from('company_members').delete().eq('id', memberId);
+    if (error) toast.error(`Couldn't remove them: ${error.message}`);
+    else toast.success('Removed from the company');
+    setConfirmRemove(null);
     loadCompany();
   };
 
   const updateMemberRole = async (memberId: string, role: CompanyRole) => {
     if (!company) return;
-    await supabase.from('company_members').update({ role }).eq('id', memberId);
+    const { error } = await supabase.from('company_members').update({ role }).eq('id', memberId);
+    if (error) toast.error(`Couldn't change the role: ${error.message}`);
     loadCompany();
   };
 
   const revokeInvitation = async (invId: string) => {
-    await supabase.from('company_invitations').delete().eq('id', invId);
+    const { error } = await supabase.from('company_invitations').delete().eq('id', invId);
+    if (error) toast.error(`Couldn't revoke the invite: ${error.message}`);
     loadCompany();
   };
 
   const deleteTeam = async (teamId: string) => {
     if (!company) return;
-    await supabase.from('company_teams').delete().eq('id', teamId);
+    const { error } = await supabase.from('company_teams').delete().eq('id', teamId);
+    if (error) toast.error(`Couldn't delete the team: ${error.message}`);
+    setConfirmDeleteTeam(null);
     loadCompany();
   };
 
@@ -283,8 +345,9 @@ export default function CompanyDashboard() {
     const slug = blogForm.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const tags = blogForm.tags.split(',').map((t) => t.trim()).filter(Boolean);
 
+    let blogError: { message: string } | null = null;
     if (editingPost) {
-      await supabase.from('company_blog_posts').update({
+      ({ error: blogError } = await supabase.from('company_blog_posts').update({
         title: blogForm.title,
         excerpt: blogForm.excerpt || null,
         content: blogForm.content,
@@ -293,9 +356,9 @@ export default function CompanyDashboard() {
         allow_comments: blogForm.allow_comments,
         status: publish ? 'published' : 'draft',
         published_at: publish && editingPost.status !== 'published' ? new Date().toISOString() : editingPost.published_at,
-      }).eq('id', editingPost.id);
+      }).eq('id', editingPost.id));
     } else {
-      await supabase.from('company_blog_posts').insert({
+      ({ error: blogError } = await supabase.from('company_blog_posts').insert({
         company_id: company.id,
         author_id: user.id,
         title: blogForm.title,
@@ -307,16 +370,21 @@ export default function CompanyDashboard() {
         allow_comments: blogForm.allow_comments,
         status: publish ? 'published' : 'draft',
         published_at: publish ? new Date().toISOString() : null,
-      });
-      await supabase.from('company_activity_log').insert({
+      }));
+      if (!blogError) await supabase.from('company_activity_log').insert({
         company_id: company.id, user_id: user.id,
         action: publish ? 'published_blog_post' : 'created_blog_draft',
         entity_type: 'blog_post', metadata: { title: blogForm.title },
       });
     }
 
-    resetBlogForm();
     setSaving(false);
+    if (blogError) {
+      toast.error(`Couldn't save the post: ${blogError.message}`);
+      return;
+    }
+    toast.success(publish ? 'Post published' : 'Draft saved');
+    resetBlogForm();
     loadCompany();
   };
 
@@ -349,10 +417,16 @@ export default function CompanyDashboard() {
     setSaving(true);
     const { name, description, website, email, phone, address, tagline, brand_color,
       public_page_enabled, show_team_on_public, show_projects_on_public, allow_script_reading } = settingsForm;
-    await supabase.from('companies').update({
+    const { error: settingsError } = await supabase.from('companies').update({
       name, description, website, email, phone, address, tagline, brand_color,
       public_page_enabled, show_team_on_public, show_projects_on_public, allow_script_reading,
     }).eq('id', company.id);
+    if (settingsError) {
+      toast.error(`Couldn't save: ${settingsError.message}`);
+      setSaving(false);
+      return;
+    }
+    toast.success('Settings saved');
     await supabase.from('company_activity_log').insert({
       company_id: company.id, user_id: user!.id, action: 'updated_settings',
       entity_type: 'company', metadata: {},
@@ -400,189 +474,202 @@ export default function CompanyDashboard() {
     );
   }
 
-  const tabs: { key: CompanyTab; label: string }[] = [
-    { key: 'overview', label: 'Overview' },
-    { key: 'members', label: `Members (${members.length})` },
-    { key: 'teams', label: `Teams (${teams.length})` },
-    { key: 'projects', label: `Projects (${projects.length})` },
-    { key: 'blog', label: `Blog (${blogPosts.length})` },
-    { key: 'pipeline' as CompanyTab, label: 'Pipeline' },
-    { key: 'channels' as CompanyTab, label: 'Channels' },
-    { key: 'assignments' as CompanyTab, label: 'Assignments' },
-    { key: 'calendar' as CompanyTab, label: 'Calendar' },
-    { key: 'resources' as CompanyTab, label: 'Resources' },
-    { key: 'pitches' as CompanyTab, label: 'Pitches' },
-    { key: 'announcements' as CompanyTab, label: 'Announcements' },
-    { key: 'education' as CompanyTab, label: 'Education' },
-    ...(canManage ? [
-      { key: 'settings' as CompanyTab, label: 'Settings' },
-      { key: 'activity' as CompanyTab, label: 'Activity' },
-    ] : []),
-  ];
+  const navGroups = ([
+    {
+      label: 'Workspace',
+      items: [
+        { key: 'overview', label: 'Overview', icon: LayoutDashboard },
+        { key: 'boards', label: 'Boards', icon: LayoutGrid },
+        { key: 'pipeline', label: 'Pipeline', icon: KanbanSquare },
+        { key: 'calendar', label: 'Calendar', icon: CalendarDays },
+      ],
+    },
+    {
+      label: 'Talk',
+      items: [
+        { key: 'channels', label: 'Channels', icon: Hash },
+        { key: 'announcements', label: 'Announcements', icon: Megaphone },
+      ],
+    },
+    {
+      label: 'Develop',
+      items: [
+        { key: 'pitches', label: 'Pitches', icon: Lightbulb },
+        { key: 'assignments', label: 'Assignments', icon: ClipboardList },
+        { key: 'resources', label: 'Resources', icon: Library },
+        { key: 'education', label: 'Classes', icon: GraduationCap },
+      ],
+    },
+    {
+      label: 'Company',
+      items: [
+        { key: 'members', label: 'Members', icon: Users, count: members.length },
+        { key: 'teams', label: 'Teams', icon: UsersRound, count: teams.length },
+        { key: 'projects', label: 'Projects', icon: FolderKanban, count: projects.length },
+        { key: 'blog', label: 'Blog', icon: PenSquare, count: blogPosts.length },
+        { key: 'settings', label: 'Settings', icon: Settings, managersOnly: true },
+        { key: 'activity', label: 'Activity', icon: Activity, managersOnly: true },
+      ],
+    },
+  ] as { label: string; items: NavItem[] }[]).map((g) => ({ ...g, items: g.items.filter((i) => !i.managersOnly || canManage) }));
+  const navItems = navGroups.flatMap((g) => g.items);
+  const current = navItems.find((i) => i.key === tab) ?? navItems[0];
+  const copy = SECTION_COPY[tab];
+  const roleLabel = myRole ? myRole[0].toUpperCase() + myRole.slice(1) : 'Member';
 
   return (
     <div className="min-h-screen bg-surface-950">
       <AppHeader />
-      {/* Company Header */}
-      <div className="border-b border-surface-800 bg-surface-950">
-        <div className="max-w-5xl mx-auto px-6 py-6">
-          <div className="flex items-center gap-4">
-            {company.logo_url ? (
-              <img src={company.logo_url} alt={company.name || 'Company logo'} className="w-14 h-14 rounded-xl object-cover" loading="lazy" />
-            ) : (
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold text-white" style={{ backgroundColor: company.brand_color }}>
-                {company.name[0]}
+      <div className="mx-auto flex max-w-7xl gap-8 px-4 sm:px-6">
+        {/* Side navigation, desktop */}
+        <aside className="hidden w-56 shrink-0 lg:block">
+          <div className="sticky top-4 space-y-5 py-6">
+            <div className="flex items-center gap-3 px-1">
+              {company.logo_url ? (
+                <img src={company.logo_url} alt="" className="h-10 w-10 rounded-xl object-cover" loading="lazy" />
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl text-base font-bold text-white" style={{ backgroundColor: company.brand_color }}>
+                  {company.name[0]}
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-white">{company.name}</p>
+                <p className="text-xs text-surface-500">{roleLabel}</p>
               </div>
-            )}
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-white">{company.name}</h1>
-              {company.tagline && <p className="text-sm text-surface-400 mt-0.5">{company.tagline}</p>}
             </div>
+            <nav aria-label="Company" className="space-y-4">
+              {navGroups.map((g) => (
+                <div key={g.label}>
+                  <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-surface-600">{g.label}</p>
+                  <ul className="space-y-0.5">
+                    {g.items.map((item) => (
+                      <li key={item.key}>
+                        <button
+                          type="button"
+                          onClick={() => setTab(item.key)}
+                          aria-current={tab === item.key ? 'page' : undefined}
+                          className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm transition-colors ${
+                            tab === item.key
+                              ? 'bg-brand-500/10 font-medium text-white ring-1 ring-inset ring-brand-500/20'
+                              : 'text-surface-400 hover:bg-surface-900 hover:text-white'
+                          }`}
+                        >
+                          <item.icon className={`h-4 w-4 shrink-0 ${tab === item.key ? 'text-brand-400' : 'text-surface-500'}`} />
+                          <span className="flex-1 truncate text-left">{item.label}</span>
+                          {item.count ? <span className="text-[11px] tabular-nums text-surface-500">{item.count}</span> : null}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </nav>
             {company.public_page_enabled && (
-              <Link href={`/p/${company.slug}`} className="text-xs text-surface-400 hover:text-white transition-colors flex items-center gap-1.5">
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                Public Page
+              <Link href={`/p/${company.slug}`} className="flex items-center gap-2 px-3 text-xs text-surface-500 hover:text-white">
+                <ExternalLink className="h-3.5 w-3.5" /> Public page
               </Link>
             )}
           </div>
-        </div>
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="flex gap-1 -mb-px">
-            {tabs.map((t) => (
-              <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
-                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                  tab === t.key
-                    ? 'border-brand-500 text-white'
-                    : 'border-transparent text-surface-400 hover:text-white'
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+        </aside>
 
-      <div className="max-w-5xl mx-auto px-6 py-8">
-        {/* Overview */}
-        {tab === 'overview' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-5 gap-4">
-              {[
-                { label: 'Members', value: members.length, icon: '👥' },
-                { label: 'Teams', value: teams.length, icon: '🏢' },
-                { label: 'Projects', value: projects.length, icon: '📁' },
-                { label: 'Blog Posts', value: blogPosts.filter(p => p.status === 'published').length, icon: '📝' },
-                { label: 'Plan', value: company.plan.toUpperCase(), icon: '⭐' },
-              ].map((stat) => (
-                <Card key={stat.label} className="p-4 text-center">
-                  <span className="text-2xl">{stat.icon}</span>
-                  <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
-                  <p className="text-xs text-surface-400">{stat.label}</p>
-                </Card>
+        <div className="min-w-0 flex-1 pb-16 pt-6">
+          {/* Navigation, phones and tablets: one scrolling row */}
+          <div className="lg:hidden">
+            <div className="mb-4 flex items-center gap-3">
+              {company.logo_url ? (
+                <img src={company.logo_url} alt="" className="h-9 w-9 rounded-lg object-cover" loading="lazy" />
+              ) : (
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg text-sm font-bold text-white" style={{ backgroundColor: company.brand_color }}>
+                  {company.name[0]}
+                </div>
+              )}
+              <p className="min-w-0 flex-1 truncate text-sm font-semibold text-white">{company.name}</p>
+            </div>
+            <nav aria-label="Company" className="-mx-4 mb-6 flex gap-1 overflow-x-auto border-b border-surface-800 px-4 pb-2 [scrollbar-width:none] sm:-mx-6 sm:px-6">
+              {navItems.map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => setTab(item.key)}
+                  aria-current={tab === item.key ? 'page' : undefined}
+                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium ${
+                    tab === item.key ? 'bg-surface-800 text-white' : 'text-surface-400 hover:text-white'
+                  }`}
+                >
+                  <item.icon className="h-3.5 w-3.5" /> {item.label}
+                </button>
               ))}
-            </div>
+            </nav>
+          </div>
 
-            {/* Quick Actions */}
-            {canManage && (
-              <Card className="p-5">
-                <h3 className="text-sm font-semibold text-surface-400 mb-3">Quick Actions</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  <button onClick={() => { setTab('members'); setShowInviteModal(true); }} className="p-3 rounded-lg bg-surface-800/60 hover:bg-surface-800 transition-colors text-left">
-                    <span className="text-lg">➕</span>
-                    <p className="text-xs font-medium text-white mt-1">Invite Member</p>
-                  </button>
-                  <button onClick={() => { setTab('teams'); setShowTeamModal(true); }} className="p-3 rounded-lg bg-surface-800/60 hover:bg-surface-800 transition-colors text-left">
-                    <span className="text-lg">🏢</span>
-                    <p className="text-xs font-medium text-white mt-1">Create Team</p>
-                  </button>
-                  <button onClick={() => setTab('blog')} className="p-3 rounded-lg bg-surface-800/60 hover:bg-surface-800 transition-colors text-left">
-                    <span className="text-lg">✏️</span>
-                    <p className="text-xs font-medium text-white mt-1">Write Blog Post</p>
-                  </button>
-                  <button onClick={() => setTab('settings')} className="p-3 rounded-lg bg-surface-800/60 hover:bg-surface-800 transition-colors text-left">
-                    <span className="text-lg">⚙️</span>
-                    <p className="text-xs font-medium text-white mt-1">Company Settings</p>
-                  </button>
+          {/* Section heading */}
+          {tab === 'overview' ? (
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+              <div className="min-w-0">
+                <h1 className="text-2xl font-semibold tracking-tight text-white">{company.name}</h1>
+                <p className="mt-1 text-sm text-surface-400">{company.tagline || 'Your studio at a glance.'}</p>
+              </div>
+              {canManage && (
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="secondary" onClick={() => { setTab('members'); setShowInviteModal(true); }}>
+                    <UserPlus className="h-4 w-4" /> Invite
+                  </Button>
+                  <Button size="sm" onClick={() => setTab('boards')}>
+                    <LayoutGrid className="h-4 w-4" /> Open boards
+                  </Button>
                 </div>
-              </Card>
-            )}
-
-            {/* Getting Started Checklist — show if company is new/sparse */}
-            {(members.length <= 1 || teams.length === 0 || projects.length === 0) && canManage && (
-              <Card className="p-5 border border-brand-500/20">
-                <h3 className="text-sm font-semibold text-white mb-3">🚀 Getting Started</h3>
-                <div className="space-y-2">
-                  {[
-                    { done: !!company.description, label: 'Add a company description', action: () => setTab('settings') },
-                    { done: members.length > 1, label: 'Invite your first team member', action: () => { setTab('members'); setShowInviteModal(true); } },
-                    { done: teams.length > 0, label: 'Create your first team', action: () => { setTab('teams'); setShowTeamModal(true); } },
-                    { done: projects.length > 0, label: 'Assign a project to the company', action: () => setTab('projects') },
-                    { done: company.public_page_enabled, label: 'Enable your public company page', action: () => setTab('settings') },
-                  ].map((step, i) => (
-                    <button key={i} onClick={step.action} className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-surface-800/50 transition-colors text-left">
-                      <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] shrink-0 ${step.done ? 'bg-green-500/20 text-green-400' : 'bg-surface-800 text-surface-500'}`}>
-                        {step.done ? '✓' : (i + 1)}
-                      </span>
-                      <span className={`text-sm ${step.done ? 'text-surface-500 line-through' : 'text-surface-300'}`}>{step.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </Card>
-            )}
-
-            {company.description && (
-              <Card className="p-6">
-                <h3 className="text-sm font-semibold text-surface-400 mb-2">About</h3>
-                <p className="text-surface-300">{company.description}</p>
-              </Card>
-            )}
-            <div className="grid grid-cols-2 gap-4">
-              {company.website && (
-                <Card className="p-4">
-                  <p className="text-xs text-surface-500">Website</p>
-                  <a href={company.website} target="_blank" rel="noopener" className="text-sm text-brand-500 hover:underline">{company.website}</a>
-                </Card>
-              )}
-              {company.email && (
-                <Card className="p-4">
-                  <p className="text-xs text-surface-500">Contact</p>
-                  <p className="text-sm text-surface-300">{company.email}</p>
-                </Card>
               )}
             </div>
-            {activity.length > 0 && (
-              <Card className="p-6">
-                <h3 className="text-sm font-semibold text-surface-400 mb-4">Recent Activity</h3>
-                <div className="space-y-3">
-                  {activity.slice(0, 8).map((act) => (
-                    <div key={act.id} className="flex items-center gap-3 text-sm">
-                      <div className="w-6 h-6 rounded-full bg-surface-800 flex items-center justify-center text-[11px] font-bold text-white shrink-0">
-                        {(act as CompanyActivityLog & { profile?: { display_name?: string } }).profile?.display_name?.[0] || '?'}
-                      </div>
-                      <p className="text-surface-300">
-                        <span className="text-white font-medium">{(act as CompanyActivityLog & { profile?: { display_name?: string } }).profile?.display_name || 'Someone'}</span>
-                        {' '}{act.action.replace(/_/g, ' ')}
-                      </p>
-                      <span className="text-surface-500 text-xs ml-auto shrink-0">{new Date(act.created_at).toLocaleDateString()}</span>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            )}
+          ) : (
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+              <div className="min-w-0">
+                <h1 className="flex items-center gap-2 text-xl font-semibold tracking-tight text-white">
+                  <current.icon className="h-5 w-5 text-brand-400" /> {copy?.title ?? current.label}
+                </h1>
+                {copy?.description && <p className="mt-1 max-w-2xl text-sm text-surface-400">{copy.description}</p>}
+              </div>
+              {tab === 'members' && canManage && (
+                <Button size="sm" onClick={() => setShowInviteModal(true)}><UserPlus className="h-4 w-4" /> Invite member</Button>
+              )}
+              {tab === 'teams' && canManage && (
+                <Button size="sm" onClick={() => setShowTeamModal(true)}><Plus className="h-4 w-4" /> New team</Button>
+              )}
+              {tab === 'blog' && canManage && !showBlogEditor && (
+                <Button size="sm" onClick={() => { resetBlogForm(); setShowBlogEditor(true); }}><Plus className="h-4 w-4" /> New post</Button>
+              )}
+            </div>
+          )}
+
+        {tab === 'overview' && user && (
+          <CompanyOverview
+            company={company}
+            userId={user.id}
+            canManage={canManage}
+            memberCount={members.length}
+            teamCount={teams.length}
+            projects={projects as { id: string; title: string; pipeline_stage_id?: string | null }[]}
+            activity={activity}
+            go={setTab}
+            onInvite={() => { setTab('members'); setShowInviteModal(true); }}
+          />
+        )}
+
+        {tab === 'boards' && (
+          <div className="h-[calc(100dvh-13rem)] min-h-[28rem] overflow-hidden rounded-xl border border-surface-800 lg:h-[calc(100dvh-11rem)]">
+            <CinderraBoards
+              scope="company"
+              scopeId={company.id}
+              tool="board"
+              label="Company boards"
+              icon={LayoutGrid}
+              kinds={['freeform', 'mindmap', 'kanban']}
+            />
           </div>
         )}
 
         {/* Members */}
         {tab === 'members' && (
           <div className="space-y-6">
-            {canManage && (
-              <div className="flex justify-end gap-2">
-                <Button onClick={() => setShowInviteModal(true)}>Invite Member</Button>
-              </div>
-            )}
             <div className="space-y-3">
               {members.map((m) => (
                 <Card key={m.id} className="p-4 flex items-center gap-4">
@@ -615,7 +702,7 @@ export default function CompanyDashboard() {
                         <option value="member">Member</option>
                         <option value="viewer">Viewer</option>
                       </select>
-                      <button onClick={() => removeMember(m.id)} className="text-red-400 hover:text-red-300 text-xs px-2">Remove</button>
+                      <button onClick={() => setConfirmRemove({ id: m.id, name: (m as CompanyMember & { profile?: Profile }).profile?.display_name || (m as CompanyMember & { profile?: Profile }).profile?.full_name || 'this member' })} className="text-red-400 hover:text-red-300 text-xs px-2">Remove</button>
                     </div>
                   )}
                 </Card>
@@ -646,18 +733,13 @@ export default function CompanyDashboard() {
         {/* Teams */}
         {tab === 'teams' && (
           <div className="space-y-6">
-            {canManage && (
-              <div className="flex justify-end">
-                <Button onClick={() => setShowTeamModal(true)}>Create Team</Button>
-              </div>
-            )}
             {teams.length === 0 ? (
               <Card className="p-8 text-center">
                 <p className="text-surface-400">No teams created yet.</p>
                 <p className="text-xs text-surface-500 mt-1">Teams let you organize members and control permissions for different departments.</p>
               </Card>
             ) : (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {teams.map((team) => (
                   <Card key={team.id} className="p-5">
                     <div className="flex items-center gap-3 mb-3">
@@ -692,7 +774,7 @@ export default function CompanyDashboard() {
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                           Add Member
                         </button>
-                        <button onClick={() => deleteTeam(team.id)} className="text-xs text-red-400 hover:text-red-300">Delete</button>
+                        <button onClick={() => setConfirmDeleteTeam({ id: team.id, name: team.name })} className="text-xs text-red-400 hover:text-red-300">Delete</button>
                       </div>
                     )}
                   </Card>
@@ -736,15 +818,6 @@ export default function CompanyDashboard() {
         {/* Blog */}
         {tab === 'blog' && (
           <div className="space-y-6">
-            {canManage && !showBlogEditor && (
-              <div className="flex justify-end">
-                <Button onClick={() => { resetBlogForm(); setShowBlogEditor(true); }}>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                  New Post
-                </Button>
-              </div>
-            )}
-
             {showBlogEditor && (
               <Card className="p-6 space-y-4">
                 <h3 className="text-lg font-semibold text-white">{editingPost ? 'Edit Post' : 'New Blog Post'}</h3>
@@ -861,11 +934,11 @@ export default function CompanyDashboard() {
                 <Input label="Name" value={settingsForm.name || ''} onChange={(e) => setSettingsForm({ ...settingsForm, name: e.target.value })} />
                 <Input label="Tagline" value={settingsForm.tagline || ''} onChange={(e) => setSettingsForm({ ...settingsForm, tagline: e.target.value })} placeholder="A short slogan" />
                 <Textarea label="Description" value={settingsForm.description || ''} onChange={(e) => setSettingsForm({ ...settingsForm, description: e.target.value })} rows={3} />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <Input label="Website" value={settingsForm.website || ''} onChange={(e) => setSettingsForm({ ...settingsForm, website: e.target.value })} />
                   <Input label="Email" value={settingsForm.email || ''} onChange={(e) => setSettingsForm({ ...settingsForm, email: e.target.value })} />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <Input label="Phone" value={settingsForm.phone || ''} onChange={(e) => setSettingsForm({ ...settingsForm, phone: e.target.value })} />
                   <div>
                     <label className="block text-sm font-medium text-surface-300 mb-1.5">Brand Color</label>
@@ -973,7 +1046,27 @@ export default function CompanyDashboard() {
             )}
           </div>
         )}
+        </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={Boolean(confirmRemove)}
+        title={`Remove ${confirmRemove?.name ?? ''}?`}
+        message="They lose access to the company's channels, boards and tools. Projects they own stay theirs."
+        confirmLabel="Remove"
+        variant="danger"
+        onConfirm={() => confirmRemove && removeMember(confirmRemove.id)}
+        onCancel={() => setConfirmRemove(null)}
+      />
+      <ConfirmDialog
+        isOpen={Boolean(confirmDeleteTeam)}
+        title={`Delete the ${confirmDeleteTeam?.name ?? ''} team?`}
+        message="Members stay in the company; only the team and its permissions go."
+        confirmLabel="Delete team"
+        variant="danger"
+        onConfirm={() => confirmDeleteTeam && deleteTeam(confirmDeleteTeam.id)}
+        onCancel={() => setConfirmDeleteTeam(null)}
+      />
 
       {/* Invite Modal */}
       {showInviteModal && (
