@@ -43,6 +43,8 @@ export interface PollSession {
   published_at: string | null;
   closed_at: string | null;
   response_count: number;
+  /** Shown as a popup to every signed-in user who hasn't answered */
+  is_global?: boolean | null;
   created_at: string;
   updated_at: string;
   // joined

@@ -114,6 +114,17 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
     setSaving(false);
   };
 
+  const toggleGlobal = async (next: boolean) => {
+    setSaving(true);
+    await fetch(`/api/admin/polls/${params.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_global: next }),
+    });
+    setSession((s) => s ? { ...s, is_global: next } : s);
+    setSaving(false);
+  };
+
   const addQuestion = async () => {
     if (!newQText.trim()) return;
     const needsOptions = ['single_select', 'multi_select', 'ranking'].includes(newQType);
@@ -346,6 +357,18 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                     className="w-full bg-surface-950/60 border border-surface-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-surface-600 focus:outline-none focus:border-brand-500/50 resize-none"
                   />
                 </div>
+                <label className="flex items-start gap-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={!!session.is_global}
+                    onChange={(e) => toggleGlobal(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 accent-brand-500"
+                  />
+                  <span>
+                    <span className="block text-sm text-white font-medium">Show as popup to all users</span>
+                    <span className="block text-xs text-surface-500">While published, signed-in users who haven&apos;t answered get it as a popup. &ldquo;Maybe later&rdquo; snoozes it for two days.</span>
+                  </span>
+                </label>
                 {metaDirty && (
                   <button onClick={saveMeta} disabled={saving} className="px-4 py-2 bg-brand-500 hover:bg-brand-500 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
                     Save changes

@@ -82,7 +82,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       answer_text: a.answer_text ?? null,
       answer_json: a.answer_json ?? null,
     }));
-    await supabase.from('poll_answers').insert(answerRows);
+    const { error: aErr } = await supabase.from('poll_answers').insert(answerRows);
+    if (aErr) {
+      // Roll back so the user can retry instead of being locked out with an empty response
+      await supabase.from('poll_responses').delete().eq('id', response.id);
+      return NextResponse.json({ error: 'Failed to save your answers — please try again' }, { status: 500 });
+    }
   }
 
   // Award XP via award_xp DB function
