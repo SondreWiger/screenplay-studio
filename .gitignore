@@ -31,3 +31,6 @@ public/downloads/*.ipa
 
 # Local manuscripts, not for the public repo
 /*.pdf
+
+# Rendered promo videos (multi-GB)
+build/ad/

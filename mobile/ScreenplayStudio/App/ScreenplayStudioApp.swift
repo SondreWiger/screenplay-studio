@@ -30,12 +30,14 @@ struct ScreenplayStudioApp: App {
                 .environmentObject(quickActions)
                 .tint(Theme.accent)
                 .preferredColorScheme(settings.appearance.colorScheme)
+                .onAppear { MacWindow.configure() }
                 .task {
                     #if DEBUG
                     if DemoData.runsKeychainTest {
                         print("[SS] keychain self-test: \(KeychainStore.selfTest())")
                     }
                     #endif
+                    MacWindow.configure()
                     await auth.bootstrap()
                     Haptics.prepare()
                 }
@@ -64,9 +66,16 @@ struct AppCommands: Commands {
     let router: Router
 
     var body: some Commands {
+        // Catalyst gives every app File > New Window and a Format menu;
+        // neither means anything here.
         CommandGroup(replacing: .newItem) {
             Button("New Project") { router.requestNewProject() }
                 .keyboardShortcut("n", modifiers: .command)
+        }
+        CommandGroup(replacing: .textFormatting) {}
+        CommandGroup(replacing: .help) {
+            Link("Screenplay Studio Help", destination: AppLinks.website)
+            Link("Contact Support", destination: AppLinks.support)
         }
         CommandMenu("Go") {
             Button("Projects") { router.go(to: .projects) }

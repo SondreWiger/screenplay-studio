@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
+// GET /api/polls/global — the newest published global poll the user hasn't answered yet
 export async function GET() {
   const supabase = createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -9,31 +10,31 @@ export async function GET() {
     return NextResponse.json({ pollId: null });
   }
 
-  // 1. Find the latest active global poll
+  // poll_status has no 'active' value — live polls are 'published'
   const { data: globalPolls, error: pollError } = await supabase
     .from('poll_sessions')
     .select('id')
     .eq('is_global', true)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
-    .limit(1);
+    .eq('status', 'published')
+    .order('published_at', { ascending: false })
+    .limit(5);
 
   if (pollError || !globalPolls || globalPolls.length === 0) {
     return NextResponse.json({ pollId: null });
   }
 
-  const pollId = globalPolls[0].id;
-
-  // 2. Check if the user has already responded
-  const { count, error: responseError } = await supabase
+  const { data: answered, error: responseError } = await supabase
     .from('poll_responses')
-    .select('*', { count: 'exact', head: true })
-    .eq('session_id', pollId)
-    .eq('user_id', user.id);
+    .select('session_id')
+    .eq('user_id', user.id)
+    .in('session_id', globalPolls.map((p) => p.id));
 
-  if (responseError || (count ?? 0) > 0) {
+  if (responseError) {
     return NextResponse.json({ pollId: null });
   }
 
-  return NextResponse.json({ pollId });
+  const done = new Set((answered ?? []).map((r) => r.session_id));
+  const next = globalPolls.find((p) => !done.has(p.id));
+
+  return NextResponse.json({ pollId: next?.id ?? null });
 }

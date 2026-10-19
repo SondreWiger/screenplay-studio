@@ -29,10 +29,41 @@ export interface PollSession {
 
 interface PollModalProps {
   pollId: string;
-  onClose: () => void;
+  /** completed = the user submitted (or had already submitted) the poll */
+  onClose: (completed: boolean) => void;
 }
 
 type AnswerValue = string | string[] | null;
+
+// Progress is kept locally so closing the modal by accident doesn't throw away a long survey
+const draftKey = (id: string) => `sps-poll-draft:${id}`;
+
+function loadDraft(id: string): { step: number; answers: Record<string, AnswerValue> } | null {
+  try {
+    const raw = localStorage.getItem(draftKey(id));
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveDraft(id: string, step: number, answers: Record<string, AnswerValue>) {
+  try { localStorage.setItem(draftKey(id), JSON.stringify({ step, answers })); } catch { /* storage blocked */ }
+}
+
+function clearDraft(id: string) {
+  try { localStorage.removeItem(draftKey(id)); } catch { /* storage blocked */ }
+}
+
+// Rough seconds per question type, for the "takes about N minutes" line
+const SECONDS_PER_TYPE: Record<PollQuestion['question_type'], number> = {
+  yes_no: 5, single_select: 10, multi_select: 15, ranking: 25, short_text: 25, long_text: 60,
+};
+
+function estimateMinutes(questions: PollQuestion[]): number {
+  const secs = questions.reduce((sum, q) => sum + (q.is_required || q.question_type !== 'long_text' ? SECONDS_PER_TYPE[q.question_type] : 15), 0);
+  return Math.max(1, Math.round(secs / 60));
+}
 
 export function PollModal({ pollId, onClose }: PollModalProps) {
   const [session, setSession] = useState<PollSession | null>(null);
@@ -43,6 +74,8 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
   const [submitting, setSubmitting] = useState(false);
   const [xpAwarded, setXpAwarded] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [completed, setCompleted] = useState(false);
+  const [resumedAt, setResumedAt] = useState<number | null>(null);
 
   useEffect(() => {
     fetch(`/api/polls/${pollId}`)
@@ -59,15 +92,35 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
             initAnswers[q.id] = [...q.options];
           }
         }
-        setAnswers(initAnswers);
+        const total = d.session.questions?.length ?? 0;
+        const draft = d.has_responded ? null : loadDraft(pollId);
+        if (draft && draft.step > 0) {
+          setAnswers({ ...initAnswers, ...draft.answers });
+          const at = Math.min(draft.step, total);
+          setStep(at);
+          setResumedAt(at);
+        } else {
+          setAnswers(initAnswers);
+        }
         // If already responded, jump to done slide
-        if (d.has_responded) setStep((d.session.questions?.length ?? 0) + 1);
+        if (d.has_responded) {
+          clearDraft(pollId);
+          setCompleted(true);
+          setStep(total + 1);
+        }
         setLoading(false);
       })
       .catch(() => { setError('Failed to load poll.'); setLoading(false); });
   }, [pollId]);
 
   const questions = session?.questions ?? [];
+
+  useEffect(() => {
+    if (!session || hasResponded || completed || step === 0 || step > questions.length) return;
+    saveDraft(pollId, step, answers);
+  }, [pollId, session, hasResponded, completed, step, answers, questions.length]);
+
+  const close = useCallback(() => onClose(completed), [onClose, completed]);
   const currentQuestion = step >= 1 && step <= questions.length ? questions[step - 1] : null;
 
   const setAnswer = useCallback((qId: string, value: AnswerValue) => {
@@ -112,6 +165,8 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? 'Submission failed'); setSubmitting(false); return; }
       setXpAwarded(data.xp_awarded ?? xpAwarded);
+      clearDraft(pollId);
+      setCompleted(true);
       setStep(questions.length + 1);
     } catch {
       setError('Network error. Please try again.');
@@ -129,10 +184,13 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
 
   // Close on Escape
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
+  }, [close]);
+
+  // Mid-survey, a stray click outside shouldn't dismiss it
+  const inQuestions = step > 0 && step <= questions.length;
 
   // Progress (exclude intro and done)
   const progress = questions.length > 0
@@ -142,7 +200,7 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
   return createPortal(
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={inQuestions ? undefined : close} />
 
       {/* Modal */}
       <div className="relative w-full max-w-xl bg-surface-900 border border-white/[0.08] rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100vh-4rem)]">
@@ -164,7 +222,7 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
               {step === 0 ? 'Survey' : step > questions.length ? 'Done' : `Question ${step} of ${questions.length}`}
             </span>
           </div>
-          <button aria-label="Close" onClick={onClose} className="text-white/45 hover:text-white/60 transition-colors p-1">
+          <button aria-label="Close" onClick={close} className="text-white/45 hover:text-white/60 transition-colors p-1">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -182,7 +240,7 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
           {error && !loading && (
             <div className="text-center py-12">
               <p className="text-red-400 text-sm">{error}</p>
-              <button onClick={onClose} className="mt-4 text-xs text-white/50 hover:text-white/60 underline">Close</button>
+              <button onClick={close} className="mt-4 text-xs text-white/50 hover:text-white/60 underline">Close</button>
             </div>
           )}
 
@@ -201,9 +259,13 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
                 </div>
               </div>
               <p className="text-xs text-white/45 mt-4">
-                {questions.length} question{questions.length !== 1 ? 's' : ''} · Takes about 2 minutes
+                {questions.length} question{questions.length !== 1 ? 's' : ''} · Takes about {estimateMinutes(questions)} minute{estimateMinutes(questions) !== 1 ? 's' : ''} · Your progress is saved if you need to step away
               </p>
             </div>
+          )}
+
+          {resumedAt === step && !loading && !error && (
+            <p className="text-xs text-brand-400 pt-3">Welcome back — picked up where you left off.</p>
           )}
 
           {/* Question */}
@@ -220,7 +282,7 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
             <div className="text-center py-10">
               <div className="text-5xl mb-4">{hasResponded && !submitting ? '✓' : '🎉'}</div>
               <h2 className="text-xl font-bold text-white mb-2">
-                {hasResponded && step <= questions.length ? 'Already submitted' : 'Thank you!'}
+                {hasResponded ? 'Already submitted' : 'Thank you!'}
               </h2>
               <p className="text-white/50 text-sm mb-6">
                 Your answers help shape the future of Screenplay Studio.
@@ -246,7 +308,12 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
                 ← Back
               </button>
             ) : (
-              <div />
+              <button
+                onClick={close}
+                className="px-4 py-2 text-sm text-white/50 hover:text-white transition-colors"
+              >
+                Maybe later
+              </button>
             )}
             <button
               onClick={handleNext}
@@ -263,7 +330,7 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
         {step > questions.length && !loading && (
           <div className="px-5 py-4 border-t border-white/[0.06] flex-shrink-0">
             <button
-              onClick={onClose}
+              onClick={close}
               className="w-full py-2.5 bg-white/5 hover:bg-white/10 text-white text-sm font-medium rounded-xl transition-colors"
             >
               Close

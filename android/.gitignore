@@ -1,0 +1,14 @@
+.gradle/
+build/
+/local.properties
+/keystore.properties
+*.jks
+*.keystore
+.idea/
+*.iml
+.kotlin/
+captures/
+
+# The root .gitignore ignores ScreenPlayStudio/, which also matches the Kotlin
+# package directory on case-insensitive file systems. Keep the sources.
+!screenplaystudio/

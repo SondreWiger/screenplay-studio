@@ -38,13 +38,27 @@ struct AppMark: View {
 /// from looking assembled out of different kits.
 struct Card<Content: View>: View {
     var padding: CGFloat = 14
+    /// An optional colour that washes in from the top-left corner — used for
+    /// headers that belong to something with its own colour (a project).
+    var glow: Color? = nil
     @ViewBuilder var content: Content
 
     var body: some View {
         content
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
+            .background {
+                let shape = RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                ZStack {
+                    shape.fill(Theme.card)
+                    if let glow {
+                        shape.fill(RadialGradient(
+                            colors: [glow.opacity(0.22), .clear],
+                            center: .topLeading, startRadius: 0, endRadius: 340
+                        ))
+                    }
+                }
+            }
             .overlay(
                 RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
                     .strokeBorder(Theme.border, lineWidth: 1)
