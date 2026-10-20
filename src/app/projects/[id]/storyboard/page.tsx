@@ -10,6 +10,11 @@ import type { Scene } from '@/lib/types';
 import { PageTitle } from '@/components/projects/PageTitle';
 import { hasDrawing, type ShotWithStoryboard } from '@/components/storyboard/engine';
 import { StoryboardThumb } from '@/components/storyboard/StoryboardThumb';
+import { StoryboardPrintDialog } from '@/components/storyboard/StoryboardPrintDialog';
+import { StoryboardVersionsDialog } from '@/components/storyboard/StoryboardVersionsDialog';
+import { getVersions } from '@/lib/storyboard-print/versions';
+
+const StoryboardScanDialog = dynamic(() => import('@/components/storyboard/StoryboardScanDialog').then((m) => m.StoryboardScanDialog), { ssr: false });
 
 // The studio is large and only needed once someone starts drawing — load it on demand.
 const loadStudio = () => import('@/components/storyboard/StoryboardSequenceStudio');
@@ -36,6 +41,9 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
   const [filterScene, setFilterScene] = useState('all');
   const [viewSize, setViewSize] = useState<ViewSize>('md');
   const [studioShotId, setStudioShotId] = useState<string | null>(null);
+  const [showPrint, setShowPrint] = useState(false);
+  const [showScan, setShowScan] = useState(false);
+  const [versionsShotId, setVersionsShotId] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoadError(false);
@@ -53,6 +61,7 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
           storyboard_drawing: s.storyboard_drawing || [],
           storyboard_references: s.storyboard_references || [],
           storyboard_notes: s.storyboard_notes || '',
+          storyboard_versions: s.storyboard_versions || [],
         }))
       );
     } catch (err) {
@@ -132,6 +141,20 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button variant="secondary" size="sm" onClick={() => setShowPrint(true)} className="gap-1.5">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.83c-.24.03-.48.06-.72.1m.72-.1a42.4 42.4 0 0110.56 0m-10.56 0L6.34 18m10.94-4.17c.24.03.48.06.72.1m-.72-.1L17.66 18m0 0l.23 2.52A1.13 1.13 0 0116.77 21.75H7.23a1.13 1.13 0 01-1.12-1.23L6.34 18m11.32 0h1.09A2.25 2.25 0 0021 15.75V9.46c0-1.08-.77-2.01-1.84-2.2a48.4 48.4 0 00-1.41-.21M6.34 18H5.25A2.25 2.25 0 013 15.75V9.46c0-1.08.77-2.01 1.84-2.2.47-.08.94-.15 1.41-.21m11.5 0a48.5 48.5 0 00-11.5 0m11.5 0V3.38c0-.62-.5-1.13-1.13-1.13H7.88c-.62 0-1.13.5-1.13 1.13v3.66M18 10.5h.01v.01H18V10.5z" />
+            </svg>
+            Print
+          </Button>
+          {canEdit && shots.length > 0 && (
+            <Button variant="secondary" size="sm" onClick={() => setShowScan(true)} className="gap-1.5">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 7.5V5.25A1.5 1.5 0 015.25 3.75H7.5M16.5 3.75h2.25a1.5 1.5 0 011.5 1.5V7.5M20.25 16.5v2.25a1.5 1.5 0 01-1.5 1.5H16.5M7.5 20.25H5.25a1.5 1.5 0 01-1.5-1.5V16.5M3.75 12h16.5" />
+              </svg>
+              Scan
+            </Button>
+          )}
           {canEdit && shots.length > 0 && (
             <Button
               variant="primary"
@@ -208,56 +231,99 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
             {group.shots.map((shot) => {
               const filled = !!shot.storyboard_url || hasDrawing(shot.storyboard_drawing);
               const Card = canEdit ? 'button' : 'div';
+              const versionCount = getVersions(shot).length;
               return (
-                <Card
-                  key={shot.id}
-                  {...(canEdit ? { type: 'button' as const, onClick: () => openStudio(shot.id), onPointerEnter: () => void loadStudio() } : {})}
-                  className={cn(
-                    'group block w-full text-left rounded-xl border overflow-hidden transition-colors',
-                    canEdit && 'cursor-pointer hover:border-surface-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
-                    filled ? 'border-surface-700' : 'border-dashed border-surface-800'
-                  )}
-                >
-                  <div className="relative">
-                    <StoryboardThumb
-                      drawing={shot.storyboard_drawing}
-                      imageUrl={shot.storyboard_url}
-                      alt={`Shot ${shot.shot_number || ''}`}
-                      emptyLabel={viewSize === 'sm' ? '' : canEdit ? 'Tap to draw' : 'No storyboard'}
-                    />
-                    {canEdit && (
-                      <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-xs font-medium text-white">
-                        {filled ? 'Edit frame' : 'Draw frame'}
-                      </span>
+                <div key={shot.id} className="relative">
+                  <Card
+                    {...(canEdit ? { type: 'button' as const, onClick: () => openStudio(shot.id), onPointerEnter: () => void loadStudio() } : {})}
+                    className={cn(
+                      'group block w-full text-left rounded-xl border overflow-hidden transition-colors',
+                      canEdit && 'cursor-pointer hover:border-surface-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
+                      filled ? 'border-surface-700' : 'border-dashed border-surface-800'
                     )}
-                  </div>
-                  <div className="p-2 bg-surface-950">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-[11px] font-bold text-surface-500 shrink-0">{shot.shot_number || '#'}</span>
-                      <Badge size="sm" variant="info" className="text-[11px] capitalize">{(shot.shot_type || '').replace(/_/g, ' ')}</Badge>
-                      <Badge size="sm" className="text-[11px] capitalize">{(shot.shot_movement || '').replace(/_/g, ' ')}</Badge>
+                  >
+                    <div className="relative">
+                      <StoryboardThumb
+                        drawing={shot.storyboard_drawing}
+                        imageUrl={shot.storyboard_url}
+                        alt={`Shot ${shot.shot_number || ''}`}
+                        emptyLabel={viewSize === 'sm' ? '' : canEdit ? 'Tap to draw' : 'No storyboard'}
+                      />
+                      {canEdit && (
+                        <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-xs font-medium text-white">
+                          {filled ? 'Edit frame' : 'Draw frame'}
+                        </span>
+                      )}
                     </div>
-                    {shot.description && viewSize !== 'sm' && (
-                      <p className="text-[11px] text-surface-500 mt-1 line-clamp-1">{shot.description}</p>
-                    )}
-                    {shot.storyboard_notes && viewSize !== 'sm' && (
-                      <p className="text-[11px] text-surface-500 mt-0.5 line-clamp-1 italic">{shot.storyboard_notes}</p>
-                    )}
-                    {(shot.storyboard_references?.length || 0) > 0 && viewSize !== 'sm' && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <svg className="w-3 h-3 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
-                        </svg>
-                        <span className="text-[11px] text-surface-500">{shot.storyboard_references!.length} ref{shot.storyboard_references!.length > 1 ? 's' : ''}</span>
+                    <div className="p-2 bg-surface-950">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-[11px] font-bold text-surface-500 shrink-0">{shot.shot_number || '#'}</span>
+                        <Badge size="sm" variant="info" className="text-[11px] capitalize">{(shot.shot_type || '').replace(/_/g, ' ')}</Badge>
+                        <Badge size="sm" className="text-[11px] capitalize">{(shot.shot_movement || '').replace(/_/g, ' ')}</Badge>
                       </div>
-                    )}
-                  </div>
-                </Card>
+                      {shot.description && viewSize !== 'sm' && (
+                        <p className="text-[11px] text-surface-500 mt-1 line-clamp-1">{shot.description}</p>
+                      )}
+                      {shot.storyboard_notes && viewSize !== 'sm' && (
+                        <p className="text-[11px] text-surface-500 mt-0.5 line-clamp-1 italic">{shot.storyboard_notes}</p>
+                      )}
+                      {(shot.storyboard_references?.length || 0) > 0 && viewSize !== 'sm' && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <svg className="w-3 h-3 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
+                          </svg>
+                          <span className="text-[11px] text-surface-500">{shot.storyboard_references!.length} ref{shot.storyboard_references!.length > 1 ? 's' : ''}</span>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                  {versionCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setVersionsShotId(shot.id)}
+                      className="absolute top-1.5 right-1.5 rounded-md bg-black/70 px-1.5 py-0.5 text-[10px] font-medium text-white hover:bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                      title="Frame versions"
+                      aria-label={`Frame versions of shot ${shot.shot_number || ''}`}
+                    >
+                      {versionCount} version{versionCount === 1 ? '' : 's'}
+                    </button>
+                  )}
+                </div>
               );
             })}
           </div>
         </section>
       ))}
+
+      <StoryboardPrintDialog
+        isOpen={showPrint}
+        onClose={() => setShowPrint(false)}
+        projectId={params.id}
+        projectTitle={currentProject?.title || 'Untitled'}
+        userId={user?.id || null}
+        scenes={scenes}
+        shots={shots}
+        sceneFilter={filterScene}
+        defaultOption="template-shots"
+      />
+      {showScan && (
+        <StoryboardScanDialog
+          isOpen
+          onClose={() => setShowScan(false)}
+          projectId={params.id}
+          userId={user?.id || null}
+          scenes={scenes}
+          shots={shots}
+          onShotPatched={patchShot}
+        />
+      )}
+      <StoryboardVersionsDialog
+        shot={shots.find((s) => s.id === versionsShotId) || null}
+        onClose={() => setVersionsShotId(null)}
+        userId={user?.id || null}
+        canEdit={canEdit}
+        onShotPatched={patchShot}
+      />
 
       {studioShotId && (
         <StoryboardSequenceStudio

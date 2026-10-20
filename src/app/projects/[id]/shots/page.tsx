@@ -10,6 +10,8 @@ import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Shot, Scene, ShotType, ShotMovement } from '@/lib/types';
 import { PageTitle } from '@/components/projects/PageTitle';
 import { StatGrid } from '@/components/kit';
+import { StoryboardPrintDialog } from '@/components/storyboard/StoryboardPrintDialog';
+import type { ShotWithStoryboard } from '@/components/storyboard/engine';
 
 const SHOT_TYPES: { value: ShotType; label: string }[] = [
   { value: 'wide', label: 'Wide' }, { value: 'full', label: 'Full' },
@@ -48,6 +50,7 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
   const [selectedShot, setSelectedShot] = useState<Shot | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [filterScene, setFilterScene] = useState<string>('all');
+  const [showPrint, setShowPrint] = useState(false);
 
   useEffect(() => { fetchData(); }, [params.id, currentScript?.id]);
 
@@ -110,20 +113,28 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
           <PageTitle>Shot List</PageTitle>
           <p className="text-sm text-surface-400 mt-1">{completed}/{shots.length} shots completed</p>
         </div>
-        <Link href={`/projects/${params.id}/script`}>
-          <Button variant="ghost" size="sm">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={() => setShowPrint(true)} disabled={shots.length === 0}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
             </svg>
-            Jump to Script
+            Print
           </Button>
-        </Link>
-        {canEdit && <Button onClick={() => { setSelectedShot(null); setShowEditor(true); }}>
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Add Shot
-        </Button>}
+          <Link href={`/projects/${params.id}/script`}>
+            <Button variant="ghost" size="sm">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              </svg>
+              Jump to Script
+            </Button>
+          </Link>
+          {canEdit && <Button onClick={() => { setSelectedShot(null); setShowEditor(true); }}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Shot
+          </Button>}
+        </div>
       </div>
       <div className="mb-6">
         <StatGrid
@@ -220,6 +231,17 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
       <ShotEditor isOpen={showEditor} onClose={() => setShowEditor(false)} shot={selectedShot}
         projectId={params.id} userId={user?.id || ''} scenes={scenes}
         onSaved={() => { fetchData(); setShowEditor(false); }} onDelete={handleDelete} canEdit={canEdit} />
+      <StoryboardPrintDialog
+        isOpen={showPrint}
+        onClose={() => setShowPrint(false)}
+        projectId={params.id}
+        projectTitle={currentProject?.title || 'Untitled'}
+        userId={user?.id || null}
+        scenes={scenes}
+        shots={shots as ShotWithStoryboard[]}
+        sceneFilter={filterScene}
+        defaultOption="shotlist"
+      />
       <ConfirmDialog />
     </div>
   );

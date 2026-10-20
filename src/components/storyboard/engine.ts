@@ -60,6 +60,8 @@ export interface ShotWithStoryboard extends Shot {
   storyboard_drawing?: any;
   storyboard_references?: ReferenceImage[];
   storyboard_notes?: string;
+  /** Earlier versions of the frame — see lib/storyboard-print/versions.ts. */
+  storyboard_versions?: any;
 }
 
 export interface OverlayConfig {
