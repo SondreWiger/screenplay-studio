@@ -33,6 +33,7 @@
     "date-fns": "^4.1.0",
     "docx": "^9.7.1",
     "dompurify": "^3.4.5",
+    "electron-updater": "^6.3.9",
     "framer-motion": "^12.38.0",
     "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.14.0",
@@ -43,6 +44,7 @@
     "next": "^14.2.21",
     "node-media-server": "^4.2.4",
     "pdfjs-dist": "^6.0.227",
+    "qrcode": "^1.5.4",
     "react": "^18.3.1",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.3.1",
@@ -52,14 +54,14 @@
     "sql.js": "^1.14.1",
     "tailwind-merge": "^2.6.0",
     "web-push": "^3.6.7",
-    "zustand": "^5.0.2",
-    "electron-updater": "^6.3.9"
+    "zustand": "^5.0.2"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/dompurify": "^3.0.5",
     "@types/node": "^22.10.5",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^18.3.12",
     "@types/react-beautiful-dnd": "^13.1.8",
     "@types/react-dom": "^18.3.1",

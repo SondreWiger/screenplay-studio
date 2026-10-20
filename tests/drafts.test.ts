@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { summarizeDraftChanges } from '@/lib/scripts/draft-changes';
 import {
   normalizeDraftCode,
   draftStampText,
@@ -57,5 +58,44 @@ describe('snapshot diff', () => {
     const now = ['[ACTION] A', '[ACTION] B2', '[ACTION] C', '[ACTION] D'];
     expect(diffStats(diffLines(printed, now))).toEqual({ added: 2, removed: 1 });
     expect(diffStats(diffLines(printed, printed))).toEqual({ added: 0, removed: 0 });
+  });
+});
+
+describe('summarizeDraftChanges', () => {
+  const el = (id: string, element_type: string, content: string, sort_order: number) => ({
+    id, element_type, content, sort_order, scene_number: null, is_omitted: false,
+  });
+  const then = [
+    el('h1', 'scene_heading', 'INT. KITCHEN - DAY', 1),
+    el('a1', 'action', 'Anna makes coffee.', 2),
+    el('h2', 'scene_heading', 'EXT. STREET - NIGHT', 3),
+    el('a2', 'action', 'Rain.', 4),
+    el('h3', 'scene_heading', 'INT. CAR - NIGHT', 5),
+    el('a3', 'action', 'Silence.', 6),
+  ];
+
+  it('reports changed, cut and new scenes from the printed copy', () => {
+    const now = [
+      el('h1', 'scene_heading', 'INT. KITCHEN - DAY', 1),
+      el('a1', 'action', 'Anna makes tea.', 2),
+      el('h3', 'scene_heading', 'INT. CAR - NIGHT', 5),
+      el('a3', 'action', 'Silence.', 6),
+      el('h4', 'scene_heading', 'INT. SECRET LAB - DAY', 7),
+    ];
+    const c = summarizeDraftChanges(then, now, { includeNewHeadings: false });
+    expect(c.changed.map((s) => s.heading)).toEqual(['INT. KITCHEN - DAY']);
+    expect(c.removed.map((s) => s.number)).toEqual(['2']);
+    expect(c.added_count).toBe(1);
+    expect(c.added).toEqual([]); // new text stays private for non-members
+    expect(c.scenes_then).toBe(3);
+    expect(c.scenes_now).toBe(3);
+    expect(summarizeDraftChanges(then, now, { includeNewHeadings: true }).added[0].heading).toBe('INT. SECRET LAB - DAY');
+  });
+
+  it('notices reordered scenes without calling them changed', () => {
+    const now = [then[4], then[5], then[0], then[1], then[2], then[3]].map((e, i) => ({ ...e, sort_order: i }));
+    const c = summarizeDraftChanges(then, now, { includeNewHeadings: false });
+    expect(c.changed).toEqual([]);
+    expect(c.moved_count).toBe(1);
   });
 });

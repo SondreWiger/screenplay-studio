@@ -41,7 +41,7 @@ import {
   deserializeVersionConfig,
 } from '@/lib/versioning';
 import { paginateScript, type PaginatedPage } from '@/lib/screenplay-paginator';
-import { createScriptDraft, draftStampText, draftStampCSS } from '@/lib/scripts/drafts';
+import { createScriptDraft, draftStampText, draftStampCSS, draftQrHTML, draftQrCSS } from '@/lib/scripts/drafts';
 import { PRINT_REFLOW_SCRIPT, printReflowCSS } from '@/lib/scripts/print-reflow';
 import { logWork } from '@/lib/work-tracker';
 
@@ -1298,9 +1298,12 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     // Every print gets a tracked draft code, stamped at the foot of each page.
     // If that fails (offline, desktop-only project) the script still prints.
     let stamp = '';
+    let qrHTML = '';
     try {
       const draft = await createScriptDraft(script.id, { source: 'print', format: 'pdf' });
       stamp = draftStampText(draft);
+      // The front page also gets a QR code that opens this print's info
+      if (useProjectStore.getState().currentProject?.print_qr_code !== false) qrHTML = await draftQrHTML(draft);
       toast.success(`Printed as draft ${draft.code}`);
     } catch (err) {
       console.warn('Could not register printed draft:', err);
@@ -1326,6 +1329,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
       <div class="page">
         <div class="page-content">${page.elements.map(elementHTML).join('')}</div>
         <div class="page-number">${i + 1}.</div>
+        ${i === 0 && !hasTitlePage ? qrHTML : ''}
         ${stampHTML}
       </div>
     `).join('');
@@ -1350,6 +1354,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
             ${titlePage.notes ? `<div class="title-bottom-right" style="text-align: right; font-size: 10pt; max-width: 160pt; white-space: pre-wrap;">${titlePage.notes}</div>` : ''}
           </div>
         </div>
+        ${qrHTML}
         ${stampHTML}
       </div>
     ` : '';
@@ -1393,6 +1398,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   }
 
   ${draftStampCSS()}
+  ${draftQrCSS()}
   ${printReflowCSS(pageHeight)}
 
   /* Title page */

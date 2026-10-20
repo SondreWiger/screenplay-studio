@@ -3,6 +3,7 @@
  * snapshot (see supabase/migrations/20261002120000_printed_drafts.sql).
  */
 
+import QRCode from 'qrcode';
 import { createClient } from '@/lib/supabase/client';
 import { flushSyncQueue } from '@/lib/offline/queue';
 import type { SnapshotElement } from './diff';
@@ -26,6 +27,8 @@ export interface ScriptDraft {
   format: string | null;
   printed_at: string;
   created_by: string | null;
+  /** Private key carried by the QR code, so a scan works without public lookup */
+  qr_token?: string;
 }
 
 /** Codes avoid 0/O and 1/I so they survive being read off paper. */
@@ -89,4 +92,52 @@ export function draftStampCSS(): string {
 export function draftStampMarginCSS(stamp: string): string {
   const text = stamp.replace(/[\\"]/g, '');
   return `@page{@bottom-right{content:"${text}";${STAMP_STYLE}vertical-align:middle;}}`;
+}
+
+/**
+ * Where a draft's QR code points. The key lets whoever holds the paper see
+ * the print info even when the project keeps code lookup private.
+ */
+export function draftLookupUrl(draft: Pick<ScriptDraft, 'code' | 'qr_token'>): string {
+  const origin = (process.env.NEXT_PUBLIC_SITE_URL
+    || (typeof window !== 'undefined' && /^https?:/.test(window.location.origin) ? window.location.origin : '')
+    || 'https://screenplaystudio.fun').replace(/\/$/, '');
+  const key = draft.qr_token ? `&k=${encodeURIComponent(draft.qr_token)}` : '';
+  return `${origin}/lookup?code=${draft.code}${key}`;
+}
+
+/**
+ * The front-page QR block for a printed draft: an inline SVG code plus a tiny
+ * caption. Returns '' if the code can't be drawn, so printing never fails on it.
+ */
+export async function draftQrHTML(draft: Pick<ScriptDraft, 'code' | 'qr_token'>): Promise<string> {
+  try {
+    const svg = await QRCode.toString(draftLookupUrl(draft), {
+      type: 'svg',
+      errorCorrectionLevel: 'M',
+      margin: 0,
+      color: { dark: '#000000', light: '#ffffff' },
+    });
+    return `<div class="draft-qr">${svg}<div class="draft-qr-caption">Scan for print info · ${draft.code}</div></div>`;
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * CSS for a `.draft-qr` block placed inside a fixed-size page box: tucked
+ * into the top-left page margin, clear of the text and the page number.
+ */
+export function draftQrCSS(): string {
+  return `.draft-qr{position:absolute;top:0.3in;left:0.45in;width:0.7in;text-align:center;pointer-events:none;}
+.draft-qr svg{display:block;width:0.7in;height:0.7in;}
+.draft-qr-caption{margin-top:3pt;${STAMP_STYLE}font-size:5pt;letter-spacing:0.04em;line-height:1.15;color:#9a9a9a;}`;
+}
+
+/** CSS for a `.draft-qr` block in documents that flow (no page boxes). */
+export function draftQrFlowCSS(): string {
+  return `.draft-qr{width:0.8in;margin:0 auto;text-align:center;}
+.draft-qr svg{display:block;width:0.8in;height:0.8in;}
+.draft-qr-caption{margin-top:4pt;${STAMP_STYLE}font-size:5.5pt;letter-spacing:0.04em;line-height:1.15;color:#9a9a9a;}
+.draft-qr.corner{float:right;margin:0 0 12pt 12pt;}`;
 }

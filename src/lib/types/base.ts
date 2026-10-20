@@ -529,6 +529,8 @@ export interface Project {
   page_size?: 'letter' | 'a4' | null;
   /** Let anyone look up this project's printed draft codes at /lookup */
   drafts_public_lookup?: boolean;
+  /** Put a QR code linking to the print's info on the front of printed drafts (default on) */
+  print_qr_code?: boolean;
   custom_branding?: {
     primary_color?: string;
     secondary_color?: string;

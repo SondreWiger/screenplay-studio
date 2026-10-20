@@ -51,6 +51,21 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
 
   useEffect(() => { fetchProject(); }, [params.id]);
 
+  // Printed-draft switches; only owners/admins can update projects
+  const saveDraftSetting = async (patch: Pick<Partial<Project>, 'drafts_public_lookup' | 'print_qr_code'>) => {
+    if (!project) return;
+    setSavingLookup(true);
+    const supabase = createClient();
+    const { data, error } = await supabase.from('projects')
+      .update(patch).eq('id', params.id).select('*');
+    setSavingLookup(false);
+    if (error) { toast.error('Could not save: ' + error.message); return; }
+    if (!data?.length) { toast.error('Only the project owner or an admin can change this.'); return; }
+    const updated = { ...project, ...data[0] } as Project;
+    applyProjectUpdate(updated);
+    setProject(updated);
+  };
+
   const fetchProject = async () => {
     try {
       const supabase = createClient();
@@ -625,24 +640,22 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
             View drafts
           </Link>
         </div>
-        <Toggle
-          checked={!!project.drafts_public_lookup}
-          disabled={savingLookup}
-          label="Allow public code lookup"
-          description="Anyone with a code can check it at /lookup and see the print date, script title and whether it’s still current — never the script itself or who it was given to."
-          onChange={async (next) => {
-            setSavingLookup(true);
-            const supabase = createClient();
-            const { data, error } = await supabase.from('projects')
-              .update({ drafts_public_lookup: next }).eq('id', params.id).select('*');
-            setSavingLookup(false);
-            if (error) { toast.error('Could not save: ' + error.message); return; }
-            if (!data?.length) { toast.error('Only the project owner or an admin can change this.'); return; }
-            const updated = { ...project, ...data[0] } as Project;
-            applyProjectUpdate(updated);
-            setProject(updated);
-          }}
-        />
+        <div className="space-y-4">
+          <Toggle
+            checked={project.print_qr_code !== false}
+            disabled={savingLookup}
+            label="QR code on printed copies"
+            description="The front page of each print gets a QR code. Scanning it shows when that copy was printed and which of its scenes have changed since — even with public lookup off, since only the paper carries the key."
+            onChange={(next) => saveDraftSetting({ print_qr_code: next })}
+          />
+          <Toggle
+            checked={!!project.drafts_public_lookup}
+            disabled={savingLookup}
+            label="Allow public code lookup"
+            description="Anyone with a code can type it in at /lookup and see the print date, script title and whether it’s still current — never the script itself or who it was given to."
+            onChange={(next) => saveDraftSetting({ drafts_public_lookup: next })}
+          />
+        </div>
       </Card>
 
       {/* Showcase & Finished Production */}

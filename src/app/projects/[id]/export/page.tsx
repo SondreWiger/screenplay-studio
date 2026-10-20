@@ -6,7 +6,7 @@ import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useProjectStore } from '@/lib/stores';
 import { Button, Card, LoadingSpinner, toast, ToastContainer } from '@/components/ui';
 import Link from 'next/link';
-import { createScriptDraft, draftStampText, draftStampMarginCSS, type ScriptDraft } from '@/lib/scripts/drafts';
+import { createScriptDraft, draftStampText, draftStampMarginCSS, draftQrHTML, draftQrFlowCSS, type ScriptDraft } from '@/lib/scripts/drafts';
 import { PageTitle } from '@/components/projects/PageTitle';
 
 // Advanced Export — free for everyone
@@ -92,6 +92,11 @@ export default function ExportPage({ params }: { params: { id: string } }) {
   const [draftRecipient, setDraftRecipient] = useState('');
   const [draftNotes, setDraftNotes] = useState('');
   const [lastDraft, setLastDraft] = useState<ScriptDraft | null>(null);
+  // QR code on the front page that opens this print's info; project default
+  const [draftQr, setDraftQr] = useState(true);
+  useEffect(() => {
+    setDraftQr(currentProject?.print_qr_code !== false);
+  }, [currentProject?.print_qr_code]);
 
   useEffect(() => {
     fetchData();
@@ -165,6 +170,11 @@ export default function ExportPage({ params }: { params: { id: string } }) {
         }
       }
 
+      // Only the paged formats (PDF, HTML) can carry a QR code
+      const qrHTML = draft && draftQr && formats.some(f => f === 'pdf' || f === 'html')
+        ? await draftQrHTML(draft)
+        : '';
+
       for (const fmt of formats) {
         const script = scripts.find(s => s.id === selectedScript);
         if (!script) continue;
@@ -207,6 +217,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
           secondaryColor: branding?.secondary_color || '#F59E0B',
           draftStamp: draft ? draftStampText(draft) : '',
           draftCode: draft?.code || '',
+          draftQr: qrHTML,
         };
 
         if (fmt === 'pdf') {
@@ -434,6 +445,22 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                 <Link href={`/projects/${params.id}/drafts`} className="text-brand-400 hover:underline">All drafts</Link>
               </p>
               {trackDraft && (
+                <label className="flex items-start gap-2 text-sm text-surface-300 mb-3">
+                  <input
+                    type="checkbox"
+                    checked={draftQr}
+                    onChange={e => setDraftQr(e.target.checked)}
+                    className="mt-0.5 rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
+                  />
+                  <span>
+                    QR code on the front page
+                    <span className="block text-[11px] text-surface-500">
+                      Scanning it shows when this copy was printed and what has changed since. PDF and HTML only.
+                    </span>
+                  </span>
+                </label>
+              )}
+              {trackDraft && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] uppercase tracking-[0.04em] text-surface-500 mb-1">Given to (optional)</label>
@@ -628,6 +655,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                 {config.watermarkEnabled && ' • Watermarked'}
                 {config.includeCover && ' • Cover page'}
                 {trackDraft && ' • Draft code'}
+                {trackDraft && draftQr && ' • QR'}
               </div>
             </Card>
           </div>
@@ -640,7 +668,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
 // Screenplay HTML builder (shared between PDF & HTML export)
 
 function generateScreenplayHTML(data: any): string {
-  const { content, config: cfg, fontFamily, coverTitle, watermarkOpacity, headerTemplate, primaryColor, projectType, draftStamp } = data;
+  const { content, config: cfg, fontFamily, coverTitle, watermarkOpacity, headerTemplate, primaryColor, projectType, draftStamp, draftQr } = data;
   const elements = Array.isArray(content) ? content : [];
   let sceneNum = 0;
   const font = fontFamily || 'Courier New';
@@ -661,7 +689,11 @@ function generateScreenplayHTML(data: any): string {
     if (cfg.draftLabel) bodyParts.push(`<div class="cover-draft">${esc(cfg.draftLabel)}</div>`);
     if (cfg.contactInfo) bodyParts.push(`<div class="cover-contact">${esc(cfg.contactInfo)}</div>`);
     if (draftStamp) bodyParts.push(`<div class="cover-draft-code">${esc(draftStamp)}</div>`);
+    if (draftQr) bodyParts.push(`<div class="cover-qr">${draftQr}</div>`);
     bodyParts.push('</div><div style="page-break-after:always"></div>');
+  } else if (draftQr) {
+    // No cover: the QR sits in the top corner of the first page
+    bodyParts.push(draftQr.replace('class="draft-qr"', 'class="draft-qr corner"'));
   }
 
   // Header based on template
@@ -803,6 +835,8 @@ ${watermarkCSS}
 .cover-contact{font-size:10pt;color:#888;margin-top:48px;white-space:pre-line;}
 .cover-draft-code{font-size:8pt;letter-spacing:0.08em;color:#aaa;margin-top:36px;}
 ${draftStamp ? draftStampMarginCSS(draftStamp) : ''}
+${draftQr ? draftQrFlowCSS() : ''}
+.cover-qr{margin-top:28px;}
 .page-header{display:flex;align-items:center;justify-content:space-between;font-size:8pt;color:#888;border-bottom:1px solid #ddd;padding-bottom:6px;margin-bottom:24px;}
 .header-company{font-weight:bold;color:#555;}
 .header-draft{margin-left:auto;margin-right:12px;}

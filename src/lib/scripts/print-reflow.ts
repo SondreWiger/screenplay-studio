@@ -30,6 +30,9 @@ export const PRINT_REFLOW_SCRIPT = `
     var np = page.cloneNode(true);
     np.classList.remove('page-overflow');
     np.querySelector('.page-content').innerHTML = '';
+    // The draft QR belongs on the front page only.
+    var qr = np.querySelector('.draft-qr');
+    if (qr) qr.parentNode.removeChild(qr);
     page.parentNode.insertBefore(np, page.nextSibling);
     return np;
   }
