@@ -4,6 +4,7 @@ import {
   normalizeDraftCode,
   draftStampText,
   draftStampMarginCSS,
+  draftLookupUrl,
   DRAFT_CODE_ALPHABET,
 } from '@/lib/scripts/drafts';
 import { diffLines, diffStats, snapshotToLines } from '@/lib/scripts/diff';
@@ -97,5 +98,18 @@ describe('summarizeDraftChanges', () => {
     const c = summarizeDraftChanges(then, now, { includeNewHeadings: false });
     expect(c.changed).toEqual([]);
     expect(c.moved_count).toBe(1);
+  });
+});
+
+describe('draftLookupUrl', () => {
+  it('never points the QR at a local dev address', () => {
+    const prev = process.env.NEXT_PUBLIC_SITE_URL;
+    process.env.NEXT_PUBLIC_SITE_URL = 'http://localhost:3000';
+    try {
+      const url = draftLookupUrl({ code: 'A7K2Q', qr_token: 'abc123' });
+      expect(url).toMatch(/^https:\/\/screenplaystudio\.fun\/lookup\?code=A7K2Q&k=abc123$/);
+    } finally {
+      process.env.NEXT_PUBLIC_SITE_URL = prev;
+    }
   });
 });

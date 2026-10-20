@@ -94,14 +94,32 @@ export function draftStampMarginCSS(stamp: string): string {
   return `@page{@bottom-right{content:"${text}";${STAMP_STYLE}vertical-align:middle;}}`;
 }
 
+const PUBLIC_SITE_URL = 'https://screenplaystudio.fun';
+
+/** True for addresses a phone scanning the paper can't reach. */
+function isLocalOrigin(origin: string): boolean {
+  try {
+    const host = new URL(origin).hostname;
+    return host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local')
+      || host === '127.0.0.1' || host === '[::1]' || host === '0.0.0.0'
+      || /^(10|192\.168|172\.(1[6-9]|2\d|3[01]))\./.test(host);
+  } catch {
+    return true;
+  }
+}
+
 /**
  * Where a draft's QR code points. The key lets whoever holds the paper see
- * the print info even when the project keeps code lookup private.
+ * the print info even when the project keeps code lookup private. Paper
+ * leaves the building, so a dev or desktop origin is never used.
  */
 export function draftLookupUrl(draft: Pick<ScriptDraft, 'code' | 'qr_token'>): string {
-  const origin = (process.env.NEXT_PUBLIC_SITE_URL
-    || (typeof window !== 'undefined' && /^https?:/.test(window.location.origin) ? window.location.origin : '')
-    || 'https://screenplaystudio.fun').replace(/\/$/, '');
+  const candidates = [
+    process.env.NEXT_PUBLIC_SITE_URL,
+    typeof window !== 'undefined' ? window.location.origin : undefined,
+  ];
+  const origin = (candidates.find((o) => o && /^https?:\/\//.test(o) && !isLocalOrigin(o)) || PUBLIC_SITE_URL)
+    .replace(/\/$/, '');
   const key = draft.qr_token ? `&k=${encodeURIComponent(draft.qr_token)}` : '';
   return `${origin}/lookup?code=${draft.code}${key}`;
 }
