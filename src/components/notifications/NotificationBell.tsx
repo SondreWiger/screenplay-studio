@@ -75,7 +75,7 @@ export function NotificationBellInner() {
         )}
       </button>
       {open && <NotificationsDropdown onClose={() => setOpen(false)} onOpenPoll={(id) => { setActivePollId(id); setOpen(false); }} />}
-      {activePollId && <PollModal pollId={activePollId} onClose={() => setActivePollId(null)} />}
+      {activePollId && <PollModal pollId={activePollId} source="notification" onClose={() => setActivePollId(null)} />}
     </div>
   );
 }
@@ -234,7 +234,7 @@ export function NotificationRow({
       <div className="flex-1 min-w-0">
         {n.link && !isActionable && n.type === 'poll_published' && onOpenPoll ? (
           <button
-            onClick={() => { handleClick(); const id = n.link!.replace('/poll/', '').split('/')[0]; onOpenPoll(id); }}
+            onClick={() => { handleClick(); const id = n.link!.replace('/poll/', '').split(/[/?#]/)[0]; onOpenPoll(id); }}
             className="block text-left w-full"
           >
             <p className="text-[13px] text-white leading-snug line-clamp-2">{n.title}</p>

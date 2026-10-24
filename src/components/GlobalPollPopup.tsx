@@ -49,6 +49,7 @@ export function GlobalPollPopup() {
   return (
     <PollModal
       pollId={pollId}
+      source="popup"
       onClose={(completed) => {
         if (!completed) snooze(pollId);
         setPollId(null);

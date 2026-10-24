@@ -66,7 +66,7 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
       type: 'poll_published',
       title: `📊 ${session.title}`,
       body: 'Help shape the future of Screenplay Studio — answer a few quick questions and earn 100 XP.',
-      link: `/poll/${params.id}`,
+      link: `/poll/${params.id}?src=notification`,
       actor_id: ctx.user.id,
       entity_type: 'poll',
       entity_id: params.id,

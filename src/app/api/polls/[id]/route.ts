@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { XP_VALUES } from '@/lib/gamification';
+import { MAX_POLL_MS, MAX_QUESTION_MS, cleanPollSource } from '@/lib/polls/analytics';
 
 // GET /api/polls/[id] — get a published poll + whether current user has answered
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
@@ -36,7 +38,8 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
 }
 
 // POST /api/polls/[id] — submit answers
-// Body: { answers: { question_id: string; answer_text?: string; answer_json?: unknown }[] }
+// Body: { answers: { question_id, answer_text?, answer_json?, time_ms? }[],
+//         started_at?, duration_ms?, source?, resumed? }
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   const supabase = createServerSupabaseClient();
   const { data: { user }, error: authErr } = await supabase.auth.getUser();
@@ -61,12 +64,26 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   if (existing) return NextResponse.json({ error: 'Already responded' }, { status: 409 });
 
   const body = await req.json();
-  const answers: { question_id: string; answer_text?: string; answer_json?: unknown }[] = body.answers ?? [];
+  const answers: { question_id: string; answer_text?: string; answer_json?: unknown; time_ms?: number }[] = body.answers ?? [];
+  // Timings are reported by the client; clamp them so one stray tab can't skew the stats
+  const clampMs = (v: unknown, max: number) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.min(Math.round(v), max) : null);
+  const startedAt = typeof body.started_at === 'string' && !Number.isNaN(Date.parse(body.started_at))
+    && Date.parse(body.started_at) <= Date.now()
+    ? new Date(body.started_at).toISOString()
+    : null;
 
   // Insert response record
   const { data: response, error: rErr } = await supabase
     .from('poll_responses')
-    .insert({ session_id: params.id, user_id: user.id, xp_awarded: XP_VALUES.poll_complete })
+    .insert({
+      session_id: params.id,
+      user_id: user.id,
+      xp_awarded: XP_VALUES.poll_complete,
+      started_at: startedAt,
+      duration_ms: clampMs(body.duration_ms, MAX_POLL_MS),
+      source: cleanPollSource(body.source),
+      resumed: body.resumed === true,
+    })
     .select()
     .single();
 
@@ -81,6 +98,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       user_id: user.id,
       answer_text: a.answer_text ?? null,
       answer_json: a.answer_json ?? null,
+      time_ms: clampMs(a.time_ms, MAX_QUESTION_MS),
     }));
     const { error: aErr } = await supabase.from('poll_answers').insert(answerRows);
     if (aErr) {
@@ -89,6 +107,18 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       return NextResponse.json({ error: 'Failed to save your answers — please try again' }, { status: 500 });
     }
   }
+
+  // Close the funnel row (best-effort)
+  try {
+    await createAdminSupabaseClient().from('poll_views').upsert({
+      session_id: params.id,
+      user_id: user.id,
+      completed_at: new Date().toISOString(),
+      last_seen_at: new Date().toISOString(),
+      max_step: answers.length,
+      ...(cleanPollSource(body.source) ? { source: cleanPollSource(body.source) } : {}),
+    }, { onConflict: 'session_id,user_id', ignoreDuplicates: false });
+  } catch { /* tracking only */ }
 
   // Award XP via award_xp DB function
   await supabase.rpc('award_xp', {

@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import type { PollSession, PollQuestion, PollQuestionType } from '@/lib/types';
-import type { QuestionResult } from '@/components/PollResultChart';
-import { PollResultCard } from '@/components/PollResultChart';
+import { PollResults, type PollResultsData } from '@/components/admin/polls/PollResults';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, BarChart3 } from 'lucide-react';
 import { timeAgo } from '@/lib/utils';
@@ -35,7 +34,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
   const [session, setSession] = useState<PollSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [results, setResults] = useState<QuestionResult[] | null>(null);
+  const [results, setResults] = useState<PollResultsData | null>(null);
   const [loadingResults, setLoadingResults] = useState(false);
 
   // Edit state for session metadata
@@ -95,7 +94,8 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
     setLoadingResults(true);
     fetch(`/api/admin/polls/${params.id}/results`)
       .then((r) => r.json())
-      .then((d) => { setResults(d.results ?? []); setLoadingResults(false); });
+      .then((d) => { setResults(d.error ? null : d as PollResultsData); setLoadingResults(false); })
+      .catch(() => setLoadingResults(false));
   }, [params.id]);
 
   useEffect(() => {
@@ -327,7 +327,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
       </Reveal>
 
       <AnimatePresence mode="wait">
-      <motion.main key={view} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }} className="max-w-3xl">
+      <motion.main key={view} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }} className={view === 'results' ? 'max-w-6xl' : 'max-w-3xl'}>
 
         {/* ── Edit Tab ─────────────────────────────────────────── */}
         {view === 'edit' && (
@@ -625,49 +625,39 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                 Results will be available after the poll is published.
               </div>
             )}
-            {isLive && loadingResults && (
+            {isLive && loadingResults && results === null && (
               <div className="flex items-center justify-center py-16">
                 <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
               </div>
             )}
-            {isLive && !loadingResults && results !== null && (
-              <div className="space-y-8">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-surface-400">
-                    <span className="text-white font-bold text-base">{session.response_count}</span> total response{session.response_count !== 1 ? 's' : ''}
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={handleNotify}
-                      disabled={notifying}
-                      className="text-xs px-3 py-1.5 bg-brand-500 hover:bg-brand-500 disabled:opacity-50 text-white rounded-lg transition-colors flex items-center gap-1"
-                    >
-                      {notifying ? (
-                        <>
-                          <span className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
-                          Sending…
-                        </>
-                      ) : (
-                        <>
-                          🔔 Push Notify
-                        </>
-                      )}
-                    </button>
-                    <button onClick={() => { setResults(null); loadResults(); }} className="text-xs text-surface-500 hover:text-white transition-colors">
-                      Refresh
-                    </button>
-                  </div>
-                </div>
-
+            {isLive && !loadingResults && results === null && (
+              <div className="text-center py-10 text-sm text-surface-500">
+                Couldn’t load results. <button onClick={loadResults} className="text-brand-400 hover:underline">Try again</button>
+              </div>
+            )}
+            {isLive && results !== null && (
+              <div className="space-y-4">
                 {notifyError && (
                   <div className={`text-sm p-3 rounded-lg ${notifyError.includes('failed') ? 'bg-red-500/10 border border-red-500/20 text-red-400' : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'}`}>
                     {notifyError}
                   </div>
                 )}
-
-                {results.map((r) => (
-                  <PollResultCard key={r.question_id} result={r} />
-                ))}
+                <PollResults
+                  title={session.title}
+                  questions={questions}
+                  data={results}
+                  refreshing={loadingResults}
+                  onRefresh={loadResults}
+                  actions={
+                    <button
+                      onClick={handleNotify}
+                      disabled={notifying}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-brand-500/40 bg-brand-600 px-3 py-2 text-xs font-semibold text-white hover:bg-brand-500 disabled:opacity-50"
+                    >
+                      {notifying ? <>Sending <Dots /></> : '🔔 Push notify'}
+                    </button>
+                  }
+                />
               </div>
             )}
           </div>
