@@ -118,6 +118,14 @@ final class LTCEncoder {
         phase = samplesPerBit // start exactly on a bit boundary
     }
 
+    /// Start over: the next sample begins a new frame (asked for from
+    /// `nextFrame`). Used when the generator is re-aligned to a new jam.
+    func reset() {
+        bitIndex = LTC.bitsPerFrame
+        phase = samplesPerBit
+        midFlipped = false
+    }
+
     /// Samples until the next frame starts.
     var samplesUntilFrame: Double {
         Double(LTC.bitsPerFrame - bitIndex - 1) * samplesPerBit + (samplesPerBit - phase)

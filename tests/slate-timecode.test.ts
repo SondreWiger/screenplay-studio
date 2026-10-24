@@ -206,6 +206,38 @@ describe('LTC encode → decode', () => {
     after.forEach((f, i) => expect(framesFromTimecode(f.tc, rate)).toBe(first + i));
   });
 
+  it('picks up a re-jam part-way through a frame', () => {
+    // What the slate does when it is re-jammed with timecode out running:
+    // silence until the new frame grid, then a fresh frame from the new label.
+    const sampleRate = 48000;
+    const rate = frameRate('25');
+    let next = 1000;
+    const encoder = new LTCEncoder(sampleRate, rate, () => {
+      const frame = { tc: timecodeFromFrames(next, rate), dropFrame: false };
+      next += 1;
+      return frame;
+    });
+    const out = new Float32Array(sampleRate * 3);
+    const jamAt = Math.round(sampleRate * 1.3) + 517; // not on a frame boundary
+    const gap = 700;
+    for (let i = 0; i < out.length; i++) {
+      if (i === jamAt) {
+        next = 50000;
+        encoder.reset();
+      }
+      out[i] = i >= jamAt && i < jamAt + gap ? 0 : encoder.nextSample();
+    }
+    const frames = decode(out, sampleRate);
+    const before = frames.filter((f) => f.nextFrameStartSample <= jamAt);
+    const after = frames.filter((f) => f.nextFrameStartSample > jamAt + gap);
+    expect(before.length).toBeGreaterThan(25);
+    expect(after.length).toBeGreaterThan(35);
+    const first = framesFromTimecode(after[0].tc, rate);
+    expect(first).toBeGreaterThanOrEqual(50000);
+    expect(first).toBeLessThanOrEqual(50002);
+    after.forEach((f, i) => expect(framesFromTimecode(f.tc, rate)).toBe(first + i));
+  });
+
   it('finds nothing in silence or noise', () => {
     const n = noise(3);
     const silence = new Float32Array(48000);

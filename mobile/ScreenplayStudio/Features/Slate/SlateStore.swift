@@ -9,6 +9,10 @@ final class SlateStore {
 
     static let shared = SlateStore()
 
+    /// Posted (with the project ID) when the slate screen closes, so screens
+    /// showing its status can re-read it.
+    static let didClose = Notification.Name("SlateStoreDidClose")
+
     struct Snapshot: Codable {
         var state: SlateState
         var takes: [SlateTake]
@@ -45,9 +49,17 @@ final class SlateStore {
     }
 
     func load(projectID: String) -> Snapshot? {
-        if let data = try? Data(contentsOf: url(for: projectID)),
-           let snapshot = try? decoder.decode(Snapshot.self, from: data) {
-            return snapshot
+        let file = url(for: projectID)
+        if let data = try? Data(contentsOf: file) {
+            if let snapshot = try? decoder.decode(Snapshot.self, from: data) {
+                return snapshot
+            }
+            // Unreadable: keep it to one side rather than let the next save
+            // write an empty log over a day's takes.
+            let stamp = Int(Date().timeIntervalSince1970)
+            let aside = file.deletingPathExtension().appendingPathExtension("corrupt-\(stamp).json")
+            try? FileManager.default.moveItem(at: file, to: aside)
+            return nil
         }
         return migrateFromDefaults(projectID: projectID)
     }

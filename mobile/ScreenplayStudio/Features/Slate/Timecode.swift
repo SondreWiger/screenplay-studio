@@ -135,7 +135,7 @@ struct Timecode: Equatable, Codable, Hashable {
     /// Parses what someone types: colons, dots or a semicolon between fields.
     init?(parsing text: String, rate: FrameRate) {
         let parts = text.trimmingCharacters(in: .whitespaces)
-            .split(whereSeparator: { $0 == ":" || $0 == "." || $0 == ";" })
+            .split(omittingEmptySubsequences: false, whereSeparator: { $0 == ":" || $0 == "." || $0 == ";" })
             .map(String.init)
         guard parts.count == 4,
               parts.allSatisfy({ (1...2).contains($0.count) && $0.allSatisfy(\.isNumber) }),
@@ -222,8 +222,11 @@ struct TimecodeJam: Codable, Equatable {
 
     /// Jam to the device clock.
     static func timeOfDay(rate: FrameRate, now: Date = Date(), clock: Double = SlateClock.now()) -> TimecodeJam {
-        let calendar = Calendar.current
-        let secondsSinceMidnight = now.timeIntervalSince(calendar.startOfDay(for: now))
+        // The clock's reading, not the time elapsed since midnight: they differ
+        // by an hour on the day the clocks change.
+        let c = Calendar.current.dateComponents([.hour, .minute, .second, .nanosecond], from: now)
+        let secondsSinceMidnight = Double((c.hour ?? 0) * 3600 + (c.minute ?? 0) * 60 + (c.second ?? 0))
+            + Double(c.nanosecond ?? 0) / 1e9
         if rate.tracksWallClock {
             return TimecodeJam(
                 anchorFrames: 0,

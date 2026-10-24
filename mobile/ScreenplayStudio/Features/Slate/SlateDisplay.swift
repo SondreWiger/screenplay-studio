@@ -21,7 +21,8 @@ final class DisplaySyncTrigger: NSObject {
         link?.invalidate()
         let link = CADisplayLink(target: self, selector: #selector(tick(_:)))
         // Ask for the fastest refresh, so the uncertainty is as small as the
-        // display allows (8 ms on ProMotion).
+        // display allows: 8 ms on a ProMotion iPad, 17 ms at 60 Hz — under
+        // half a frame at 24 fps either way.
         link.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 120, preferred: 120)
         link.add(to: .main, forMode: .common)
         self.link = link
