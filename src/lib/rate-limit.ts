@@ -89,8 +89,13 @@ export function addRateLimitHeaders(
 
 // Extract client IP from request
 export function getClientIp(req: Request): string {
-  return (req.headers as Headers).get('x-forwarded-for')?.split(',')[0]?.trim()
-    || (req.headers as Headers).get('x-real-ip')
+  // The left-most X-Forwarded-For entry is client-controlled, so never trust
+  // it. Prefer the platform header, then the entry appended by the nearest
+  // proxy (right-most), then X-Real-IP.
+  const h = req.headers as Headers;
+  return h.get('x-vercel-forwarded-for')?.split(',')[0]?.trim()
+    || h.get('x-forwarded-for')?.split(',').pop()?.trim()
+    || h.get('x-real-ip')
     || 'unknown';
 }
 

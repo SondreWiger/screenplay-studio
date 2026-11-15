@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { safeEqual } from '@/lib/secure-compare';
 
 /**
  * Vercel Cron calls scheduled routes with `Authorization: Bearer $CRON_SECRET`.
@@ -11,7 +12,7 @@ export function rejectUnlessCron(req: Request): NextResponse | null {
   if (!secret) {
     return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 503 });
   }
-  if (req.headers.get('authorization') !== `Bearer ${secret}`) {
+  if (!safeEqual(req.headers.get('authorization'), `Bearer ${secret}`)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   return null;

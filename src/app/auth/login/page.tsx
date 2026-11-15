@@ -8,6 +8,7 @@ import { createLocalUser, isElectronMode } from '@/lib/supabase/electron-client'
 import logger from '@/lib/logger';
 import { useTranslation } from '@/components/TranslationProvider';
 import { ResendConfirmation } from '@/components/ResendConfirmation';
+import { safeRedirectPath } from '@/lib/safe-redirect';
 
 function friendlyAuthError(msg: string): string {
   const m = msg.toLowerCase();
@@ -43,7 +44,7 @@ function LoginForm() {
   // const googleAuthEnabled = hasAccess('google_auth_enabled');
   const googleAuthEnabled = false;
   
-  const redirect = searchParams.get('redirect') || '/dashboard';
+  const redirect = safeRedirectPath(searchParams.get('redirect'));
   const [loading, setLoading] = useState(false);
   const urlError = searchParams.get('error');
   const [error, setError] = useState(urlError ? friendlyAuthError(decodeURIComponent(urlError)) : '');

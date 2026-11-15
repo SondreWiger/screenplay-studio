@@ -1,6 +1,7 @@
 import logger from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { safeEqual } from '@/lib/secure-compare';
 
 // Internal route — secured with PUSH_API_SECRET
 // This route writes to automod_flags using the service role key.
@@ -74,7 +75,7 @@ export async function POST(req: NextRequest) {
     if (!PUSH_API_SECRET) {
       return NextResponse.json({ error: 'PUSH_API_SECRET not configured' }, { status: 500 });
     }
-    if (secret !== PUSH_API_SECRET) {
+    if (!safeEqual(secret, PUSH_API_SECRET)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

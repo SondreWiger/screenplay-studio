@@ -14,6 +14,7 @@ import { spawn, ChildProcess } from 'child_process';
 
 // Track active relay processes by output ID
 const activeRelays = new Map<string, ChildProcess>();
+const MAX_ACTIVE_RELAYS = 20;
 
 export async function POST(req: NextRequest) {
   const supabase = createServerSupabaseClient();
@@ -25,6 +26,17 @@ export async function POST(req: NextRequest) {
 
   if (!action || !outputId || !projectId) {
     return NextResponse.json({ error: 'action, outputId, and projectId required' }, { status: 400 });
+  }
+
+  // RLS-scoped lookup: the caller must be able to see this output, and it must
+  // belong to the project they named, before any relay process is touched.
+  const { data: owned } = await supabase
+    .from('broadcast_stream_outputs')
+    .select('id, project_id')
+    .eq('id', outputId)
+    .maybeSingle();
+  if (!owned || owned.project_id !== projectId) {
+    return NextResponse.json({ error: 'Output not found' }, { status: 404 });
   }
 
   if (action === 'stop') {
@@ -52,6 +64,9 @@ export async function POST(req: NextRequest) {
   if (action === 'start') {
     // Kill existing relay for this output if any
     const existing = activeRelays.get(outputId);
+    if (!existing && activeRelays.size >= MAX_ACTIVE_RELAYS) {
+      return NextResponse.json({ error: 'Too many active relays. Try again later.' }, { status: 429 });
+    }
     if (existing) {
       existing.kill('SIGTERM');
       activeRelays.delete(outputId);
@@ -102,8 +117,10 @@ export async function POST(req: NextRequest) {
 
     const destUrl = `${output.rtmp_url}/${output.stream_key}`;
 
-    const allowedSchemes = ['rtmp://', 'rtmps://', 'http://', 'https://'];
-    if (!allowedSchemes.some(s => sourceUrl.startsWith(s)) || !allowedSchemes.some(s => destUrl.startsWith(s))) {
+    // The destination is user-supplied: only real streaming endpoints, never
+    // http(s), which would let ffmpeg be pointed at internal services.
+    const destSchemes = ['rtmp://', 'rtmps://'];
+    if (!destSchemes.some(s => destUrl.toLowerCase().startsWith(s)) || /\s/.test(destUrl)) {
       return NextResponse.json({ error: 'Invalid URL scheme' }, { status: 400 });
     }
 

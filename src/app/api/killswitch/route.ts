@@ -4,6 +4,7 @@ import { fillEmails } from '@/lib/private-profile';
 import { sendEmail } from '@/lib/mailer';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import logger from '@/lib/logger';
+import { safeEqual } from '@/lib/secure-compare';
 
 const KILLSWITCH_KEY = process.env.KILLSWITCH_SECRET || '';
 
@@ -152,7 +153,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 });
   }
 
-  if (!body.key || body.key.trim() !== KILLSWITCH_KEY.trim()) {
+  if (typeof body.key !== 'string' || !safeEqual(body.key.trim(), KILLSWITCH_KEY.trim())) {
     // Artificial delay to prevent timing attacks
     await sleep(1200);
     logger.warn('killswitch', `Invalid key attempt from IP ${ip}`);

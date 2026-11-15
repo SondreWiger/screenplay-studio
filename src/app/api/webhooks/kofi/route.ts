@@ -1,6 +1,7 @@
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { grantProFromDonation } from '@/lib/donations';
 import { NextRequest, NextResponse } from 'next/server';
+import { safeEqual } from '@/lib/secure-compare';
 
 // Ko-Fi verification token (from your Ko-Fi webhook settings) - set
 // KOFI_VERIFICATION_TOKEN in the server environment, never hardcode it here:
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
 
     const body = JSON.parse(raw);
 
-    if (body.verification_token !== KOFI_VERIFICATION_TOKEN) {
+    if (typeof body?.verification_token !== 'string' || !safeEqual(body.verification_token, KOFI_VERIFICATION_TOKEN)) {
       console.warn('[kofi webhook] invalid verification token');
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }

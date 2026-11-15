@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { assertPublicHttpsUrl, safeFetch } from '@/lib/ssrf';
 
 // Wire Feed Polling API — Real RSS/Atom feed ingestion
 // POST /api/broadcast/wire-poll
@@ -194,8 +195,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Feed is inactive' }, { status: 400 });
     }
 
-    if (!feed.feed_url.startsWith('https://')) {
-      return NextResponse.json({ error: 'Feed URL must use HTTPS' }, { status: 400 });
+    try {
+      await assertPublicHttpsUrl(feed.feed_url);
+    } catch (urlErr: unknown) {
+      const message = urlErr instanceof Error ? urlErr.message : 'Invalid feed URL';
+      return NextResponse.json({ error: `Feed URL rejected: ${message}` }, { status: 400 });
     }
 
     // 2. Fetch the actual RSS/Atom feed
@@ -204,7 +208,7 @@ export async function POST(request: NextRequest) {
 
     let feedResponse: Response;
     try {
-      feedResponse = await fetch(feed.feed_url, {
+      feedResponse = await safeFetch(feed.feed_url, {
         signal: controller.signal,
         headers: {
           'User-Agent': 'ScreenplayStudio-NRCS/1.0 (Broadcast Wire Ingestion)',

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { safeEqual } from '@/lib/secure-compare';
 
 /**
  * POST /api/broadcast/streams/status
@@ -16,19 +17,13 @@ export async function POST(req: NextRequest) {
   // Validate request — require a shared secret in production
   const authHeader = req.headers.get('x-media-server-key');
   const expectedKey = process.env.MEDIA_SERVER_SECRET || '';
-  if (process.env.NODE_ENV === 'production') {
-    if (!expectedKey) {
-      return NextResponse.json({ error: 'MEDIA_SERVER_SECRET not configured' }, { status: 500 });
-    }
-    if (authHeader !== expectedKey) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-  } else {
-    // Dev default for local testing only
-    const devExpected = expectedKey || 'dev-media-key';
-    if (authHeader !== devExpected) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  // The well-known dev key is only accepted when running `next dev`.
+  const key = expectedKey || (process.env.NODE_ENV === 'development' ? 'dev-media-key' : '');
+  if (!key) {
+    return NextResponse.json({ error: 'MEDIA_SERVER_SECRET not configured' }, { status: 500 });
+  }
+  if (!safeEqual(authHeader, key)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const body = await req.json();

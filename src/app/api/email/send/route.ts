@@ -1,6 +1,7 @@
 import logger from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail, sendNotificationEmail } from '@/lib/mailer';
+import { safeEqual } from '@/lib/secure-compare';
 
 // Email sending API route
 // POST /api/email/send
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest) {
     if (!PUSH_API_SECRET) {
       return NextResponse.json({ error: 'PUSH_API_SECRET not configured' }, { status: 500 });
     }
-    if (secret !== PUSH_API_SECRET) {
+    if (!safeEqual(secret, PUSH_API_SECRET)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
